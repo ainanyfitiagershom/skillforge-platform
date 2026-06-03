@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: skillforge-backend-app
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/skillforge}
+    username: ${DB_USER:skillforge}
+    password: ${DB_PASSWORD:skillforge_dev}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+server:
+  port: ${SERVER_PORT:8090}  # 8080 deja pris par Traefik d'un autre projet
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+skillforge:
+  jwt:
+    secret: ${JWT_SECRET:change-me-in-production-this-secret-must-be-at-least-32-characters-long}
+    access-ttl-minutes: 30
+    refresh-ttl-days: 7
+  llm:
+    provider: ${LLM_PROVIDER:mock}  # mock | openai | claude
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      model: ${OPENAI_MODEL:gpt-4o-mini}
+    claude:
+      api-key: ${ANTHROPIC_API_KEY:}
+      model: ${CLAUDE_MODEL:claude-sonnet-4-5}
+  rgpd:
+    cv-retention-months: 12
+
+logging:
+  level:
+    root: INFO
+    com.tsarajoro.skillforge: DEBUG
