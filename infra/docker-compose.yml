@@ -1,0 +1,29 @@
+# Services de développement local pour SkillForge.
+# Lancer : docker compose -f infra/docker-compose.yml up -d
+# Arrêter : docker compose -f infra/docker-compose.yml down
+# Données persistées dans un volume nommé `skillforge_pgdata`.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: skillforge-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skillforge
+      POSTGRES_USER: skillforge
+      POSTGRES_PASSWORD: skillforge_dev
+    # Mappé sur 5434 côté hôte (5432 et 5433 sont déjà occupés par d'autres projets).
+    # Backend Spring Boot doit donc se connecter sur localhost:5434.
+    ports:
+      - "5434:5432"
+    volumes:
+      - skillforge_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillforge -d skillforge"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  skillforge_pgdata:
+    name: skillforge_pgdata
