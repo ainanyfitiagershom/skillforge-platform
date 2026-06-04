@@ -44,6 +44,8 @@ public class QuestionController {
             all = repository.findByStatusAndType(status, type);
         } else if (status != null) {
             all = repository.findByStatus(status);
+        } else if (type != null) {
+            all = repository.findByType(type);
         } else {
             all = repository.findAll();
         }
@@ -59,11 +61,14 @@ public class QuestionController {
 
     @PostMapping
     public ResponseEntity<QuestionResponse> create(@Valid @RequestBody QuestionRequest body) {
+        // Si le recruteur fournit un statut explicite (par exemple APPROVED parce qu'il valide
+        // a la creation), on l'utilise. Sinon on retombe sur PENDING_REVIEW par defaut.
+        QuestionStatus status = body.status() != null ? body.status() : QuestionStatus.PENDING_REVIEW;
         Question q = Question.newQuestion(
                 body.type(),
                 body.statement(),
                 body.difficulty(),
-                QuestionStatus.PENDING_REVIEW,
+                status,
                 body.jsonPayload());
         return ResponseEntity.status(HttpStatus.CREATED).body(QuestionResponse.of(repository.save(q)));
     }

@@ -1,5 +1,8 @@
 package com.tsarajoro.skillforge.exception;
 
+import com.tsarajoro.skillforge.cv.CvParseException;
+import com.tsarajoro.skillforge.cv.UnsupportedCvFormatException;
+import com.tsarajoro.skillforge.llm.LlmCallException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -30,6 +33,21 @@ public class GlobalExceptionHandler {
                 .map(f -> f.getField() + ": " + f.getDefaultMessage())
                 .collect(Collectors.joining("; "));
         return error(HttpStatus.BAD_REQUEST, details);
+    }
+
+    @ExceptionHandler(UnsupportedCvFormatException.class)
+    public ResponseEntity<Map<String, Object>> handleUnsupportedFormat(UnsupportedCvFormatException e) {
+        return error(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(CvParseException.class)
+    public ResponseEntity<Map<String, Object>> handleCvParse(CvParseException e) {
+        return error(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(LlmCallException.class)
+    public ResponseEntity<Map<String, Object>> handleLlmCall(LlmCallException e) {
+        return error(HttpStatus.BAD_GATEWAY, e.getMessage());
     }
 
     private ResponseEntity<Map<String, Object>> error(HttpStatus status, String message) {

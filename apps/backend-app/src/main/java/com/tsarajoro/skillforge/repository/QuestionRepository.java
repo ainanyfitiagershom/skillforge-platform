@@ -12,5 +12,7 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
 
     List<Question> findByStatus(QuestionStatus status);
 
+    List<Question> findByType(QuestionType type);
+
     List<Question> findByStatusAndType(QuestionStatus status, QuestionType type);
 }
