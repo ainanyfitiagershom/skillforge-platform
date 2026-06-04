@@ -18,6 +18,14 @@ public interface LlmClient {
     CvExtractionResult extractSkillsFromCv(String cvText, String profileCode);
 
     /**
+     * Genere un ensemble de questions adaptees aux competences detectees et au profil cible.
+     *
+     * @param request parametres de generation (profil, competences, types, difficulte)
+     * @return resultat structure (questions + couts API)
+     */
+    QuestionGenerationResult generateQuestions(GenerationRequest request);
+
+    /**
      * Nom du fournisseur (openai, claude, mock).
      */
     String providerName();

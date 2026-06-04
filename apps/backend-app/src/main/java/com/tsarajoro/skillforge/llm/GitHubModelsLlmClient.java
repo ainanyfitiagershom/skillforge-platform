@@ -20,31 +20,41 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Implementation OpenAI : appelle l'API chat/completions avec une sortie structuree JSON.
- * Activee quand skillforge.llm.provider=openai.
+ * Implementation GitHub Models (Azure AI Inference).
+ *
+ * GitHub propose un acces gratuit a plusieurs modeles (OpenAI gpt-4o-mini, gpt-4o,
+ * Phi-3.5, Llama-3.3, Mistral...) avec des rate limits raisonnables pour les developpeurs.
+ * L'API est OpenAI-compatible (meme format de body chat/completions).
+ *
+ * Auth : Personal Access Token GitHub avec scope 'models:read'.
+ * Endpoint : https://models.github.ai/inference (ou .../v1/chat/completions)
+ *
+ * Activee quand skillforge.llm.provider=github
  */
 @Component
-@ConditionalOnProperty(name = "skillforge.llm.provider", havingValue = "openai")
-public class OpenAiLlmClient implements LlmClient {
+@ConditionalOnProperty(name = "skillforge.llm.provider", havingValue = "github")
+public class GitHubModelsLlmClient implements LlmClient {
 
-    private static final String BASE_URL = "https://api.openai.com/v1";
+    private static final String DEFAULT_BASE_URL = "https://models.github.ai/inference";
 
     private final RestClient http;
     private final String model;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public OpenAiLlmClient(
-            @Value("${skillforge.llm.openai.api-key}") String apiKey,
-            @Value("${skillforge.llm.openai.model}") String model) {
-        if (apiKey == null || apiKey.isBlank()) {
+    public GitHubModelsLlmClient(
+            @Value("${skillforge.llm.github.token}") String token,
+            @Value("${skillforge.llm.github.model}") String model,
+            @Value("${skillforge.llm.github.base-url:" + DEFAULT_BASE_URL + "}") String baseUrl) {
+        if (token == null || token.isBlank()) {
             throw new IllegalStateException(
-                    "OPENAI_API_KEY is missing while skillforge.llm.provider=openai");
+                    "GITHUB_TOKEN is missing while skillforge.llm.provider=github");
         }
         this.model = model;
         this.http = RestClient.builder()
-                .baseUrl(BASE_URL)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                .baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
@@ -100,20 +110,11 @@ public class OpenAiLlmClient implements LlmClient {
             }
 
             int tokens = response.path("usage").path("total_tokens").asInt(0);
-            // Estimation grossiere du cout (gpt-4o-mini ~ 0.15/1M input, 0.60/1M output)
-            BigDecimal cost = BigDecimal.valueOf(tokens).multiply(new BigDecimal("0.0000005"));
-            return new CvExtractionResult(skills, providerName(), model, tokens, cost);
+            // GitHub Models : gratuit, donc cout = 0
+            return new CvExtractionResult(skills, providerName(), model, tokens, BigDecimal.ZERO);
 
         } catch (Exception e) {
-            throw new LlmCallException("openai chat/completions failed: " + e.getMessage(), e);
-        }
-    }
-
-    private SkillLevel parseLevel(String s) {
-        try {
-            return SkillLevel.valueOf(s.toUpperCase());
-        } catch (Exception e) {
-            return SkillLevel.UNKNOWN;
+            throw new LlmCallException("github models chat/completions failed: " + e.getMessage(), e);
         }
     }
 
@@ -195,16 +196,23 @@ public class OpenAiLlmClient implements LlmClient {
             }
 
             int tokens = response.path("usage").path("total_tokens").asInt(0);
-            BigDecimal cost = BigDecimal.valueOf(tokens).multiply(new BigDecimal("0.0000005"));
-            return new QuestionGenerationResult(questions, providerName(), model, tokens, cost);
+            return new QuestionGenerationResult(questions, providerName(), model, tokens, BigDecimal.ZERO);
 
         } catch (Exception e) {
-            throw new LlmCallException("openai chat/completions (generation) failed: " + e.getMessage(), e);
+            throw new LlmCallException("github models chat/completions (generation) failed: " + e.getMessage(), e);
+        }
+    }
+
+    private SkillLevel parseLevel(String s) {
+        try {
+            return SkillLevel.valueOf(s.toUpperCase());
+        } catch (Exception e) {
+            return SkillLevel.UNKNOWN;
         }
     }
 
     @Override
     public String providerName() {
-        return "openai";
+        return "github";
     }
 }

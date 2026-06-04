@@ -1,7 +1,9 @@
 package com.tsarajoro.skillforge.llm;
 
+import com.tsarajoro.skillforge.domain.QuestionType;
 import com.tsarajoro.skillforge.llm.CvExtractionResult.ExtractedSkill;
 import com.tsarajoro.skillforge.llm.CvExtractionResult.SkillLevel;
+import com.tsarajoro.skillforge.llm.QuestionGenerationResult.GeneratedQuestion;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -91,6 +93,71 @@ public class MockLlmClient implements LlmClient {
         int ia = text.indexOf(a);
         int ib = text.indexOf(b);
         return ia >= 0 && ib >= 0 && Math.abs(ia - ib) < 100;
+    }
+
+    @Override
+    public QuestionGenerationResult generateQuestions(GenerationRequest request) {
+        List<GeneratedQuestion> generated = new ArrayList<>();
+        // Pour chaque type demande, on genere `count` questions factices coherentes.
+        for (var quota : request.types()) {
+            for (int i = 1; i <= quota.count(); i++) {
+                String skillCode = pickSkill(request.skillCodes(), i);
+                generated.add(buildMockQuestion(quota.type(), i, request.difficulty(),
+                        request.profileCode(), skillCode));
+            }
+        }
+        return new QuestionGenerationResult(generated, providerName(), "mock-generator-v1",
+                0, BigDecimal.ZERO);
+    }
+
+    private String pickSkill(List<String> skills, int index) {
+        if (skills == null || skills.isEmpty()) {
+            return "LANG_PHP";
+        }
+        return skills.get((index - 1) % skills.size());
+    }
+
+    private GeneratedQuestion buildMockQuestion(QuestionType type, int index, int difficulty,
+                                                 String profileCode, String skillCode) {
+        return switch (type) {
+            case QCM -> new GeneratedQuestion(
+                    QuestionType.QCM,
+                    "[MOCK QCM " + index + "] Question sur " + skillCode + " pour profil " + profileCode,
+                    difficulty,
+                    List.of(skillCode),
+                    """
+                    {
+                      "options": ["Reponse A", "Reponse B (correcte)", "Reponse C", "Reponse D"],
+                      "correctIndex": 1,
+                      "explanation": "Generation factice pour developpement / tests."
+                    }
+                    """);
+            case CODE -> new GeneratedQuestion(
+                    QuestionType.CODE,
+                    "[MOCK CODE " + index + "] Implementer une fonction lien a " + skillCode,
+                    difficulty,
+                    List.of(skillCode),
+                    """
+                    {
+                      "language": "PHP",
+                      "starterCode": "function solve($input) {\\n  // votre code ici\\n  return null;\\n}",
+                      "hiddenTests": "function testBasic() { assertEquals(42, solve(21)); }",
+                      "explanation": "Generation factice."
+                    }
+                    """);
+            case CAS_PRATIQUE -> new GeneratedQuestion(
+                    QuestionType.CAS_PRATIQUE,
+                    "[MOCK CAS " + index + "] Vous arrivez sur un projet utilisant " + skillCode + " ...",
+                    difficulty,
+                    List.of(skillCode),
+                    """
+                    {
+                      "scenario": "Decrire les etapes que vous suivriez pour diagnostiquer le probleme.",
+                      "expectedAnswerPoints": ["Analyser les logs", "Verifier la configuration", "Reproduire en local"],
+                      "explanation": "Generation factice."
+                    }
+                    """);
+        };
     }
 
     @Override

@@ -39,10 +39,14 @@ skillforge:
     access-ttl-minutes: 30
     refresh-ttl-days: 7
   llm:
-    provider: ${LLM_PROVIDER:mock}  # mock | openai | claude
+    provider: ${LLM_PROVIDER:mock}  # mock | openai | github | claude
     openai:
       api-key: ${OPENAI_API_KEY:}
       model: ${OPENAI_MODEL:gpt-4o-mini}
+    github:
+      token: ${GITHUB_TOKEN:}
+      model: ${GITHUB_MODEL:openai/gpt-4o-mini}  # voir https://github.com/marketplace/models
+      base-url: ${GITHUB_MODELS_BASE_URL:https://models.github.ai/inference}
     claude:
       api-key: ${ANTHROPIC_API_KEY:}
       model: ${CLAUDE_MODEL:claude-sonnet-4-5}

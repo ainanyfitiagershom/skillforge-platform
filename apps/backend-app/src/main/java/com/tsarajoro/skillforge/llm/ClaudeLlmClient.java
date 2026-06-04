@@ -39,6 +39,12 @@ public class ClaudeLlmClient implements LlmClient {
     }
 
     @Override
+    public QuestionGenerationResult generateQuestions(GenerationRequest request) {
+        throw new UnsupportedOperationException(
+                "Claude LLM client not implemented yet — set skillforge.llm.provider=openai or mock");
+    }
+
+    @Override
     public String providerName() {
         return "claude";
     }
