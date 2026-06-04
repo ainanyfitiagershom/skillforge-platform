@@ -1,18 +1,74 @@
 # Guide — Obtenir et configurer une clé API IA
 
-SkillForge utilise un modèle de langage (LLM) pour analyser les CV, générer des questions et rédiger des comptes rendus. Trois options sont supportées :
+SkillForge utilise un modèle de langage (LLM) pour analyser les CV, générer des questions et rédiger des comptes rendus. Quatre options sont supportées :
 
 | Provider | Quand l'utiliser | Coût | Statut |
 |---|---|---|---|
 | **mock** | Développement et tests, sans appel réseau | Gratuit | ✅ Activé par défaut |
-| **openai** | Production / POC réels avec ChatGPT | Payant à l'usage | ✅ Implémenté |
-| **claude** | Production / POC réels avec Claude | Payant à l'usage | ⚠️ Squelette (à finaliser) |
+| **github** | POC gratuit avec rate limits raisonnables | **GRATUIT** | ✅ Implémenté |
+| **openai** | Production / POC avec ChatGPT | Payant à l'usage (5 $ min recharge) | ✅ Implémenté |
+| **claude** | Production / POC avec Claude | Payant à l'usage | ⚠️ Squelette (à finaliser) |
 
 Le choix se fait via la variable d'environnement `LLM_PROVIDER` dans `apps/backend-app/.env`.
 
+⚠️ **Important** : un abonnement **ChatGPT Plus à 20 $/mois** ne donne **PAS** accès à l'API OpenAI. Ce sont deux produits totalement séparés. Si vous n'avez que ChatGPT Plus, utilisez **GitHub Models** (gratuit) à la place.
+
 ---
 
-## 1. OpenAI / ChatGPT
+## 1. GitHub Models (recommandé pour POC — gratuit)
+
+GitHub propose depuis fin 2024 un accès gratuit à plusieurs modèles d'IA (OpenAI, Llama, Phi, Mistral) via son service **GitHub Models**. C'est l'option idéale pour le POC 1 (analyse CV) et le POC 2 (génération de questions) du stage, puisque ça permet d'utiliser de vrais LLM sans payer.
+
+### 1.1 Créer un Personal Access Token (PAT) GitHub
+
+1. Aller sur **https://github.com/settings/tokens**
+2. Cliquer sur **"Generate new token"** → **"Generate new token (classic)"** (ou Fine-grained, au choix)
+3. **Note** : `skillforge-models`
+4. **Expiration** : 90 jours (ou plus)
+5. **Scope à cocher** : **`models:read`** uniquement (par sécurité, pas plus)
+6. Cliquer **"Generate token"**
+7. ⚠️ **Copier immédiatement** le token (format `ghp_…` pour classic, `github_pat_…` pour fine-grained). Il ne sera plus jamais affiché ensuite.
+
+### 1.2 Configurer le backend SkillForge
+
+Éditer `apps/backend-app/.env` :
+
+```env
+LLM_PROVIDER=github
+GITHUB_TOKEN=ghp_votre_token_colle_ici
+GITHUB_MODEL=openai/gpt-4o-mini
+```
+
+Redémarrer le backend :
+
+```bash
+cd apps/backend-app
+mvn spring-boot:run
+```
+
+### 1.3 Choix du modèle (`GITHUB_MODEL`)
+
+Les modèles disponibles sont listés sur **https://github.com/marketplace/models**. Les plus utiles pour SkillForge :
+
+| Modèle | Format | Cas d'usage |
+|---|---|---|
+| `openai/gpt-4o-mini` | OpenAI | Recommandé : bon rapport qualité/limite |
+| `openai/gpt-4o` | OpenAI | Meilleure qualité, limites plus strictes |
+| `meta/llama-3.3-70b-instruct` | Meta | Open source, bonne qualité |
+| `microsoft/phi-3.5-mini-instruct` | Microsoft | Léger, très rapide |
+| `mistral-ai/mistral-nemo` | Mistral | Souverain européen, bon pour le français |
+
+### 1.4 Rate limits
+
+GitHub Models a des **limites par minute, heure et jour** selon le modèle. Pour les usages POC du stage (~30 CV + 100 questions), c'est largement suffisant. Si vous atteignez la limite, attendez quelques minutes ou basculez sur un autre modèle.
+
+### 1.5 Vérifier que ça marche
+
+Voir la commande de test à la section "Vérifier que ça marche" plus bas — c'est exactement la même que pour OpenAI, le code SkillForge bascule transparent.
+
+---
+
+## 2. OpenAI / ChatGPT
 
 ### 1.1 Créer un compte
 

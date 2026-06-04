@@ -170,35 +170,44 @@
 **Estimation : 11 jours**
 
 ### 4.1 Prompts de génération (3 j)
-- [ ] Prompt QCM (avec distracteurs plausibles)
-- [ ] Prompt exercice de code (avec tests cachés)
-- [ ] Prompt cas pratique (mini-scénario métier)
+- [x] Prompt QCM (avec distracteurs plausibles) dans `OpenAiLlmClient.generateQuestions`
+- [x] Prompt exercice de code (avec tests cachés)
+- [x] Prompt cas pratique (mini-scénario métier)
+- [x] Mock generator (`MockLlmClient.generateQuestions`) qui produit les 3 types
+- [x] Squelette Claude (`ClaudeLlmClient.generateQuestions`)
 
 ### 4.2 Endpoint de génération (2 j)
-- [ ] POST /tests/generate (compétences + profil + nb questions)
-- [ ] Validation JSON robuste de la réponse LLM
-- [ ] Stockage des questions en statut `pending_review`
-- [ ] Implémentation prompt caching (réduction coût -90 %)
-- [ ] Tracking tokens consommés + coût
+- [x] POST /tests/generate (compétences + profil + nb questions par type + difficulté)
+- [x] Validation Jakarta (skillCodes notEmpty, difficulty 1-5, count 1-20)
+- [x] Stockage des questions en statut `pending_review`
+- [x] Tracking tokens consommés + coût (champ `tokensUsed`, `costEur`)
+- [ ] Prompt caching (à activer côté Claude quand `ClaudeLlmClient` sera finalisé)
 
 ### 4.3 POC 2 (3 j) — livrable rapport
-- [ ] Générer 100 questions sur 5 compétences cibles
-- [ ] Faire valider par 2-3 développeurs seniors
+- [x] Protocole rédigé : `docs/03-poc/poc-02-generation.md`
+- [ ] Générer 100 questions sur 5 compétences cibles (a faire avec cle OpenAI/Claude)
+- [ ] Faire valider par 2-3 développeurs seniors (a planifier avec tuteur)
 - [ ] Mesurer le taux d'acceptation (cible ≥ 75 %)
 - [ ] Mesurer le coût moyen par question (cible ≤ 0,02 €)
-- [ ] Rédiger `docs/03-poc/poc-02-generation.md`
 
 ### 4.4 Frontend recruteur (2 j)
-- [ ] Initialiser `apps/frontend-web` (Vite + React 19 + TS + Tailwind + ShadcnUI)
-- [ ] Page login + gestion JWT
-- [ ] Layout principal (sidebar + header)
-- [ ] Page "Nouveau test" : upload CV → affichage compétences détectées
-- [ ] Page "Review questions générées" (accept / reject / edit)
+- [x] Initialiser `apps/frontend-web` (Vite 6 + React 19 + TS + Tailwind 3 + composants UI custom)
+- [x] Client API typé (`src/lib/api.ts`) + gestion JWT en localStorage
+- [x] Page login + gestion erreurs
+- [x] Layout principal (sidebar avec navigation + bouton logout)
+- [x] Route guard `ProtectedRoute` (verifie JWT + role)
+- [x] Page "Tableau de bord"
+- [x] Page "Nouveau test" : upload CV → skills détectées (cliquables) → génération
+- [x] Page "Revoir les questions" : liste filtrée PENDING_REVIEW + accept/reject/edit/delete + modal edition
+- [x] Proxy Vite `/api/*` → `http://localhost:8090` teste OK
+- [x] Build production OK (`pnpm build` → 305 KB JS, 12 KB CSS)
 
 ### 4.5 Lien candidat (1 j)
-- [ ] Modèle Invitation (UUID + expiration)
-- [ ] Endpoint POST /tests/{id}/invite (envoi e-mail + génération lien)
-- [ ] Endpoint GET /invitations/{token} (validation côté candidat)
+- [x] Modèle Invitation (UUID + token + expires_at + used)
+- [x] Endpoint POST /tests/{id}/invite (génère lien + TTL 24h par défaut)
+- [x] Endpoint GET /invitations/{token} **PUBLIC** (whitelist Spring Security)
+- [x] Sanitization payload candidat (correctIndex + hiddenTests retirés)
+- [x] Gestion statuts : VALID, EXPIRED, ALREADY_USED, UNKNOWN → 410 Gone
 
 ---
 
