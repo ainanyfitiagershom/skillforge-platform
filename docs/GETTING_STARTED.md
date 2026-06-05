@@ -158,13 +158,51 @@ CLAUDE_MODEL=claude-sonnet-4-5
 
 ⚠️ Le `.env` est ignoré par Git. **Ne le committez jamais.**
 
-### 5.3 Démarrer le backend
+### 5.3 Démarrer le backend principal
 
 ```bash
 mvn spring-boot:run
 ```
 
 Au premier lancement, Maven télécharge les dépendances (peut prendre 1 à 2 minutes).
+
+### 5.4 (Frontend) Installer / mettre à jour les dépendances
+
+Si vous venez de pull et que de nouvelles deps ont été ajoutées (ex: `@monaco-editor/react`) :
+
+```bash
+cd apps/frontend-web
+pnpm install
+```
+
+Puis pour démarrer le serveur de dev :
+```bash
+pnpm dev
+```
+
+### 5.5 (Optionnel — Sprint 4+) Construire les images Docker de la sandbox
+
+Si vous voulez tester l'exécution réelle de code candidat dans la sandbox, construisez d'abord les 2 images runtime :
+
+```bash
+docker build -t skillforge-runtime-php:8.3 infra/sandbox/php8.3/
+docker build -t skillforge-runtime-node:20 infra/sandbox/node20/
+```
+
+À faire une seule fois (les images sont en cache local après).
+
+### 5.5 (Optionnel — Sprint 4+) Démarrer backend-sandbox
+
+Service séparé du backend principal, sur le port 8091, qui orchestre les exécutions Docker.
+
+```bash
+cd apps/backend-sandbox
+cp .env.example .env
+# Éditer .env si besoin (la cle interne doit etre la meme que backend-app)
+mvn spring-boot:run
+```
+
+⚠️ La même clé `SANDBOX_INTERNAL_KEY` doit être configurée des deux côtés (`apps/backend-app/.env` et `apps/backend-sandbox/.env`) sinon backend-app ne pourra pas appeler la sandbox.
 
 Vous devriez voir dans les logs :
 

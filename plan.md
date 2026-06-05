@@ -215,31 +215,41 @@
 **Estimation : 11 jours**
 
 ### 5.1 Images Docker durcies (3 j)
-- [ ] Image PHP 8.3 minimale avec PHPUnit
-- [ ] Image Node 20 minimale avec Jest
-- [ ] Profil seccomp custom
-- [ ] Configuration cgroups (memory + cpu)
+- [x] Image PHP 8.3 minimale avec PHPUnit → `infra/sandbox/php8.3/Dockerfile`
+- [x] Image Node 20 minimale avec Jest → `infra/sandbox/node20/Dockerfile`
+- [x] Profil seccomp custom → `infra/sandbox/seccomp/skillforge-seccomp.json`
+- [x] Configuration cgroups (memory + cpu + pids-limit) → appliquee au runtime par SandboxRunner
 
 ### 5.2 Service Sandbox (3 j)
-- [ ] Initialiser `apps/backend-sandbox` (Spring Boot)
-- [ ] Endpoint POST /sandbox/execute (langage, code, tests cachés)
-- [ ] Implémentation avec Docker Java API
-- [ ] Gestion des timeouts (5 s max)
-- [ ] Capture stdout, stderr, exit code, durée, mémoire
-- [ ] Tests d'intégration avec Testcontainers
+- [x] Initialiser `apps/backend-sandbox` (Spring Boot, port 8091)
+- [x] Endpoint `POST /sandbox/execute` avec validation Jakarta + filtre `X-Internal-Key`
+- [x] Implementation avec Docker Java API : tous les flags de durcissement (`--network none`, `--read-only`, `--user 1001`, `--cap-drop=ALL`, seccomp, `no-new-privileges`)
+- [x] Gestion des timeouts (5 s par defaut) + kill auto + statut `TIMEOUT`
+- [x] Capture stdout, stderr (tronques 64 Ko), exit code, duree, `OOMKilled`
+- [x] Parsing PHPUnit / Jest pour scoring (tests unitaires inclus)
+- [x] Cleanup conteneur + workdir temp en `finally`
+- [ ] Tests d'integration avec Testcontainers (a faire en S7 audit complet)
 
 ### 5.3 POC 3 (3 j) — livrable rapport
-- [ ] Préparer 100 exécutions valides (50 PHP + 50 JS)
-- [ ] Préparer 30 cas d'attaque (fork bomb, accès réseau, etc.)
-- [ ] Exécuter et mesurer (latence < 2 s, 0 évasion)
-- [ ] Rédiger `docs/03-poc/poc-03-sandbox.md`
+- [x] Doc protocole `docs/03-poc/poc-03-sandbox.md` (100 valides + 30 attaques + criteres)
+- [ ] Preparer 100 executions valides (50 PHP + 50 JS) — peut etre genere par GitHub Models
+- [ ] Preparer 30 cas d'attaque (fork bomb, reseau, FS, escalade, OOM, timeout)
+- [ ] Construire les images Docker localement (`docker build`)
+- [ ] Executer et mesurer (latence < 2 s, 0 evasion)
+- [ ] Validation par M. Tsinjo (Cybersecurite)
 
 ### 5.4 Frontend candidat (2 j)
-- [ ] Page de passation (vérification environnement)
-- [ ] Intégration Monaco Editor (PHP + JS)
-- [ ] Bouton "Exécuter" qui appelle /sandbox/execute
-- [ ] Sauvegarde automatique toutes les 30 secondes
-- [ ] Chronomètre visible
+- [x] Entites JPA `Passation`, `Answer` + repositories
+- [x] `SandboxApiClient` cote backend-app + `CandidatePassationService`
+- [x] Endpoints publics `/candidate/passations/*` (whitelist Spring Security)
+- [x] Route `/candidate/passation/:token` : welcome + saisie email/nom
+- [x] Page de passation : QCM (radio), CODE (Monaco), CAS_PRATIQUE (textarea)
+- [x] Composant `CodeEditor` Monaco (theme sync light/dark, PHP + JS)
+- [x] Bouton "Executer" → POST `/candidate/.../run-code` → backend-app → backend-sandbox
+- [x] Affichage stdout/stderr/score apres execution
+- [x] Sauvegarde automatique (debouncee 1 s textarea, immediate QCM)
+- [x] Chronometre global (mm:ss) + barre de progression
+- [x] Page de fin (`CandidateDonePage`) avec score indicatif
 
 ---
 

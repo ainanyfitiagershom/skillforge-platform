@@ -360,3 +360,91 @@ curl -s http://localhost:5173/api/actuator/health
 | Bug | Fichier | Correction |
 |---|---|---|
 | Tailwind 4 vs PostCSS plugin incompatible | `package.json` | Downgrade vers Tailwind 3 (stable + Shadcn-compatible) |
+
+---
+
+## 14. Tests Phase 5 — Sandbox Docker durcie + Frontend candidat (à effectuer chez vous)
+
+> Cette phase nécessite Docker fonctionnel. Avant de tester, construire les images :
+> ```bash
+> docker build -t skillforge-runtime-php:8.3 infra/sandbox/php8.3/
+> docker build -t skillforge-runtime-node:20 infra/sandbox/node20/
+> ```
+
+### Backend Sandbox (port 8091)
+
+#### 14.1 🏠 Healthcheck public
+```bash
+curl http://localhost:8091/actuator/health
+```
+**Attendu :** `{"status":"UP"}`
+
+#### 14.2 🏠 Accès sans clé interne → 401
+```bash
+curl -s -w "\nHTTP %{http_code}\n" http://localhost:8091/sandbox/execute
+```
+**Attendu :** HTTP 401 + `{"error":"missing or invalid X-Internal-Key"}`
+
+#### 14.3 🏠 Exécution PHP simple (hello world)
+```bash
+curl -s -X POST http://localhost:8091/sandbox/execute \
+  -H "Content-Type: application/json" \
+  -H "X-Internal-Key: dev-internal-key-please-change" \
+  -d '{"language":"PHP","userCode":"<?php echo 42;"}' | python3 -m json.tool
+```
+**Attendu :** `status: OK`, `exitCode: 0`, `stdout: "42"`, `durationMs < 2000`
+
+#### 14.4 🏠 Exécution JS simple
+```bash
+curl -s -X POST http://localhost:8091/sandbox/execute \
+  -H "Content-Type: application/json" \
+  -H "X-Internal-Key: dev-internal-key-please-change" \
+  -d '{"language":"JS","userCode":"console.log(2+2)"}' | python3 -m json.tool
+```
+**Attendu :** `stdout: "4"`
+
+#### 14.5 🏠 PHP avec PHPUnit (auto-grading)
+```bash
+curl -s -X POST http://localhost:8091/sandbox/execute \
+  -H "Content-Type: application/json" \
+  -H "X-Internal-Key: dev-internal-key-please-change" \
+  -d '{
+    "language": "PHP",
+    "userCode": "<?php function add($a,$b){return $a+$b;}",
+    "hiddenTests": "<?php\nuse PHPUnit\\Framework\\TestCase;\nrequire \"solution.php\";\nclass HiddenTest extends TestCase { public function testAdd(){ $this->assertEquals(5, add(2,3)); } }"
+  }' | python3 -m json.tool
+```
+**Attendu :** `testsPassed: 1`, `testsTotal: 1`, `score: 1.0`
+
+#### 14.6 🏠 Tests de cas d'attaque (cf. POC 3, à faire un par un)
+- Fork bomb PHP : `<?php while(true) pcntl_fork();` → `status: OOM` ou `ERROR` (PID limit)
+- Accès réseau : `<?php file_get_contents("http://example.com");` → `status: ERROR`
+- Lecture /etc/shadow : `<?php echo file_get_contents("/etc/shadow");` → contenu vide / erreur
+- Écriture FS : `<?php file_put_contents("/x", "1");` → `status: ERROR`
+- Boucle infinie : `<?php while(true);` → `status: TIMEOUT`
+- Allocation 1 Go : `<?php $a=str_repeat("x", 1000000000);` → `status: OOM`
+
+### Frontend candidat
+
+#### 14.7 🏠 Cycle complet candidat
+1. En tant que recruteur, créer un test + générer une invitation (UI Nouveau test)
+2. Récupérer le token et ouvrir `http://localhost:5173/candidate/passation/{token}`
+3. Vérifier le statut `token.valid` + nombre de questions
+4. Saisir email + nom, cliquer "Commencer le test"
+5. Naviguer Précédente / Suivante, répondre aux QCM (sauvegarde immédiate)
+6. Sur une question CODE : taper du code dans Monaco, cliquer "Exécuter" → voir `OK` + `durationMs` + score
+7. Cliquer "Soumettre le test" → page `done` avec score indicatif
+8. Vérifier en BDD que `passations.submitted_at IS NOT NULL` et `invitations.used = true`
+
+#### 14.8 🏠 Token invalide / expiré → page "Lien invalide"
+Aller sur `http://localhost:5173/candidate/passation/inexistant`
+**Attendu :** message "Lien invalide" + détail
+
+#### 14.9 🏠 Reload pendant la passation
+Recharger la page (F5) en cours de test → vérifier que les réponses sauvegardées sont conservées en BDD (mais la session sessionStorage est perdue, donc retourner à `/candidate/passation/:token` pour redémarrer)
+
+### Tests Java unitaires Phase 5
+
+#### 14.10 ✅ Parsing PHPUnit et Jest (tests unitaires `SandboxRunner`)
+Lancer `mvn test` dans `apps/backend-sandbox/` :
+**Attendu :** 6 tests verts dans `TestResultParsingTest` (3 cas PHPUnit, 3 cas Jest)
