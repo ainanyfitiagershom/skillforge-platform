@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: skillforge-backend-sandbox
+
+server:
+  port: ${SERVER_PORT:8091}  # 8091 = sandbox (8090 = backend-app)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+skillforge:
+  sandbox:
+    # Cle d'authentification interne : seul backend-app peut appeler /sandbox/execute.
+    # En production : valeur secrete forte ; en dev : valeur arbitraire.
+    # IMPORTANT : doit etre IDENTIQUE a skillforge.sandbox.internal-key cote backend-app.
+    internal-key: ${SANDBOX_INTERNAL_KEY:dev-internal-key-please-change}
+
+    # Endpoint Docker (par defaut Unix socket sur Linux)
+    docker-host: ${DOCKER_HOST_URI:unix:///var/run/docker.sock}
+
+    # Limites runtime appliquees a chaque conteneur
+    memory-mb: 256
+    cpus: 1.0
+    pids-limit: 64
+    timeout-seconds: 5
+    max-stdout-bytes: 65536    # 64 Ko de logs max
+
+    # Chemin vers le profil seccomp.
+    # Par defaut, relatif au repo : ../../infra/sandbox/seccomp/skillforge-seccomp.json
+    # (resolu depuis apps/backend-sandbox/ au moment du run)
+    # En production : override via SECCOMP_PROFILE_PATH avec chemin absolu.
+    seccomp-profile-path: ${SECCOMP_PROFILE_PATH:../../infra/sandbox/seccomp/skillforge-seccomp.json}
+
+    # Images Docker disponibles (correspond aux Dockerfiles dans infra/sandbox/)
+    # Les cles sont des chaines libres mappees a Map<String, String> dans SandboxProperties.
+    runtimes:
+      php: skillforge-runtime-php:8.3
+      js: skillforge-runtime-node:20
+
+logging:
+  level:
+    root: INFO
+    com.tsarajoro.skillforge: DEBUG
+    com.github.dockerjava: WARN  # docker-java est tres verbeux
