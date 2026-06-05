@@ -52,6 +52,11 @@ skillforge:
       model: ${CLAUDE_MODEL:claude-sonnet-4-5}
   rgpd:
     cv-retention-months: 12
+  sandbox:
+    # URL du service backend-sandbox (port 8091 par defaut)
+    url: ${SANDBOX_URL:http://localhost:8091}
+    # Cle interne partagee avec backend-sandbox
+    internal-key: ${SANDBOX_INTERNAL_KEY:dev-internal-key-please-change}
 
 logging:
   level:
