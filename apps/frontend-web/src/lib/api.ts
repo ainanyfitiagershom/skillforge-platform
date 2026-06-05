@@ -126,6 +126,85 @@ export const api = {
     request<{ id: string; token: string; expiresAt: string }>(`/tests/${testId}/invite`, {
       method: 'POST',
     }),
+
+  // ---------- Candidat (endpoints publics) ----------
+
+  candidateResolveInvitation: (token: string) =>
+    request<CandidateInvitation>(`/invitations/${token}`, { auth: false }),
+
+  candidateStartPassation: (
+    token: string,
+    candidateEmail: string,
+    candidateDisplayName: string,
+  ) =>
+    request<CandidatePassation>('/candidate/passations/start', {
+      method: 'POST',
+      auth: false,
+      body: { token, candidateEmail, candidateDisplayName },
+    }),
+
+  candidateSaveTextAnswer: (passationId: string, questionId: string, answerText: string) =>
+    request<void>(`/candidate/passations/${passationId}/answer-text`, {
+      method: 'POST',
+      auth: false,
+      body: { questionId, answerText },
+    }),
+
+  candidateRunCode: (
+    passationId: string,
+    questionId: string,
+    language: 'PHP' | 'JS',
+    userCode: string,
+    hiddenTests: string | null,
+  ) =>
+    request<RunCodeResult>(`/candidate/passations/${passationId}/run-code`, {
+      method: 'POST',
+      auth: false,
+      body: { questionId, language, userCode, hiddenTests },
+    }),
+
+  candidateSubmit: (passationId: string) =>
+    request<CandidatePassation>(`/candidate/passations/${passationId}/submit`, {
+      method: 'POST',
+      auth: false,
+    }),
+};
+
+// ---------- Types candidat ----------
+
+export type CandidateQuestionView = {
+  id: string;
+  type: QuestionType;
+  statement: string;
+  difficulty: number;
+  publicPayload: string;
+};
+
+export type CandidateInvitation = {
+  testId: string;
+  questions: CandidateQuestionView[];
+};
+
+export type CandidatePassation = {
+  id: string;
+  invitationId: string;
+  candidateId: string;
+  startedAt: string;
+  submittedAt: string | null;
+  // Jackson serialise BigDecimal en number JSON (peut etre string si grand nombre)
+  globalScore: number | string | null;
+  fraudRiskScore: number;
+};
+
+export type RunCodeResult = {
+  status: 'OK' | 'TIMEOUT' | 'OOM' | 'ERROR' | 'SECURITY_VIOLATION';
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  durationMs: number;
+  testsPassed: number;
+  testsTotal: number;
+  score: number;
 };
 
 // ---- Types partages avec le backend ----
