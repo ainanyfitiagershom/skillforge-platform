@@ -2,16 +2,19 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardBody, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ApiError, api } from '@/lib/api';
+import {
+  AlertCircle,
+  ArrowRight,
+  Lock,
+  ShieldCheck,
+  Sparkles,
+  Loader2,
+} from 'lucide-react';
 
-/**
- * Page d'accueil du candidat (URL : /candidate/passation/:token).
- *
- * Verifie le token, demande email + nom, puis demarre la passation.
- */
 export function CandidateWelcomePage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
@@ -43,7 +46,7 @@ export function CandidateWelcomePage() {
         setTokenStatus('invalid');
         const msg =
           err instanceof ApiError && err.status === 410
-            ? "Lien expire, deja utilise ou inconnu."
+            ? 'Lien expire, deja utilise ou inconnu.'
             : err instanceof Error
               ? err.message
               : 'Erreur de validation du lien.';
@@ -58,7 +61,6 @@ export function CandidateWelcomePage() {
     setSubmitError(null);
     try {
       const passation = await api.candidateStartPassation(token, email, displayName);
-      // Stocker l'id de passation en sessionStorage pour la page suivante
       sessionStorage.setItem(
         `skillforge.passation.${token}`,
         JSON.stringify({ id: passation.id, candidateEmail: email }),
@@ -72,66 +74,86 @@ export function CandidateWelcomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="flex items-center justify-between border-b border-border px-6 py-3">
+    <div className="min-h-screen bg-app-gradient text-foreground">
+      <header className="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-            S
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-gradient text-white shadow-md">
+            <span className="font-display text-lg font-bold">S</span>
           </div>
-          <span className="text-sm font-semibold tracking-tight">SkillForge</span>
+          <span className="font-display text-xl font-bold tracking-tight">
+            SkillForge
+          </span>
         </div>
         <ThemeToggle />
       </header>
 
-      <div className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-12">
+      <div className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-8">
         {tokenStatus === 'checking' && (
-          <p className="font-mono text-xs text-muted-foreground">
-            $ verifying invitation token…
-          </p>
+          <Card variant="elevated" className="p-10 text-center">
+            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-accent" />
+            <p className="text-sm text-muted">
+              Verification du lien d'invitation en cours…
+            </p>
+          </Card>
         )}
 
         {tokenStatus === 'invalid' && (
-          <Card>
-            <CardBody>
-              <div className="flex items-start gap-3">
-                <div className="h-2 w-2 mt-2 rounded-full bg-danger" />
-                <div>
-                  <h2 className="text-lg font-semibold">Lien invalide</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{tokenError}</p>
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Verifiez aupres de votre interlocuteur RH que le lien envoye est bien
-                    celui-ci.
-                  </p>
-                </div>
+          <Card variant="elevated" className="p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-danger/10 text-danger">
+                <AlertCircle className="h-5 w-5" />
               </div>
-            </CardBody>
+              <div>
+                <h2 className="font-display text-2xl font-semibold tracking-tight">
+                  Lien invalide
+                </h2>
+                <p className="mt-2 text-sm text-muted">{tokenError}</p>
+                <p className="mt-4 text-xs text-muted">
+                  Verifiez aupres de votre interlocuteur RH que le lien envoye est
+                  bien celui-ci.
+                </p>
+              </div>
+            </div>
           </Card>
         )}
 
         {tokenStatus === 'valid' && (
           <>
-            <div>
-              <Badge tone="success" className="mb-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                token.valid
+            <div className="animate-fade-in-up">
+              <Badge tone="success" className="mb-3">
+                <ShieldCheck className="h-3 w-3" />
+                Lien verifie
               </Badge>
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Test technique SkillForge
+              <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tighter text-foreground sm:text-5xl">
+                Test technique{' '}
+                <span className="bg-text-accent-gradient bg-clip-text text-transparent">
+                  SkillForge
+                </span>
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {questionsCount} questions vous attendent. Avant de commencer, identifiez-vous.
+              <p className="mt-3 text-base text-muted">
+                {questionsCount} questions vous attendent. Avant de commencer,
+                identifiez-vous.
               </p>
             </div>
 
-            <Card>
+            <Card variant="elevated" className="animate-fade-in-up">
               <CardHeader>
-                <CardTitle>Identification</CardTitle>
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-accent" />
+                    Identification
+                  </CardTitle>
+                  <CardDescription>
+                    Vos coordonnees servent uniquement a transmettre le compte
+                    rendu au recruteur.
+                  </CardDescription>
+                </div>
               </CardHeader>
               <CardBody>
-                <form onSubmit={handleStart} className="space-y-4">
+                <form onSubmit={handleStart} className="space-y-5">
                   <div>
-                    <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                      email
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                      Email
                     </label>
                     <Input
                       type="email"
@@ -142,8 +164,8 @@ export function CandidateWelcomePage() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                      nom complet
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                      Nom complet
                     </label>
                     <Input
                       type="text"
@@ -155,28 +177,47 @@ export function CandidateWelcomePage() {
                   </div>
 
                   {submitError && (
-                    <div className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 font-mono text-[11px] text-danger">
-                      ✗ {submitError}
+                    <div className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">
+                      {submitError}
                     </div>
                   )}
 
-                  <Button type="submit" disabled={submitting} className="w-full" size="lg">
+                  <Button
+                    type="submit"
+                    variant="cta"
+                    size="xl"
+                    disabled={submitting}
+                    className="w-full"
+                  >
                     {submitting ? (
-                      <span className="font-mono">$ starting…</span>
+                      'Demarrage…'
                     ) : (
-                      'Commencer le test ↵'
+                      <>
+                        Commencer le test
+                        <ArrowRight className="h-4 w-4" />
+                      </>
                     )}
                   </Button>
                 </form>
               </CardBody>
             </Card>
 
-            <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
-              <p>
-                Vos donnees (nom, email, reponses) sont stockees uniquement pour ce
-                recrutement et seront purgees apres 12 mois (conformite RGPD).
-              </p>
-            </div>
+            <Card variant="flat" className="border border-dashed border-border">
+              <div className="flex items-start gap-3 p-5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-strong">
+                  <Lock className="h-4 w-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    Vos donnees sont protegees
+                  </h4>
+                  <p className="mt-1 text-xs text-muted">
+                    Nom, email et reponses sont stockes uniquement pour ce
+                    recrutement et purges apres 12 mois (conformite RGPD).
+                  </p>
+                </div>
+              </div>
+            </Card>
           </>
         )}
       </div>

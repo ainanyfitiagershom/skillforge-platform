@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardBody, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ApiError, Question, api } from '@/lib/api';
-import { Check, Pencil, Trash2, X } from 'lucide-react';
+import { Check, Pencil, Trash2, X, ClipboardList, Inbox } from 'lucide-react';
 
 export function ReviewQuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -15,7 +15,6 @@ export function ReviewQuestionsPage() {
     setLoading(true);
     setError(null);
     try {
-      // GET /questions n'est pas dans le client typé, on l'appelle direct
       const res = await fetch('/api/questions?status=PENDING_REVIEW', {
         headers: {
           Authorization: `Bearer ${JSON.parse(localStorage.getItem('skillforge.tokens') || '{}').accessToken ?? ''}`,
@@ -91,43 +90,49 @@ export function ReviewQuestionsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Badge tone="muted" className="mb-2">
-          /review
+    <div className="mx-auto max-w-4xl space-y-12 pt-8">
+      <div className="text-center">
+        <Badge tone="accent" className="mb-4">
+          <ClipboardList className="h-3 w-3" />
+          Banque de questions
         </Badge>
-        <h1 className="text-2xl font-semibold tracking-tight">Questions a revoir</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="font-display text-display-sm leading-[1.05] tracking-tighter text-foreground">
+          Questions a{' '}
+          <span className="bg-text-accent-gradient bg-clip-text text-transparent">
+            valider.
+          </span>
+        </h1>
+        <p className="mx-auto mt-4 max-w-lg text-base text-muted">
           {loading
-            ? '$ loading…'
-            : `${questions.length} question${questions.length > 1 ? 's' : ''} en attente de validation.`}
+            ? 'Chargement…'
+            : `${questions.length} question${questions.length > 1 ? 's' : ''} en attente de revue.`}
         </p>
       </div>
 
       {error && (
-        <div className="rounded-md border border-danger/30 bg-danger/10 px-4 py-2 font-mono text-xs text-danger">
-          ✗ {error}
+        <div className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">
+          {error}
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {questions.map((q) => (
-          <Card key={q.id}>
-            <CardHeader className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+          <Card key={q.id} variant="elevated">
+            <CardHeader className="flex-wrap">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={q.type === 'QCM' ? 'info' : q.type === 'CODE' ? 'warning' : 'success'}>
                   {q.type}
                 </Badge>
-                <Badge tone="muted">diff {q.difficulty}/5</Badge>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                <Badge tone="muted">Difficulte {q.difficulty}/5</Badge>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-soft">
                   id: {q.id.slice(0, 8)}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditing(q)}>
+                <Button variant="secondary" size="sm" onClick={() => setEditing(q)}>
                   <Pencil className="h-3 w-3" /> Editer
                 </Button>
-                <Button variant="primary" size="sm" onClick={() => approve(q)}>
+                <Button variant="cta" size="sm" onClick={() => approve(q)}>
                   <Check className="h-3 w-3" /> Accepter
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => reject(q)}>
@@ -139,23 +144,29 @@ export function ReviewQuestionsPage() {
               </div>
             </CardHeader>
             <CardBody>
-              <p className="text-sm font-medium">
-                {q.statement || <em className="text-muted-foreground">(enonce dans le payload)</em>}
+              <p className="text-sm font-medium text-foreground">
+                {q.statement || (
+                  <em className="text-muted">(enonce dans le payload)</em>
+                )}
               </p>
-              <pre className="mt-2 overflow-x-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-[11px] text-muted-foreground">
+              <pre className="mt-3 overflow-x-auto rounded-2xl border border-border bg-background-soft p-4 font-mono text-[11px] text-muted">
                 {q.jsonPayload}
               </pre>
             </CardBody>
           </Card>
         ))}
+
         {!loading && questions.length === 0 && (
-          <Card>
-            <CardBody className="py-12 text-center">
-              <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                $ no pending questions
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Aucune question en attente de validation pour le moment.
+          <Card variant="elevated">
+            <CardBody className="py-16 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-background-soft text-muted">
+                <Inbox className="h-6 w-6" />
+              </div>
+              <h3 className="font-display text-xl font-semibold text-foreground">
+                Aucune question en attente
+              </h3>
+              <p className="mt-2 text-sm text-muted">
+                Vous etes a jour. Demarrez un nouveau test pour generer de nouvelles questions.
               </p>
             </CardBody>
           </Card>
@@ -186,26 +197,32 @@ function EditModal({
   onSave: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <Card className="w-full max-w-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-md">
+      <Card variant="elevated" className="w-full max-w-2xl animate-fade-in-up">
         <CardHeader>
-          <CardTitle>Editer la question</CardTitle>
-        </CardHeader>
-        <CardBody className="space-y-4">
           <div>
-            <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-              enonce
+            <CardTitle>Editer la question</CardTitle>
+            <CardDescription>
+              Modifiez l'enonce, la difficulte ou le payload JSON. La question
+              repassera en attente de validation.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardBody className="space-y-5">
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+              Enonce
             </label>
             <textarea
-              className="block w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+              className="block w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
               rows={3}
               value={question.statement}
               onChange={(e) => onChange({ ...question, statement: e.target.value })}
             />
           </div>
           <div>
-            <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-              difficulte (1 a 5)
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+              Difficulte (1 a 5)
             </label>
             <input
               type="number"
@@ -213,27 +230,29 @@ function EditModal({
               max={5}
               value={question.difficulty}
               onChange={(e) => onChange({ ...question, difficulty: Number(e.target.value) })}
-              className="block w-24 rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+              className="block w-24 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
             />
           </div>
           <div>
-            <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-              payload json
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+              Payload JSON
             </label>
             <textarea
-              className="block w-full rounded-md border border-border bg-muted/40 px-3 py-2 font-mono text-[11px] text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+              className="block w-full rounded-xl border border-border bg-background-soft px-4 py-3 font-mono text-[11px] text-foreground transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
               rows={8}
               value={question.jsonPayload}
               onChange={(e) => onChange({ ...question, jsonPayload: e.target.value })}
             />
           </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={onCancel}>
-              Annuler
-            </Button>
-            <Button onClick={onSave}>Enregistrer</Button>
-          </div>
         </CardBody>
+        <div className="flex justify-end gap-2 px-6 pb-6">
+          <Button variant="ghost" onClick={onCancel}>
+            Annuler
+          </Button>
+          <Button variant="cta" onClick={onSave}>
+            Enregistrer
+          </Button>
+        </div>
       </Card>
     </div>
   );

@@ -1,8 +1,11 @@
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ApiError, api, saveTokens } from '@/lib/api';
+import { AvatarStack } from '@/components/ui/AvatarStack';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -18,7 +21,7 @@ export function LoginPage() {
     try {
       const tokens = await api.login(email, password);
       saveTokens(tokens);
-      navigate('/');
+      navigate('/app');
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Connexion impossible';
       setError(msg);
@@ -28,122 +31,225 @@ export function LoginPage() {
   };
 
   return (
-    <div className="grid min-h-screen grid-cols-1 bg-background lg:grid-cols-12">
-      {/* Sidebar minimaliste mono */}
-      <aside className="hidden border-r border-border bg-muted/30 lg:col-span-1 lg:block">
-        <div className="flex h-full flex-col items-center justify-between py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-            S
+    <div className="grid min-h-screen grid-cols-1 bg-app-gradient lg:grid-cols-2">
+      {/* ============== COLONNE GAUCHE : marketing ============== */}
+      <aside className="relative hidden flex-col justify-between overflow-hidden p-12 lg:flex">
+        {/* Blobs decoratifs */}
+        <div
+          className="blob-accent left-12 top-32 h-72 w-72"
+          style={{ background: 'radial-gradient(circle, #38bdf8 0%, transparent 70%)' }}
+        />
+        <div
+          className="blob-accent bottom-20 right-20 h-72 w-72"
+          style={{ background: 'radial-gradient(circle, #818cf8 0%, transparent 70%)' }}
+        />
+
+        {/* Logo + retour Landing */}
+        <Link to="/" className="relative z-10 flex items-center gap-2 w-fit">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-gradient text-white shadow-md">
+            <span className="font-display text-lg font-bold">S</span>
           </div>
-          <div className="space-y-3 text-center font-mono text-[9px] text-muted-foreground">
-            <div>/01</div>
-            <div>/02</div>
+          <span className="font-display text-xl font-bold tracking-tight text-foreground">
+            SkillForge
+          </span>
+        </Link>
+
+        {/* Pitch */}
+        <div className="relative z-10 max-w-md">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-1 text-xs font-medium text-muted backdrop-blur-md">
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            Recrutement technique nouvelle generation
           </div>
-          <div className="font-mono text-[9px] text-muted-foreground">v1.0</div>
+          <h2 className="font-display text-4xl font-semibold leading-[1.05] tracking-tighter text-foreground sm:text-5xl">
+            Du CV au verdict,
+            <br />
+            <span className="bg-text-accent-gradient bg-clip-text text-transparent">
+              en quelques minutes.
+            </span>
+          </h2>
+          <p className="mt-5 text-base text-muted">
+            Sandbox Docker durcie, generation de tests par IA, compte rendu
+            humain. Sans compromis sur la securite.
+          </p>
+
+          {/* Mini features */}
+          <div className="mt-8 space-y-3">
+            <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface/60 p-3 backdrop-blur-md">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-strong">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-foreground">
+                  Generation propulsee par GPT-4o
+                </div>
+                <div className="text-xs text-muted">
+                  Multi-LLM : OpenAI, Claude, GitHub Models
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface/60 p-3 backdrop-blur-md">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-strong">
+                <ShieldCheck className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-foreground">
+                  Sandbox seccomp + cap-drop=ALL
+                </div>
+                <div className="text-xs text-muted">
+                  Execution candidat 100% isolee, network=none
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface/60 p-3 backdrop-blur-md">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-strong">
+                <Zap className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-foreground">
+                  Compte rendu IA pret a transmettre
+                </div>
+                <div className="text-xs text-muted">
+                  Forces, faiblesses, recommandation argumentee
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Social proof */}
+        <div className="relative z-10">
+          <AvatarStack count={4} label="3 200+ candidats evalues" />
         </div>
       </aside>
 
-      {/* Contenu principal */}
-      <main className="flex flex-col lg:col-span-11">
-        {/* Top bar avec status + toggle theme */}
-        <header className="flex items-center justify-between border-b border-border px-6 py-3">
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-success" />
-            <span className="font-mono text-[11px] text-muted-foreground">
-              system.status: operational
+      {/* ============== COLONNE DROITE : formulaire ============== */}
+      <main className="flex flex-col">
+        {/* Top bar */}
+        <header className="flex items-center justify-between px-6 py-5 lg:px-10">
+          <Link to="/" className="flex items-center gap-2 lg:hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-gradient text-white shadow-md">
+              <span className="font-display text-base font-bold">S</span>
+            </div>
+            <span className="font-display text-lg font-bold tracking-tight text-foreground">
+              SkillForge
             </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[10px] text-muted-foreground">
-              v1.0.0
+          </Link>
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <span className="hidden text-sm text-muted sm:inline">
+              Pas encore de compte ?
             </span>
+            <Link to="/">
+              <Button variant="ghost" size="sm">
+                Decouvrir
+              </Button>
+            </Link>
             <ThemeToggle />
           </div>
         </header>
 
-        {/* Formulaire centre */}
-        <div className="flex flex-1 items-center justify-center px-6 py-12">
+        {/* Form */}
+        <div className="flex flex-1 items-center justify-center px-6 py-12 lg:px-10">
           <div className="w-full max-w-md">
-            <div className="mb-8">
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-                Sign in to SkillForge
+            <div className="mb-8 text-center lg:text-left">
+              <h1 className="font-display text-3xl font-semibold tracking-tighter text-foreground sm:text-4xl">
+                Bon retour parmi nous
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Plateforme de recrutement technique assistee par IA.
+              <p className="mt-2 text-sm text-muted">
+                Connectez-vous a votre espace recruteur SkillForge.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label
                   htmlFor="email"
-                  className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted"
                 >
-                  email
+                  Email
                 </label>
-                <input
+                <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="block w-full rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:bg-card focus:outline-none focus:ring-1 focus:ring-ring"
                   placeholder="vous@entreprise.com"
                 />
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
-                  className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground"
-                >
-                  password
-                </label>
-                <input
+                <div className="mb-2 flex items-center justify-between">
+                  <label
+                    htmlFor="password"
+                    className="block text-xs font-semibold uppercase tracking-wider text-muted"
+                  >
+                    Mot de passe
+                  </label>
+                  <a
+                    href="#"
+                    className="text-xs font-medium text-accent-strong hover:underline"
+                  >
+                    Oublie ?
+                  </a>
+                </div>
+                <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={12}
-                  className="block w-full rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:bg-card focus:outline-none focus:ring-1 focus:ring-ring"
                   placeholder="............"
                 />
               </div>
 
               {error && (
-                <div className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 font-mono text-[11px] text-danger">
-                  ✗ {error}
+                <div className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">
+                  {error}
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading} size="lg">
+              <Button
+                type="submit"
+                variant="cta"
+                size="xl"
+                className="w-full"
+                disabled={loading}
+              >
                 {loading ? (
-                  <span className="font-mono">$ connecting…</span>
+                  'Connexion en cours…'
                 ) : (
                   <>
-                    Continue&nbsp;<span className="font-mono text-muted-foreground">↵</span>
+                    Se connecter
+                    <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </Button>
             </form>
 
-            <div className="mt-8 flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
-              <div className="h-2 w-2 rounded-full bg-warning" />
-              <span className="text-xs text-muted-foreground">
-                Powered by{' '}
-                <span className="font-mono font-medium text-foreground">gpt-4o-mini</span>{' '}
+            <div className="mt-8 flex items-center gap-3 rounded-2xl border border-border bg-surface/60 px-4 py-3 backdrop-blur-md">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-strong">
+                <Sparkles className="h-3.5 w-3.5" />
+              </div>
+              <div className="text-xs text-muted">
+                Demo connectee a{' '}
+                <span className="font-mono font-semibold text-foreground">
+                  gpt-4o-mini
+                </span>{' '}
                 via GitHub Models
-              </span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <footer className="border-t border-border px-6 py-3">
-          <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground">
-            <span>Tsarajoro &middot; 2026</span>
-            <span>build 2026.06.04</span>
+        <footer className="px-6 py-5 text-center lg:px-10 lg:text-left">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted lg:justify-start">
+            <span>© 2026 Tsarajoro</span>
+            <span>·</span>
+            <a href="#" className="hover:text-foreground">Confidentialite</a>
+            <span>·</span>
+            <a href="#" className="hover:text-foreground">Conditions</a>
           </div>
         </footer>
       </main>

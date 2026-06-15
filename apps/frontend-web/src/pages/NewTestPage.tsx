@@ -2,7 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardBody, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import {
   ApiError,
@@ -11,7 +11,7 @@ import {
   Question,
   api,
 } from '@/lib/api';
-import { CheckCircle2, FileUp, Sparkles, X } from 'lucide-react';
+import { CheckCircle2, FileUp, Sparkles, X, ArrowRight, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const PROFILES = [
@@ -92,47 +92,57 @@ export function NewTestPage() {
     }
   };
 
-  const handleGoReview = () => navigate('/review');
+  const handleGoReview = () => navigate('/app/review');
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Badge tone="muted" className="mb-2">
-          /new-test
+    <div className="mx-auto max-w-3xl space-y-12 pt-8">
+      {/* ============ HEADER calme ============ */}
+      <div className="text-center">
+        <Badge tone="accent" className="mb-4">
+          <Sparkles className="h-3 w-3" />
+          Nouveau test
         </Badge>
-        <h1 className="text-2xl font-semibold tracking-tight">Nouveau test pour un candidat</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Etape 1 : televerser le CV. Etape 2 : valider les competences. Etape 3 : generer
-          et revoir les questions.
+        <h1 className="font-display text-display-sm leading-[1.05] tracking-tighter text-foreground">
+          Demarrer un{' '}
+          <span className="bg-text-accent-gradient bg-clip-text text-transparent">
+            recrutement.
+          </span>
+        </h1>
+        <p className="mx-auto mt-4 max-w-lg text-base text-muted">
+          3 etapes : upload du CV, validation des competences, generation du
+          test par l'IA.
         </p>
       </div>
 
-      {/* Indicateur d'etapes */}
-      <Steps
-        current={
-          generated ? 3 : skills ? 2 : 1
-        }
-      />
+      {/* ============ STEPS — discret ============ */}
+      <Steps current={generated ? 3 : skills ? 2 : 1} />
 
-      {/* ETAPE 1 */}
-      <Card>
+      {/* ============ ETAPE 1 ============ */}
+      <Card variant="elevated">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span className="font-mono text-xs text-muted-foreground">01.</span>
-            CV et profil cible
-          </CardTitle>
+          <div>
+            <CardTitle className="flex items-center gap-3">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft font-mono text-xs font-bold text-accent-strong">
+                01
+              </span>
+              CV et profil cible
+            </CardTitle>
+            <CardDescription>
+              Choisissez le poste vise, ajoutez l'identite du candidat et televersez son CV.
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardBody>
-          <form onSubmit={handleUpload} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <form onSubmit={handleUpload} className="space-y-5">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                  profil cible
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                  Profil cible
                 </label>
                 <select
                   value={profileCode}
                   onChange={(e) => setProfileCode(e.target.value)}
-                  className="block w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="block h-[42px] w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground transition-all hover:border-border-strong focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
                 >
                   {PROFILES.map((p) => (
                     <option key={p.code} value={p.code}>
@@ -142,8 +152,8 @@ export function NewTestPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                  email du candidat
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                  Email du candidat
                 </label>
                 <Input
                   type="email"
@@ -154,8 +164,8 @@ export function NewTestPage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                  nom complet
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                  Nom complet
                 </label>
                 <Input
                   value={candidateDisplayName}
@@ -165,52 +175,64 @@ export function NewTestPage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                  fichier cv (pdf ou docx)
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                  Fichier CV (PDF ou DOCX)
                 </label>
-                <Input
-                  type="file"
-                  accept=".pdf,.docx"
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                  required
-                />
+                <label className="flex h-[42px] cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-background-soft px-4 text-sm text-muted transition-all hover:border-accent hover:bg-accent-soft/30 hover:text-foreground">
+                  <FileUp className="h-4 w-4" />
+                  <span className="flex-1 truncate">
+                    {file ? file.name : 'Cliquez pour choisir un fichier'}
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf,.docx"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    required
+                    className="sr-only"
+                  />
+                </label>
               </div>
             </div>
-            <Button type="submit" disabled={analyzing || !file}>
+            <Button type="submit" variant="cta" size="lg" disabled={analyzing || !file}>
               <FileUp className="h-4 w-4" />
-              {analyzing ? (
-                <span className="font-mono">$ analyzing CV…</span>
-              ) : (
-                'Analyser le CV'
-              )}
+              {analyzing ? 'Analyse du CV en cours…' : 'Analyser le CV'}
+              {!analyzing && <ArrowRight className="h-4 w-4" />}
             </Button>
           </form>
         </CardBody>
       </Card>
 
-      {/* ETAPE 2 */}
+      {/* ============ ETAPE 2 ============ */}
       {skills && (
-        <Card>
+        <Card variant="elevated" className="animate-fade-in-up">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span className="font-mono text-xs text-muted-foreground">02.</span>
-              Competences detectees
-            </CardTitle>
+            <div>
+              <CardTitle className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft font-mono text-xs font-bold text-accent-strong">
+                  02
+                </span>
+                Competences detectees
+              </CardTitle>
+              <CardDescription>
+                Decochez celles qui ne sont pas pertinentes pour le test.
+              </CardDescription>
+            </div>
           </CardHeader>
           <CardBody>
             {llmInfo && (
-              <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-[11px] text-muted-foreground">
-                <div className="h-1.5 w-1.5 rounded-full bg-success" />
-                provider: <span className="text-foreground">{llmInfo.provider}</span>
-                <span>·</span>
-                tokens: <span className="text-foreground">{llmInfo.tokens}</span>
-                <span>·</span>
-                cost: <span className="text-foreground">{llmInfo.cost} EUR</span>
+              <div className="mb-5 inline-flex flex-wrap items-center gap-3 rounded-full border border-border bg-background-soft px-4 py-2 font-mono text-[11px] text-muted">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-foreground">{llmInfo.provider}</span>
+                </div>
+                <span className="text-muted-soft">·</span>
+                <span>
+                  {llmInfo.tokens} tokens
+                </span>
+                <span className="text-muted-soft">·</span>
+                <span>{llmInfo.cost} EUR</span>
               </div>
             )}
-            <p className="mb-3 text-sm text-muted-foreground">
-              Cliquez sur une competence pour l'inclure ou l'exclure de la generation du test.
-            </p>
             <div className="flex flex-wrap gap-2">
               {skills.map((s) => {
                 const selected = selectedSkills.has(s.skillCode);
@@ -220,25 +242,25 @@ export function NewTestPage() {
                     onClick={() => toggleSkill(s.skillCode)}
                     type="button"
                     className={cn(
-                      'group inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
+                      'group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all',
                       selected
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-card text-muted-foreground hover:border-foreground hover:text-foreground',
+                        ? 'border-foreground bg-foreground text-background shadow-md'
+                        : 'border-border bg-surface text-muted hover:border-border-strong hover:text-foreground',
                     )}
                   >
                     {selected ? (
-                      <CheckCircle2 className="h-3 w-3" />
+                      <CheckCircle2 className="h-3.5 w-3.5" />
                     ) : (
-                      <X className="h-3 w-3 opacity-50" />
+                      <X className="h-3.5 w-3.5 opacity-40" />
                     )}
                     {s.displayName}
                     <span
                       className={cn(
-                        'font-mono text-[9px]',
-                        selected ? 'text-primary-foreground/70' : 'text-muted-foreground',
+                        'font-mono text-[10px]',
+                        selected ? 'text-background/60' : 'text-muted-soft',
                       )}
                     >
-                      ({s.level.toLowerCase()})
+                      {s.level.toLowerCase()}
                     </span>
                   </button>
                 );
@@ -246,59 +268,66 @@ export function NewTestPage() {
             </div>
             <Button
               onClick={handleGenerate}
+              variant="cta"
+              size="lg"
               disabled={generating || selectedSkills.size === 0}
-              className="mt-5"
+              className="mt-6"
             >
               <Sparkles className="h-4 w-4" />
-              {generating ? (
-                <span className="font-mono">$ generating questions…</span>
-              ) : (
-                'Generer le test'
-              )}
+              {generating ? 'Generation des questions…' : 'Generer le test'}
+              {!generating && <ArrowRight className="h-4 w-4" />}
             </Button>
           </CardBody>
         </Card>
       )}
 
-      {/* ETAPE 3 */}
+      {/* ============ ETAPE 3 ============ */}
       {generated && (
-        <Card>
+        <Card variant="elevated" className="animate-fade-in-up">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span className="font-mono text-xs text-muted-foreground">03.</span>
-              Questions generees
-            </CardTitle>
+            <div>
+              <CardTitle className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft font-mono text-xs font-bold text-accent-strong">
+                  03
+                </span>
+                Questions generees
+              </CardTitle>
+              <CardDescription>
+                {generated.questions.length} questions creees en statut PENDING_REVIEW.
+                Editez-les ou supprimez-les depuis « Revoir les questions ».
+              </CardDescription>
+            </div>
           </CardHeader>
           <CardBody>
-            <div className="mb-4 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-[11px] text-muted-foreground">
-              <div className="h-1.5 w-1.5 rounded-full bg-success" />
-              provider: <span className="text-foreground">{generated.llmProvider}</span>
-              <span>·</span>
-              model: <span className="text-foreground">{generated.llmModel}</span>
-              <span>·</span>
-              tokens: <span className="text-foreground">{generated.tokensUsed}</span>
-              <span>·</span>
-              cost: <span className="text-foreground">{generated.costEur} EUR</span>
+            <div className="mb-5 inline-flex flex-wrap items-center gap-3 rounded-full border border-border bg-background-soft px-4 py-2 font-mono text-[11px] text-muted">
+              <div className="flex items-center gap-1.5">
+                <BrainCircuit className="h-3 w-3 text-accent" />
+                <span className="text-foreground">{generated.llmProvider}</span>
+                <span className="text-muted-soft">/</span>
+                <span className="text-foreground">{generated.llmModel}</span>
+              </div>
+              <span className="text-muted-soft">·</span>
+              <span>{generated.tokensUsed} tokens</span>
+              <span className="text-muted-soft">·</span>
+              <span>{generated.costEur} EUR</span>
             </div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              {generated.questions.length} questions creees en statut PENDING_REVIEW. Vous
-              pouvez les editer ou les supprimer sur la page « Revoir les questions ».
-            </p>
+
             <div className="space-y-2">
               {generated.questions.map((q) => (
                 <QuestionPreview key={q.id} q={q} />
               ))}
             </div>
-            <Button onClick={handleGoReview} className="mt-5">
+            <Button onClick={handleGoReview} variant="cta" size="lg" className="mt-6">
               Aller a la revue des questions
+              <ArrowRight className="h-4 w-4" />
             </Button>
           </CardBody>
         </Card>
       )}
 
       {error && (
-        <div className="rounded-md border border-danger/30 bg-danger/10 px-4 py-2 font-mono text-xs text-danger">
-          ✗ {error}
+        <div className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">
+          {error}
         </div>
       )}
     </div>
@@ -309,12 +338,18 @@ function QuestionPreview({ q }: { q: Question }) {
   const tone =
     q.type === 'QCM' ? 'info' : q.type === 'CODE' ? 'warning' : 'success';
   return (
-    <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-2.5">
-      <Badge tone={tone}>{q.type}</Badge>
+    <div className="flex items-start gap-3 rounded-2xl border border-border bg-background-soft px-4 py-3 transition-colors hover:bg-surface">
+      <Badge tone={tone} variant="mono">
+        {q.type}
+      </Badge>
       <div className="flex-1">
-        <p className="text-sm">{q.statement || <em className="text-muted-foreground">(enonce dans le payload)</em>}</p>
-        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          difficulty: {q.difficulty}/5
+        <p className="text-sm text-foreground">
+          {q.statement || (
+            <em className="text-muted">(enonce dans le payload)</em>
+          )}
+        </p>
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted">
+          difficulte : {q.difficulty}/5
         </p>
       </div>
     </div>
@@ -323,30 +358,33 @@ function QuestionPreview({ q }: { q: Question }) {
 
 function Steps({ current }: { current: 1 | 2 | 3 }) {
   const steps = [
-    { num: 1, label: 'Televerser CV' },
-    { num: 2, label: 'Valider competences' },
-    { num: 3, label: 'Generer questions' },
+    { num: 1, label: 'CV' },
+    { num: 2, label: 'Competences' },
+    { num: 3, label: 'Questions' },
   ];
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center justify-center gap-3">
       {steps.map((s, i) => {
         const active = current >= s.num;
+        const done = current > s.num;
         return (
-          <div key={s.num} className="flex items-center gap-2">
+          <div key={s.num} className="flex items-center gap-3">
             <div
               className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-full border font-mono text-[11px] font-medium transition-colors',
-                active
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-card text-muted-foreground',
+                'flex h-7 w-7 items-center justify-center rounded-full border font-mono text-[11px] font-bold transition-all',
+                done
+                  ? 'border-emerald-500 bg-emerald-500 text-white'
+                  : active
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border bg-surface text-muted',
               )}
             >
-              {s.num}
+              {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.num}
             </div>
             <span
               className={cn(
-                'text-xs font-medium',
-                active ? 'text-foreground' : 'text-muted-foreground',
+                'text-xs font-medium transition-colors',
+                active ? 'text-foreground' : 'text-muted',
               )}
             >
               {s.label}
@@ -354,8 +392,8 @@ function Steps({ current }: { current: 1 | 2 | 3 }) {
             {i < steps.length - 1 && (
               <div
                 className={cn(
-                  'mx-2 h-px w-8 transition-colors',
-                  current > s.num ? 'bg-primary' : 'bg-border',
+                  'h-px w-8 transition-colors',
+                  current > s.num ? 'bg-emerald-500' : 'bg-border',
                 )}
               />
             )}

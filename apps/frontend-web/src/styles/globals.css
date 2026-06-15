@@ -2,72 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme : Mono Terminal — palette neutre noir/blanc avec accents vifs.
-   Inspiration : Vercel, Resend, Railway, Cursor. */
+/* Theme : SkillForge Premium AI 2025
+   Inspiration : Socialynx (Dribbble NexUX Lab), Linear, Anthropic
+   - Fond doux : lavande / gris-bleu tres clair
+   - Accent : bleu electrique (#1B7FB8 -> #0EA5E9 plus vivant)
+   - Typo : Inter (display + body), JetBrains Mono pour les details tech
+*/
 
 :root {
-  /* Mode clair par defaut */
-  --background: #ffffff;
-  --foreground: #18181b; /* zinc-900 */
+  /* MODE CLAIR — palette principale
+     Background : style Socialynx — gradient doux blanc -> bleu pale -> blanc.
+     - Haut/bas : presque blanc (pour que la pilule ressorte)
+     - Centre : bleu pale doux #e4ebf4 */
+  --background: #eef2f7;        /* couleur "moyenne" si gradient pas applique */
+  --background-soft: #e4ebf4;   /* zone bleue du milieu */
+  --background-grad-1: #f5f7fa; /* haut presque blanc */
+  --background-grad-2: #f5f7fa; /* bas presque blanc */
 
-  --muted: #f4f4f5; /* zinc-100 */
-  --muted-foreground: #71717a; /* zinc-500 */
+  --surface: #ffffff;            /* cards, modales */
+  --surface-elevated: #ffffff;   /* cards qui flottent (avec shadow) */
 
-  --card: #ffffff;
-  --card-foreground: #18181b;
+  --foreground: #0a1628;         /* texte principal — bleu marine fonce */
+  --foreground-soft: #1e293b;
+  --muted: #64748b;              /* texte secondaire */
+  --muted-soft: #94a3b8;
 
-  --border: #e4e4e7; /* zinc-200 */
-  --input: #e4e4e7;
-  --ring: #18181b;
+  --border: #c2cee0;             /* bordures discretes (s adapte au fond bleu pale) */
+  --border-strong: #a8b8cf;
 
-  --primary: #18181b; /* noir */
-  --primary-foreground: #fafafa; /* blanc casse */
+  /* ACCENT bleu electrique style Socialynx */
+  --accent: #0ea5e9;              /* sky-500 */
+  --accent-strong: #0284c7;       /* sky-600 (hover) */
+  --accent-soft: #e0f2fe;         /* sky-100 (backgrounds) */
+  --accent-foreground: #ffffff;
 
-  /* Accent vif : ambre (rappel "système actif") */
-  --accent: #f59e0b; /* amber-500 */
-  --accent-foreground: #18181b;
+  /* CTA bouton noir (style Socialynx "Get Started") */
+  --cta: #0a1628;
+  --cta-foreground: #ffffff;
+  --cta-hover: #1e293b;
 
-  --success: #10b981; /* emerald-500 */
-  --success-foreground: #ffffff;
-
+  /* Statuts */
+  --success: #10b981;
   --warning: #f59e0b;
-  --warning-foreground: #18181b;
+  --danger: #ef4444;
 
-  --danger: #dc2626; /* red-600 */
-  --danger-foreground: #ffffff;
+  --radius: 0.75rem;
+  --radius-pill: 9999px;
 
-  --radius: 0.5rem;
+  /* Ombres signature (douces, multi-couches) */
+  --shadow-sm: 0 1px 2px 0 rgba(10, 22, 40, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(10, 22, 40, 0.08), 0 2px 4px -1px rgba(10, 22, 40, 0.04);
+  --shadow-lg: 0 20px 40px -12px rgba(10, 22, 40, 0.12), 0 8px 16px -4px rgba(10, 22, 40, 0.05);
+  --shadow-glow: 0 0 60px -15px rgba(14, 165, 233, 0.4);
 }
 
 .dark {
-  /* Mode sombre — inverse, palette zinc + accent emerald */
-  --background: #09090b; /* zinc-950 */
-  --foreground: #fafafa; /* zinc-50 */
+  /* MODE SOMBRE — fonds anthracite tres profonds avec accent bleu glow */
+  --background: #0a1422;
+  --background-soft: #0f1b2d;
+  --background-grad-1: #0a1422;
+  --background-grad-2: #0f1b2d;
 
-  --muted: #18181b; /* zinc-900 */
-  --muted-foreground: #a1a1aa; /* zinc-400 */
+  --surface: #131f33;
+  --surface-elevated: #1a2942;
 
-  --card: #18181b;
-  --card-foreground: #fafafa;
+  --foreground: #f1f5f9;
+  --foreground-soft: #cbd5e1;
+  --muted: #94a3b8;
+  --muted-soft: #64748b;
 
-  --border: #27272a; /* zinc-800 */
-  --input: #27272a;
-  --ring: #fafafa;
+  --border: #1e293b;
+  --border-strong: #334155;
 
-  --primary: #fafafa;
-  --primary-foreground: #09090b;
+  --accent: #38bdf8;              /* sky-400 plus lumineux en dark */
+  --accent-strong: #0ea5e9;
+  --accent-soft: #082f49;
+  --accent-foreground: #0a1422;
 
-  --accent: #10b981; /* emerald-500 */
-  --accent-foreground: #09090b;
+  --cta: #ffffff;
+  --cta-foreground: #0a1422;
+  --cta-hover: #f1f5f9;
 
-  --success: #10b981;
-  --success-foreground: #09090b;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
 
-  --warning: #f59e0b;
-  --warning-foreground: #09090b;
-
-  --danger: #ef4444; /* red-500 */
-  --danger-foreground: #fafafa;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 80px -10px rgba(56, 189, 248, 0.45);
 }
 
 * {
@@ -83,25 +106,56 @@ body,
 
 body {
   margin: 0;
-  font-family: theme('fontFamily.sans');
+  font-family:
+    'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui,
+    sans-serif;
   background-color: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'cv11', 'ss01';
-  font-variation-settings: 'opsz' 32;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv11', 'ss01', 'cv02', 'cv03';
 }
 
-/* Pas de focus ring marron par defaut Chrome */
+/* Display font pour les gros titres : Inter Tight si dispo, sinon Inter avec letterspacing tighter */
+.font-display {
+  font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  letter-spacing: -0.04em;
+  font-weight: 600;
+}
+
+.font-mono {
+  font-family:
+    'JetBrains Mono', 'SF Mono', Menlo, Monaco, Consolas, ui-monospace,
+    monospace;
+}
+
+/* Background style Socialynx : gradient vertical blanc -> bleu pale -> blanc.
+   Donne l effet "vague bleue douce" au centre, avec haut/bas presque blancs
+   (la pilule blanche ressort, les sections respirent). */
+.bg-app-gradient {
+  background:
+    linear-gradient(
+      to bottom,
+      var(--background-grad-1) 0%,
+      var(--background-soft) 35%,
+      var(--background-soft) 65%,
+      var(--background-grad-2) 100%
+    );
+}
+
+/* Focus ring premium */
 *:focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Selection texte */
 ::selection {
-  background-color: var(--foreground);
-  color: var(--background);
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
 /* Scrollbar discrete */
@@ -113,9 +167,39 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-strong);
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+  background: var(--muted);
 }
+
+/* Animation "float" subtile (utilisee sur le mockup hero) */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out backwards;
+}
+
+/* Decorative blur blob (utilise dans le hero) */
+.blob-accent {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Marquee / scroll-x discret pour logo banners (optionnel) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }

@@ -11,23 +11,20 @@ import {
   RunCodeResult,
   api,
 } from '@/lib/api';
-import { Check, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Clock,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 
-/**
- * Page de passation candidat (URL : /candidate/passation/:token/run).
- *
- * - Affiche les questions une par une (navigation prev/next)
- * - QCM : choix radio + sauvegarde auto sur changement
- * - CODE : Monaco editor + bouton "Executer" -> POST /candidate/.../run-code
- * - CAS_PRATIQUE : textarea libre + sauvegarde auto debouncee
- * - Chronometre global affiche dans le header
- * - Bouton "Soumettre" en fin de parcours
- */
 export function CandidatePassationPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
 
-  // Etat global
   const [questions, setQuestions] = useState<CandidateQuestionView[] | null>(null);
   const [passationId, setPassationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,14 +33,12 @@ export function CandidatePassationPage() {
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  // Chronometre demarre a l'arrivee sur la page (en secondes)
   const [elapsedSec, setElapsedSec] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setElapsedSec((s) => s + 1), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Charger les questions + retrouver l'id de passation depuis sessionStorage
   useEffect(() => {
     if (!token) return;
     api
@@ -97,55 +92,67 @@ export function CandidatePassationPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-6">
-        <Card className="max-w-md">
-          <CardBody>
-            <p className="font-mono text-xs text-danger">✗ {error}</p>
-          </CardBody>
+      <div className="flex min-h-screen items-center justify-center bg-app-gradient p-6">
+        <Card variant="elevated" className="max-w-md p-8">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-danger/10 text-danger">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl font-semibold tracking-tight">
+                Une erreur est survenue
+              </h2>
+              <p className="mt-2 text-sm text-muted">{error}</p>
+            </div>
+          </div>
         </Card>
       </div>
     );
   }
+
   if (!questions || !passationId || !currentQuestion) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-6">
-        <p className="font-mono text-xs text-muted-foreground">$ loading…</p>
+      <div className="flex min-h-screen items-center justify-center bg-app-gradient p-6">
+        <Card variant="elevated" className="p-10 text-center">
+          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-accent" />
+          <p className="text-sm text-muted">Chargement du test…</p>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
+    <div className="min-h-screen bg-app-gradient text-foreground">
+      {/* Header sticky avec progression */}
+      <header className="sticky top-0 z-10 border-b border-border bg-surface/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-              S
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-gradient text-white shadow-md">
+              <span className="font-display text-lg font-bold">S</span>
             </div>
             <div>
-              <div className="text-sm font-semibold">SkillForge</div>
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div className="font-display text-base font-bold tracking-tight">
+                SkillForge
+              </div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted">
                 test en cours
               </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Badge tone="muted">
-              <span className="font-mono">
-                question {currentIndex + 1} / {questions.length}
-              </span>
+              Question {currentIndex + 1} / {questions.length}
             </Badge>
-            <Badge tone="info">
-              <span className="font-mono">⏱ {formatTime(elapsedSec)}</span>
+            <Badge tone="accent">
+              <Clock className="h-3 w-3" />
+              <span className="font-mono">{formatTime(elapsedSec)}</span>
             </Badge>
             <ThemeToggle />
           </div>
         </div>
-        {/* Barre de progression */}
-        <div className="h-1 bg-muted">
+        <div className="h-1 bg-background-soft">
           <div
-            className="h-full bg-primary transition-all"
+            className="h-full bg-accent-gradient transition-all duration-300"
             style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
           />
         </div>
@@ -159,10 +166,10 @@ export function CandidatePassationPage() {
           onChange={(patch) => updateAnswer(currentQuestion.id, patch)}
         />
 
-        {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
           <Button
-            variant="outline"
+            variant="secondary"
+            size="lg"
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
             disabled={currentIndex === 0}
           >
@@ -171,12 +178,12 @@ export function CandidatePassationPage() {
           </Button>
 
           {currentIndex < questions.length - 1 ? (
-            <Button onClick={() => setCurrentIndex((i) => i + 1)}>
+            <Button variant="cta" size="lg" onClick={() => setCurrentIndex((i) => i + 1)}>
               Suivante
               <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={submitting}>
+            <Button variant="cta" size="lg" onClick={handleSubmit} disabled={submitting}>
               <Check className="h-4 w-4" />
               {submitting ? 'Envoi…' : 'Soumettre le test'}
             </Button>
@@ -186,10 +193,6 @@ export function CandidatePassationPage() {
     </div>
   );
 }
-
-// ============================================================
-// Composants internes
-// ============================================================
 
 type AnswerState = {
   qcmIndex?: number;
@@ -221,17 +224,17 @@ function QuestionCard({
   }
 
   return (
-    <Card>
+    <Card variant="elevated">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Badge tone={tone}>{question.type}</Badge>
-          <Badge tone="muted">diff {question.difficulty}/5</Badge>
+          <Badge tone="muted">Difficulte {question.difficulty}/5</Badge>
         </CardTitle>
       </CardHeader>
       <CardBody>
-        <p className="text-base leading-relaxed">
+        <p className="text-base leading-relaxed text-foreground">
           {question.statement || (
-            <em className="text-muted-foreground">(enonce dans le payload)</em>
+            <em className="text-muted">(enonce dans le payload)</em>
           )}
         </p>
 
@@ -303,9 +306,9 @@ function QcmAnswerEditor({
     void api.candidateSaveTextAnswer(passationId, questionId, String(i));
   };
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {options.length === 0 && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted">
           Aucune option disponible pour cette question.
         </p>
       )}
@@ -317,23 +320,23 @@ function QcmAnswerEditor({
             type="button"
             onClick={() => handleSelect(i)}
             className={
-              'flex w-full items-center gap-3 rounded-md border px-3 py-2 text-left text-sm transition-colors ' +
+              'flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left text-sm transition-all ' +
               (checked
-                ? 'border-primary bg-primary/10 text-foreground'
-                : 'border-border bg-card text-muted-foreground hover:border-foreground hover:text-foreground')
+                ? 'border-foreground bg-foreground/5 text-foreground shadow-sm'
+                : 'border-border bg-surface text-muted hover:border-border-strong hover:text-foreground')
             }
           >
             <span
               className={
-                'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ' +
+                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all ' +
                 (checked
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border')
+                  ? 'border-foreground bg-foreground text-background'
+                  : 'border-border-strong')
               }
             >
-              {checked ? <Check className="h-3 w-3" /> : null}
+              {checked ? <Check className="h-3.5 w-3.5" /> : null}
             </span>
-            <span className="flex-1">{opt}</span>
+            <span className="flex-1 font-medium">{opt}</span>
           </button>
         );
       })}
@@ -354,7 +357,6 @@ function TextAnswerEditor({
   value: string;
   onChange: (patch: Partial<AnswerState>) => void;
 }) {
-  // Sauvegarde debouncee : 1 s apres la derniere frappe
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleChange = (next: string) => {
@@ -368,20 +370,24 @@ function TextAnswerEditor({
   return (
     <div>
       {scenario && (
-        <div className="mb-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-          <p className="font-mono text-[10px] uppercase tracking-widest">scenario</p>
-          <p className="mt-1 whitespace-pre-wrap">{scenario}</p>
+        <div className="mb-4 rounded-2xl border border-border bg-background-soft px-4 py-3">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
+            Scenario
+          </p>
+          <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground">
+            {scenario}
+          </p>
         </div>
       )}
       <textarea
         value={value}
         onChange={(e) => handleChange(e.target.value)}
         rows={8}
-        className="block w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+        className="block w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
         placeholder="Votre reponse ici…"
       />
-      <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-        $ auto-save 1s after typing
+      <p className="mt-2 font-mono text-[10px] text-muted">
+        Sauvegarde automatique 1 s apres la derniere frappe
       </p>
     </div>
   );
@@ -437,17 +443,24 @@ function CodeAnswerEditor({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Badge tone="muted">{language}</Badge>
-        <span className="font-mono text-[10px] text-muted-foreground">
-          executable en sandbox Docker durcie
+        <Badge tone="accent">{language}</Badge>
+        <span className="font-mono text-[10px] text-muted">
+          execute en sandbox Docker durcie (seccomp + cap-drop=ALL)
         </span>
       </div>
-      <CodeEditor language={language} value={code} onChange={(v) => onChange({ code: v })} />
-      <Button onClick={handleRun} disabled={running || code.trim().length === 0}>
+      <div className="overflow-hidden rounded-2xl border border-border">
+        <CodeEditor language={language} value={code} onChange={(v) => onChange({ code: v })} />
+      </div>
+      <Button
+        onClick={handleRun}
+        variant="cta"
+        size="lg"
+        disabled={running || code.trim().length === 0}
+      >
         <Play className="h-4 w-4" />
-        {running ? <span className="font-mono">$ running in sandbox…</span> : 'Executer'}
+        {running ? 'Execution en sandbox…' : 'Executer'}
       </Button>
 
       {runResult && <RunResultPanel result={runResult} />}
@@ -463,8 +476,8 @@ function RunResultPanel({ result }: { result: RunCodeResult }) {
         ? 'warning'
         : 'danger';
   return (
-    <div className="rounded-md border border-border bg-muted/40 p-3">
-      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-muted-foreground">
+    <div className="rounded-2xl border border-border bg-background-soft p-4">
+      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-muted">
         <Badge tone={tone}>{result.status}</Badge>
         <span>
           exit: <span className="text-foreground">{result.exitCode}</span>
@@ -494,10 +507,10 @@ function RunResultPanel({ result }: { result: RunCodeResult }) {
       </div>
       {result.stdout && (
         <div className="mt-3">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
             stdout
           </p>
-          <pre className="mt-1 overflow-x-auto rounded-md bg-background p-2 font-mono text-[11px]">
+          <pre className="mt-1 overflow-x-auto rounded-xl bg-surface p-3 font-mono text-[11px] text-foreground">
             {result.stdout}
           </pre>
         </div>
@@ -507,7 +520,7 @@ function RunResultPanel({ result }: { result: RunCodeResult }) {
           <p className="font-mono text-[10px] uppercase tracking-widest text-danger">
             stderr
           </p>
-          <pre className="mt-1 overflow-x-auto rounded-md bg-background p-2 font-mono text-[11px] text-danger">
+          <pre className="mt-1 overflow-x-auto rounded-xl bg-surface p-3 font-mono text-[11px] text-danger">
             {result.stderr}
           </pre>
         </div>
