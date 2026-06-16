@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { PillNavSimple } from '@/components/ui/PillNav';
 import { AvatarStack } from '@/components/ui/AvatarStack';
 import { AppMockup } from '@/components/AppMockup';
 import { ThemeToggle } from '@/components/ThemeToggle';

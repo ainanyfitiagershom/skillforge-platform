@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -11,15 +11,38 @@ import {
   Question,
   api,
 } from '@/lib/api';
-import { CheckCircle2, FileUp, Sparkles, X, ArrowRight, BrainCircuit } from 'lucide-react';
+import {
+  ArrowRight,
+  BrainCircuit,
+  BriefcaseBusiness,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  FileUp,
+  ListChecks,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const PROFILES = [
-  { code: 'DEV_PHP', label: 'Developpeur PHP' },
-  { code: 'INT_WORDPRESS', label: 'Integrateur WordPress' },
-  { code: 'DEV_VUE', label: 'Developpeur Vue.js' },
-  { code: 'SEO_TECH', label: 'Specialiste SEO technique' },
+  { code: 'DEV_PHP', label: 'Developpeur PHP', hint: 'Backend, API, Laravel' },
+  { code: 'INT_WORDPRESS', label: 'Integrateur WordPress', hint: 'Theme, CMS, SEO' },
+  { code: 'DEV_VUE', label: 'Developpeur Vue.js', hint: 'Frontend, SPA, TypeScript' },
+  { code: 'SEO_TECH', label: 'Specialiste SEO technique', hint: 'Audit, performance, crawl' },
 ];
+
+const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
+  QCM: 'QCM',
+  CODE: 'Code',
+  CAS_PRATIQUE: 'Cas pratique',
+};
+
+const QUESTION_TYPE_HELPERS: Record<Question['type'], string> = {
+  QCM: 'Validation rapide des bases et concepts',
+  CODE: 'Exercices pratiques a executer',
+  CAS_PRATIQUE: 'Mise en situation projet',
+};
 
 export function NewTestPage() {
   const navigate = useNavigate();
@@ -41,10 +64,12 @@ export function NewTestPage() {
   const [generated, setGenerated] = useState<GenerateResponse | null>(null);
 
   const [error, setError] = useState<string | null>(null);
+  const uploadLocked = Boolean(skills);
+  const generationLocked = Boolean(generated);
 
   const handleUpload = async (e: FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file || uploadLocked) return;
     setError(null);
     setAnalyzing(true);
     setGenerated(null);
@@ -61,6 +86,7 @@ export function NewTestPage() {
   };
 
   const toggleSkill = (code: string) => {
+    if (generationLocked) return;
     setSelectedSkills((prev) => {
       const next = new Set(prev);
       if (next.has(code)) next.delete(code);
@@ -70,6 +96,7 @@ export function NewTestPage() {
   };
 
   const handleGenerate = async () => {
+    if (generationLocked) return;
     setError(null);
     setGenerating(true);
     try {
@@ -139,17 +166,11 @@ export function NewTestPage() {
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
                   Profil cible
                 </label>
-                <select
+                <ProfileSelect
                   value={profileCode}
-                  onChange={(e) => setProfileCode(e.target.value)}
-                  className="block h-[42px] w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground transition-all hover:border-border-strong focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
-                >
-                  {PROFILES.map((p) => (
-                    <option key={p.code} value={p.code}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setProfileCode}
+                  disabled={uploadLocked}
+                />
               </div>
               <div>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
@@ -159,6 +180,7 @@ export function NewTestPage() {
                   type="email"
                   value={candidateEmail}
                   onChange={(e) => setCandidateEmail(e.target.value)}
+                  disabled={uploadLocked}
                   required
                   placeholder="jean.dupont@example.com"
                 />
@@ -170,6 +192,7 @@ export function NewTestPage() {
                 <Input
                   value={candidateDisplayName}
                   onChange={(e) => setCandidateDisplayName(e.target.value)}
+                  disabled={uploadLocked}
                   required
                   placeholder="Jean Dupont"
                 />
@@ -178,7 +201,14 @@ export function NewTestPage() {
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
                   Fichier CV (PDF ou DOCX)
                 </label>
-                <label className="flex h-[42px] cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border bg-background-soft px-4 text-sm text-muted transition-all hover:border-accent hover:bg-accent-soft/30 hover:text-foreground">
+                <label
+                  className={cn(
+                    'flex h-[42px] items-center gap-3 rounded-xl border border-dashed border-border bg-background-soft px-4 text-sm text-muted transition-all',
+                    uploadLocked
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer hover:border-accent hover:bg-accent-soft/30 hover:text-foreground',
+                  )}
+                >
                   <FileUp className="h-4 w-4" />
                   <span className="flex-1 truncate">
                     {file ? file.name : 'Cliquez pour choisir un fichier'}
@@ -187,16 +217,25 @@ export function NewTestPage() {
                     type="file"
                     accept=".pdf,.docx"
                     onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    disabled={uploadLocked}
                     required
                     className="sr-only"
                   />
                 </label>
               </div>
             </div>
-            <Button type="submit" variant="cta" size="lg" disabled={analyzing || !file}>
-              <FileUp className="h-4 w-4" />
-              {analyzing ? 'Analyse du CV en cours…' : 'Analyser le CV'}
-              {!analyzing && <ArrowRight className="h-4 w-4" />}
+            <Button type="submit" variant="cta" size="lg" disabled={analyzing || !file || uploadLocked}>
+              {uploadLocked ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <FileUp className="h-4 w-4" />
+              )}
+              {uploadLocked
+                ? 'CV analyse'
+                : analyzing
+                  ? 'Analyse du CV en cours…'
+                  : 'Analyser le CV'}
+              {!analyzing && !uploadLocked && <ArrowRight className="h-4 w-4" />}
             </Button>
           </form>
         </CardBody>
@@ -241,11 +280,13 @@ export function NewTestPage() {
                     key={s.skillCode}
                     onClick={() => toggleSkill(s.skillCode)}
                     type="button"
+                    disabled={generationLocked}
                     className={cn(
-                      'group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all',
+                      'group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed',
                       selected
                         ? 'border-foreground bg-foreground text-background shadow-md'
                         : 'border-border bg-surface text-muted hover:border-border-strong hover:text-foreground',
+                      generationLocked && 'opacity-70',
                     )}
                   >
                     {selected ? (
@@ -270,12 +311,20 @@ export function NewTestPage() {
               onClick={handleGenerate}
               variant="cta"
               size="lg"
-              disabled={generating || selectedSkills.size === 0}
+              disabled={generating || selectedSkills.size === 0 || generationLocked}
               className="mt-6"
             >
-              <Sparkles className="h-4 w-4" />
-              {generating ? 'Generation des questions…' : 'Generer le test'}
-              {!generating && <ArrowRight className="h-4 w-4" />}
+              {generationLocked ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {generationLocked
+                ? 'Test genere'
+                : generating
+                  ? 'Generation des questions…'
+                  : 'Generer le test'}
+              {!generating && !generationLocked && <ArrowRight className="h-4 w-4" />}
             </Button>
           </CardBody>
         </Card>
@@ -293,31 +342,48 @@ export function NewTestPage() {
                 Questions generees
               </CardTitle>
               <CardDescription>
-                {generated.questions.length} questions creees en statut PENDING_REVIEW.
-                Editez-les ou supprimez-les depuis « Revoir les questions ».
+                Les questions sont pretes pour la revue. Verifiez les enonces,
+                ajustez les payloads et publiez le test depuis l'ecran de revue.
               </CardDescription>
             </div>
           </CardHeader>
           <CardBody>
-            <div className="mb-5 inline-flex flex-wrap items-center gap-3 rounded-full border border-border bg-background-soft px-4 py-2 font-mono text-[11px] text-muted">
-              <div className="flex items-center gap-1.5">
-                <BrainCircuit className="h-3 w-3 text-accent" />
-                <span className="text-foreground">{generated.llmProvider}</span>
-                <span className="text-muted-soft">/</span>
-                <span className="text-foreground">{generated.llmModel}</span>
+            <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+              <div className="rounded-2xl border border-border bg-background-soft px-4 py-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <ListChecks className="h-4 w-4 text-accent" />
+                  {generated.questions.length} questions en attente de revue
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(['QCM', 'CODE', 'CAS_PRATIQUE'] as Question['type'][]).map((type) => (
+                    <span
+                      key={type}
+                      className="rounded-full border border-border bg-surface px-3 py-1 font-mono text-[11px] text-muted"
+                    >
+                      <span className="font-semibold text-foreground">
+                        {generated.questions.filter((q) => q.type === type).length}
+                      </span>{' '}
+                      {QUESTION_TYPE_LABELS[type]}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <span className="text-muted-soft">·</span>
-              <span>{generated.tokensUsed} tokens</span>
-              <span className="text-muted-soft">·</span>
-              <span>{generated.costEur} EUR</span>
+
+              <div className="rounded-2xl border border-border bg-background-soft px-4 py-3 font-mono text-[11px] text-muted">
+                <div className="mb-1 flex items-center gap-1.5">
+                  <BrainCircuit className="h-3 w-3 text-accent" />
+                  <span className="text-foreground">{generated.llmProvider}</span>
+                </div>
+                <div>{generated.llmModel}</div>
+                <div className="mt-1">
+                  {generated.tokensUsed} tokens · {generated.costEur} EUR
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              {generated.questions.map((q) => (
-                <QuestionPreview key={q.id} q={q} />
-              ))}
-            </div>
-            <Button onClick={handleGoReview} variant="cta" size="lg" className="mt-6">
+            <QuestionList questions={generated.questions} />
+
+            <Button onClick={handleGoReview} variant="cta" size="lg" className="mt-6 w-full sm:w-auto">
               Aller a la revue des questions
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -334,25 +400,185 @@ export function NewTestPage() {
   );
 }
 
-function QuestionPreview({ q }: { q: Question }) {
+function ProfileSelect({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const selected = PROFILES.find((profile) => profile.code === value) ?? PROFILES[0];
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, []);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <input type="hidden" name="profileCode" value={value} />
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        disabled={disabled}
+        onClick={() => setOpen((current) => !current)}
+        className={cn(
+          'group flex h-[48px] w-full items-center gap-3 rounded-2xl border bg-surface px-3.5 text-left shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-65',
+          open
+            ? 'border-accent ring-4 ring-accent/15'
+            : 'border-border hover:border-border-strong hover:bg-background-soft/40',
+        )}
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-strong transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+          <BriefcaseBusiness className="h-4 w-4" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold text-foreground">
+            {selected.label}
+          </span>
+          <span className="block truncate font-mono text-[10px] uppercase tracking-wide text-muted">
+            {selected.hint}
+          </span>
+        </span>
+        <ChevronDown
+          className={cn(
+            'h-4 w-4 shrink-0 text-muted transition-transform duration-200',
+            open && 'rotate-180 text-accent-strong',
+          )}
+        />
+      </button>
+
+      {open && !disabled && (
+        <div
+          role="listbox"
+          className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-2xl border border-border bg-surface-elevated p-1.5 shadow-lg animate-fade-in-up"
+        >
+          {PROFILES.map((profile) => {
+            const active = profile.code === value;
+            return (
+              <button
+                key={profile.code}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  onChange(profile.code);
+                  setOpen(false);
+                }}
+                className={cn(
+                  'flex min-h-[54px] w-full items-center gap-3 rounded-xl px-3 text-left transition-colors',
+                  active
+                    ? 'bg-foreground text-background'
+                    : 'text-foreground hover:bg-background-soft',
+                )}
+              >
+                <span
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+                    active
+                      ? 'border-background/20 bg-background/10 text-background'
+                      : 'border-border bg-accent-soft text-accent-strong',
+                  )}
+                >
+                  {active ? <Check className="h-4 w-4" /> : <BriefcaseBusiness className="h-4 w-4" />}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">
+                    {profile.label}
+                  </span>
+                  <span
+                    className={cn(
+                      'block truncate font-mono text-[10px] uppercase tracking-wide',
+                      active ? 'text-background/60' : 'text-muted',
+                    )}
+                  >
+                    {profile.hint}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QuestionList({ questions }: { questions: Question[] }) {
+  const groups = (['QCM', 'CODE', 'CAS_PRATIQUE'] as Question['type'][]).map((type) => ({
+    type,
+    questions: questions.filter((q) => q.type === type),
+  }));
+
+  return (
+    <div className="space-y-5">
+      {groups.map(({ type, questions }) => {
+        if (questions.length === 0) return null;
+        return (
+          <section key={type} className="space-y-2">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h4 className="text-sm font-semibold text-foreground">
+                  {QUESTION_TYPE_LABELS[type]}
+                </h4>
+                <p className="text-xs text-muted">
+                  {QUESTION_TYPE_HELPERS[type]}
+                </p>
+              </div>
+              <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[10px] text-muted">
+                {questions.length}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {questions.map((q, index) => (
+                <QuestionPreview key={q.id} q={q} index={index + 1} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+function QuestionPreview({ q, index }: { q: Question; index: number }) {
   const tone =
     q.type === 'QCM' ? 'info' : q.type === 'CODE' ? 'warning' : 'success';
+  const difficultyLabel = `${q.difficulty}/5`;
+
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-border bg-background-soft px-4 py-3 transition-colors hover:bg-surface">
-      <Badge tone={tone} variant="mono">
-        {q.type}
-      </Badge>
-      <div className="flex-1">
-        <p className="text-sm text-foreground">
+    <article className="grid grid-cols-[auto_1fr] gap-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm transition-colors hover:border-border-strong hover:bg-background-soft/50">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background-soft font-mono text-xs font-bold text-muted">
+        {String(index).padStart(2, '0')}
+      </div>
+      <div className="min-w-0">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <Badge tone={tone} variant="mono">
+            {QUESTION_TYPE_LABELS[q.type]}
+          </Badge>
+          <span className="rounded-full border border-border bg-background-soft px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-muted">
+            difficulte {difficultyLabel}
+          </span>
+        </div>
+        <p className="text-[15px] font-medium leading-6 text-foreground">
           {q.statement || (
-            <em className="text-muted">(enonce dans le payload)</em>
+            <em className="font-normal text-muted">Enonce disponible dans le payload.</em>
           )}
         </p>
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted">
-          difficulte : {q.difficulty}/5
-        </p>
       </div>
-    </div>
+    </article>
   );
 }
 
