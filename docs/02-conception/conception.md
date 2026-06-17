@@ -35,7 +35,7 @@ flowchart TB
 
   subgraph Infra [Infrastructure]
     Postgres[(PostgreSQL 16)]
-    LlmExt[API IA externe OpenAI ou Claude]
+    LlmExt[API LLM externe — provider configurable : GitHub Models, OpenAI, Claude]
   end
 
   Recruteur -->|HTTPS| UI
@@ -184,6 +184,8 @@ classDiagram
     UUID id
     String name
     int durationMinutes
+    UUID candidateId
+    String profileCode
     LocalDateTime createdAt
   }
 
@@ -230,6 +232,7 @@ classDiagram
   Candidate "1" --> "*" Cv
   Cv "1" --> "0..1" CvAnalysis
   Candidate "1" --> "*" Passation
+  Candidate "1" --> "*" Test : evalue
   Test "*" --> "*" Question : compose
   Test "1" --> "*" Invitation
   Invitation "1" --> "0..1" Passation
@@ -354,7 +357,7 @@ erDiagram
 | `candidates` | id, email, display_name, created_at | PK id, UQ email |
 | `cvs` | id, candidate_id (FK), file_name, content (BYTEA), uploaded_at, purge_at | PK id |
 | `cv_analyses` | id, cv_id (FK UQ), extracted_skills (JSONB), llm_provider, llm_model, tokens_used, cost_eur, analyzed_at | PK id |
-| `tests` | id, name, duration_minutes, created_at | PK id |
+| `tests` | id, name, duration_minutes, candidate_id (FK candidates), profile_code, created_at | PK id, FK candidate_id |
 | `test_compositions` | test_id, question_id, position | PK composite |
 | `invitations` | id, test_id (FK), token (UQ), expires_at, used | PK id |
 | `passations` | id, invitation_id (FK UQ), candidate_id (FK), started_at, submitted_at, global_score, fraud_risk_score | PK id |
@@ -389,7 +392,7 @@ src/main/java/com/tsarajoro/skillforge/
 ├── domain/         # entités JPA, value objects, enums métier
 ├── repository/     # interfaces Spring Data JPA
 ├── service/        # logique métier
-├── llm/            # abstraction LLM (interface + impls OpenAI / Claude / mock)
+├── llm/            # abstraction LLM (interface + 4 impls : mock, OpenAI, GitHub Models, Claude)
 ├── controller/     # contrôleurs REST + DTO
 └── exception/      # gestion centralisée des erreurs
 ```
@@ -405,7 +408,67 @@ src/
 │   ├── passation/
 │   ├── reports/
 │   └── dashboard/
-├── components/ui/   # composants ShadcnUI
+├── components/ui/   # composants UI custom (Button, Card, Badge, Input, PillNav, AvatarStack)
 ├── lib/             # client API, hooks utilitaires
 └── routes/
 ```
+
+---
+
+## 6. Évolutions post-conception (sprints 3-5)
+
+Cette section documente les ajouts et ajustements faits **après la rédaction initiale**
+de la conception, suite aux retours utilisateur et aux apprentissages des POCs.
+
+### 6.1 Lien explicite Test ↔ Candidate (migration V2)
+
+**Avant** : `tests` n'avait pas de FK vers `candidates`. Un Test était conçu comme
+réutilisable, le lien candidat passait par `invitations` → `passations`.
+
+**Après** : ajout des colonnes `tests.candidate_id` (FK candidates) et
+`tests.profile_code`. Chaque génération crée un Test sur mesure pour 1 candidat,
+ce qui permet :
+- de regrouper la **revue des questions par candidat** sur la page recruteur,
+- de tracer **quel test a été généré pour qui** sans passer par les invitations.
+
+Le modèle "1 Test = 1 Candidate" reflète l'usage réel observé (chaque CV
+déclenche une génération sur mesure). Migration Flyway : `V2__test_link_candidate.sql`.
+
+### 6.2 Multi-provider LLM (4 implémentations)
+
+**Avant** : la conception mentionnait "OpenAI ou Claude".
+
+**Après** : l'interface `LlmClient` a 4 implémentations sélectionnables via
+`LLM_PROVIDER` :
+- `mock` — pour les tests et le développement local (pas d'appel réseau).
+- `github` — GitHub Models / Azure AI Inference, gratuit pour les développeurs
+  avec un PAT (`models:read` scope). Utilisé en POC par défaut.
+- `openai` — OpenAI API officielle (gpt-4o-mini).
+- `claude` — Anthropic Messages API.
+
+Le switch se fait sans recompilation, simplement par variable d'environnement.
+Cela permet de basculer entre fournisseurs selon les contraintes (coût,
+confidentialité, latence) et de comparer les performances.
+
+### 6.3 Compétences personnalisables côté recruteur
+
+**Avant** : le recruteur validait uniquement les compétences extraites du CV
+(figées par le LLM dans un référentiel restreint).
+
+**Après** : composant `SkillCombobox` (frontend) qui combine **autocomplete sur
+le référentiel** + **création libre d'une compétence personnalisée** (code
+généré `CUSTOM_<slug>`). Le recruteur peut ainsi ajouter une techno demandée
+par l'entreprise mais absente du CV (ex : "Inertia.js", "tRPC"). Chaque
+compétence est associée à un niveau (Junior / Confirmé / Senior) éditable.
+
+### 6.4 Page de revue groupée par candidat
+
+**Avant** : la page `/app/review` listait toutes les questions à plat, mélangées.
+
+**Après** : endpoint `GET /review/by-candidate` qui renvoie les questions
+groupées par `Test` (et donc par candidat), et page refondue en layout **2
+colonnes** type Gmail / Slack inbox : sidebar gauche listant les candidats
+avec un compteur de questions en attente, panneau de droite affichant les
+questions du candidat sélectionné avec actions (approuver, refuser, éditer,
+supprimer, "tout approuver").
+

@@ -35,6 +35,7 @@ public class GenerationController {
     @PostMapping("/generate")
     public GenerateResponse generate(@Valid @RequestBody GenerateRequest body) {
         GenerationRequest req = new GenerationRequest(
+                body.candidateId(),
                 body.profileCode(),
                 body.skillCodes(),
                 body.types().stream()
@@ -44,6 +45,7 @@ public class GenerationController {
         GenerationOutput output = generationService.generate(req);
         return new GenerateResponse(
                 output.questions().stream().map(QuestionSummary::of).toList(),
+                output.testId(),
                 output.llmProvider(),
                 output.llmModel(),
                 output.tokensUsed(),
@@ -51,6 +53,7 @@ public class GenerationController {
     }
 
     public record GenerateRequest(
+            UUID candidateId,
             @NotBlank String profileCode,
             @NotEmpty List<@NotBlank String> skillCodes,
             @NotEmpty List<@Valid TypeQuotaDto> types,
@@ -62,6 +65,7 @@ public class GenerationController {
 
     public record GenerateResponse(
             List<QuestionSummary> questions,
+            UUID testId,
             String llmProvider,
             String llmModel,
             int tokensUsed,

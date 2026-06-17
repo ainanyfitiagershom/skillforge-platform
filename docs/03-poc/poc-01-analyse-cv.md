@@ -20,17 +20,23 @@ Les briques suivantes sont déjà en place dans le backend :
 | Parseur PDF | `CvParserService` (Apache PDFBox) |
 | Parseur DOCX | `CvParserService` (Apache POI) |
 | OCR fallback | Détection automatique des PDF scannés (< 100 caractères extraits), à brancher avec Tesseract / tess4j en Sprint 2 |
-| Abstraction LLM | Interface `LlmClient` avec trois implémentations : `MockLlmClient`, `OpenAiLlmClient`, `ClaudeLlmClient` (squelette) |
+| Abstraction LLM | Interface `LlmClient` avec **quatre** implémentations : `MockLlmClient`, `OpenAiLlmClient`, `GitHubModelsLlmClient`, `ClaudeLlmClient` |
 | Endpoint d'upload | `POST /cv/upload` (multipart) qui orchestre tout |
 | Persistance | Entités `Candidate`, `Cv`, `CvAnalysis` + tables PostgreSQL |
 
 Le choix du fournisseur LLM se fait par la variable d'environnement `LLM_PROVIDER` :
 
 ```env
-LLM_PROVIDER=mock    # par défaut, déterministe, gratuit
-LLM_PROVIDER=openai  # OPENAI_API_KEY requis
-LLM_PROVIDER=claude  # ANTHROPIC_API_KEY requis (implémentation à finaliser)
+LLM_PROVIDER=mock    # par défaut local, déterministe, sans réseau
+LLM_PROVIDER=github  # GITHUB_TOKEN requis (PAT scope models:read) — GRATUIT, recommandé pour le POC
+LLM_PROVIDER=openai  # OPENAI_API_KEY requis (gpt-4o-mini)
+LLM_PROVIDER=claude  # ANTHROPIC_API_KEY requis
 ```
+
+GitHub Models (Azure AI Inference) expose plusieurs LLM dont `gpt-4o-mini`,
+`gpt-4o`, `Phi-3.5`, `Llama-3.3` avec une API OpenAI-compatible. C'est le
+provider utilisé par défaut en démo : aucune carte bancaire, juste un PAT
+GitHub.
 
 ## 3. Protocole de mesure
 

@@ -16,7 +16,7 @@ import {
 
 export function DashboardPage() {
   return (
-    <div className="space-y-12">
+    <div className="mx-auto max-w-7xl space-y-12 px-6">
       {/* ============ HERO ASYMETRIQUE (style Socialynx) ============ */}
       <section className="grid grid-cols-1 items-center gap-12 pt-8 lg:grid-cols-2 lg:gap-8 lg:pt-12">
         {/* Gauche : texte + CTA */}

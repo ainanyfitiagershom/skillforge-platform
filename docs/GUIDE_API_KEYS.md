@@ -205,13 +205,14 @@ C'est un argument fort pour défendre le choix de Claude vs OpenAI dans votre ra
 
 ## 3. Bascule rapide entre providers
 
-Le grand avantage de l'**abstraction LLM** mise en place : pour basculer entre mock, OpenAI et Claude, **aucune modification de code** n'est nécessaire. Il suffit de modifier la variable `LLM_PROVIDER` dans `.env` et de redémarrer Spring Boot.
+Le grand avantage de l'**abstraction LLM** mise en place : pour basculer entre les 4 providers, **aucune modification de code** n'est nécessaire. Il suffit de modifier la variable `LLM_PROVIDER` dans `.env` et de redémarrer Spring Boot.
 
-| Pour utiliser | `LLM_PROVIDER=` | Clé requise |
-|---|---|---|
-| Mock (gratuit, déterministe) | `mock` | aucune |
-| OpenAI | `openai` | `OPENAI_API_KEY` |
-| Claude | `claude` | `ANTHROPIC_API_KEY` |
+| Pour utiliser | `LLM_PROVIDER=` | Clé requise | Coût |
+|---|---|---|---|
+| Mock (déterministe, dev local) | `mock` | aucune | gratuit |
+| GitHub Models (recommandé POC) | `github` | `GITHUB_TOKEN` (PAT `models:read`) | gratuit |
+| OpenAI | `openai` | `OPENAI_API_KEY` | payant |
+| Claude | `claude` | `ANTHROPIC_API_KEY` | payant |
 
 ---
 

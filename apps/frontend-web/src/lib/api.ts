@@ -110,6 +110,9 @@ export const api = {
   generateQuestions: (req: GenerateRequest) =>
     request<GenerateResponse>('/tests/generate', { method: 'POST', body: req }),
 
+  reviewByCandidate: () =>
+    request<CandidateGroup[]>('/review/by-candidate'),
+
   updateQuestion: (id: string, body: QuestionUpdate) =>
     request<Question>(`/questions/${id}`, { method: 'PUT', body }),
 
@@ -249,6 +252,7 @@ export type QuestionUpdate = {
 };
 
 export type GenerateRequest = {
+  candidateId?: string;
   profileCode: string;
   skillCodes: string[];
   types: { type: QuestionType; count: number }[];
@@ -257,8 +261,31 @@ export type GenerateRequest = {
 
 export type GenerateResponse = {
   questions: Question[];
+  testId: string | null;
   llmProvider: string;
   llmModel: string;
   tokensUsed: number;
   costEur: string;
+};
+
+export type ReviewQuestion = {
+  id: string;
+  type: QuestionType;
+  statement: string;
+  difficulty: number;
+  status: QuestionStatus;
+  version: number;
+  jsonPayload: string;
+  position: number;
+};
+
+export type CandidateGroup = {
+  testId: string;
+  testName: string;
+  profileCode: string;
+  testCreatedAt: string;
+  candidateId: string;
+  candidateEmail: string;
+  candidateName: string | null;
+  questions: ReviewQuestion[];
 };

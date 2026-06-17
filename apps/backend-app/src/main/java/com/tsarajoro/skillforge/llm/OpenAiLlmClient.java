@@ -6,6 +6,8 @@ import com.tsarajoro.skillforge.domain.QuestionType;
 import com.tsarajoro.skillforge.llm.CvExtractionResult.ExtractedSkill;
 import com.tsarajoro.skillforge.llm.CvExtractionResult.SkillLevel;
 import com.tsarajoro.skillforge.llm.QuestionGenerationResult.GeneratedQuestion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -27,11 +29,31 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(name = "skillforge.llm.provider", havingValue = "openai")
 public class OpenAiLlmClient implements LlmClient {
 
+    private static final Logger log = LoggerFactory.getLogger(OpenAiLlmClient.class);
     private static final String BASE_URL = "https://api.openai.com/v1";
 
     private final RestClient http;
     private final String model;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    /** Lit jsonPayload qui peut etre une string echappee ou un objet imbrique. */
+    private String extractJsonPayload(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return "{}";
+        }
+        if (node.isTextual()) {
+            String raw = node.asText();
+            return raw.isBlank() ? "{}" : raw;
+        }
+        if (node.isObject() || node.isArray()) {
+            try {
+                return mapper.writeValueAsString(node);
+            } catch (Exception e) {
+                return "{}";
+            }
+        }
+        return "{}";
+    }
 
     public OpenAiLlmClient(
             @Value("${skillforge.llm.openai.api-key}") String apiKey,
@@ -144,14 +166,22 @@ public class OpenAiLlmClient implements LlmClient {
                 Regles :
                 - 'type' est l'un de : QCM, CODE, CAS_PRATIQUE
                 - 'difficulty' est un entier entre 1 et 5
+                - 'statement' est OBLIGATOIRE et non vide (2-4 phrases qui contextualisent)
                 - 'targetSkillCodes' contient au moins 1 code competence parmi ceux fournis
-                - 'jsonPayload' est une CHAINE de caracteres contenant un JSON valide echappe :
-                    * QCM : {"options":["..."], "correctIndex":0, "explanation":"..."}
+                - 'jsonPayload' est une CHAINE JSON echappee, jamais un objet. Selon le type :
+                    * QCM : {"options":["A","B","C","D"], "correctIndex":1, "explanation":"..."}
                     * CODE : {"language":"PHP|JS", "starterCode":"...", "hiddenTests":"...", "explanation":"..."}
                     * CAS_PRATIQUE : {"scenario":"...", "expectedAnswerPoints":["..."], "explanation":"..."}
-                - Les distracteurs des QCM doivent etre plausibles (pas evidents)
-                - Les exercices CODE doivent avoir un code de demarrage realiste et des tests caches simples
-                - Les cas pratiques doivent etre lies au metier (WordPress, SEO, etc.) quand le profil le justifie
+
+                Pour les questions CODE specifiquement :
+                - 'starterCode' est un VRAI squelette a completer : signature de la fonction,
+                  docbloc decrivant params/retour, commentaire "// TODO: implementer ici" a
+                  l interieur du corps, et un return par defaut. JAMAIS vide, jamais juste un
+                  commentaire seul. Le candidat doit pouvoir lire la signature et completer.
+                - 'hiddenTests' contient 2-3 assertions executables qui appellent la fonction
+                  du candidat (ex : assert(solve(2) === 4); echo 'OK';).
+                - Les distracteurs des QCM doivent etre plausibles.
+                - Les cas pratiques doivent etre lies au metier quand le profil le justifie.
                 """;
 
         String userPrompt = String.format("""
@@ -190,7 +220,11 @@ public class OpenAiLlmClient implements LlmClient {
                 for (JsonNode s : q.path("targetSkillCodes")) {
                     targetSkills.add(s.asText());
                 }
-                String payload = q.path("jsonPayload").asText();
+                String payload = extractJsonPayload(q.path("jsonPayload"));
+                if (statement.isBlank() || payload.equals("{}")) {
+                    log.warn("LLM a renvoye une question incomplete (type={}, statementEmpty={}, payloadEmpty={}): raw={}",
+                            type, statement.isBlank(), payload.equals("{}"), q.toString());
+                }
                 questions.add(new GeneratedQuestion(type, statement, difficulty, targetSkills, payload));
             }
 

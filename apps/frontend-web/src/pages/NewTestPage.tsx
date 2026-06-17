@@ -1,12 +1,14 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardBody, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { CodeEditor } from '@/components/CodeEditor';
+import { SkillCombobox, SkillToAdd } from '@/components/SkillCombobox';
+import { SkillPill, SkillLevel } from '@/components/SkillPill';
 import {
   ApiError,
-  ExtractedSkill,
   GenerateResponse,
   Question,
   api,
@@ -18,10 +20,11 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  Code2,
   FileUp,
+  FlaskConical,
   ListChecks,
   Sparkles,
-  X,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -44,6 +47,14 @@ const QUESTION_TYPE_HELPERS: Record<Question['type'], string> = {
   CAS_PRATIQUE: 'Mise en situation projet',
 };
 
+type SkillEntry = {
+  code: string;
+  displayName: string;
+  level: SkillLevel;
+  isCustom: boolean;
+  source: 'cv' | 'manual';
+};
+
 export function NewTestPage() {
   const navigate = useNavigate();
   const [profileCode, setProfileCode] = useState('DEV_PHP');
@@ -52,7 +63,8 @@ export function NewTestPage() {
   const [file, setFile] = useState<File | null>(null);
 
   const [analyzing, setAnalyzing] = useState(false);
-  const [skills, setSkills] = useState<ExtractedSkill[] | null>(null);
+  const [candidateId, setCandidateId] = useState<string | null>(null);
+  const [skillEntries, setSkillEntries] = useState<SkillEntry[] | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set());
   const [llmInfo, setLlmInfo] = useState<{
     provider: string;
@@ -64,7 +76,7 @@ export function NewTestPage() {
   const [generated, setGenerated] = useState<GenerateResponse | null>(null);
 
   const [error, setError] = useState<string | null>(null);
-  const uploadLocked = Boolean(skills);
+  const uploadLocked = Boolean(skillEntries);
   const generationLocked = Boolean(generated);
 
   const handleUpload = async (e: FormEvent) => {
@@ -75,8 +87,16 @@ export function NewTestPage() {
     setGenerated(null);
     try {
       const res = await api.uploadCv(file, candidateEmail, candidateDisplayName, profileCode);
-      setSkills(res.skills);
-      setSelectedSkills(new Set(res.skills.map((s) => s.skillCode)));
+      setCandidateId(res.candidateId);
+      const entries: SkillEntry[] = res.skills.map((s) => ({
+        code: s.skillCode,
+        displayName: s.displayName,
+        level: s.level,
+        isCustom: false,
+        source: 'cv',
+      }));
+      setSkillEntries(entries);
+      setSelectedSkills(new Set(entries.map((e) => e.code)));
       setLlmInfo({ provider: res.llmProvider, tokens: res.tokensUsed, cost: res.costEur });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Erreur lors de l'upload");
@@ -95,6 +115,44 @@ export function NewTestPage() {
     });
   };
 
+  const addSkill = (s: SkillToAdd) => {
+    if (generationLocked) return;
+    setSkillEntries((prev) => {
+      const list = prev ?? [];
+      if (list.some((e) => e.code === s.code)) {
+        setSelectedSkills((sel) => new Set(sel).add(s.code));
+        return list;
+      }
+      return [
+        ...list,
+        {
+          code: s.code,
+          displayName: s.displayName,
+          level: s.level,
+          isCustom: s.isCustom,
+          source: 'manual',
+        },
+      ];
+    });
+    setSelectedSkills((sel) => new Set(sel).add(s.code));
+  };
+
+  const updateSkillLevel = (code: string, level: Exclude<SkillLevel, 'UNKNOWN'>) => {
+    setSkillEntries((prev) =>
+      prev ? prev.map((e) => (e.code === code ? { ...e, level } : e)) : prev,
+    );
+  };
+
+  const removeSkill = (code: string) => {
+    if (generationLocked) return;
+    setSkillEntries((prev) => (prev ? prev.filter((e) => e.code !== code) : prev));
+    setSelectedSkills((sel) => {
+      const next = new Set(sel);
+      next.delete(code);
+      return next;
+    });
+  };
+
   const handleGenerate = async () => {
     if (generationLocked) return;
     setError(null);
@@ -102,6 +160,7 @@ export function NewTestPage() {
     try {
       const skillCodes = Array.from(selectedSkills);
       const res = await api.generateQuestions({
+        candidateId: candidateId ?? undefined,
         profileCode,
         skillCodes,
         types: [
@@ -122,7 +181,7 @@ export function NewTestPage() {
   const handleGoReview = () => navigate('/app/review');
 
   return (
-    <div className="mx-auto max-w-3xl space-y-12 pt-8">
+    <div className="mx-auto max-w-3xl space-y-12 px-6 pt-8">
       {/* ============ HEADER calme ============ */}
       <div className="text-center">
         <Badge tone="accent" className="mb-4">
@@ -142,7 +201,7 @@ export function NewTestPage() {
       </div>
 
       {/* ============ STEPS — discret ============ */}
-      <Steps current={generated ? 3 : skills ? 2 : 1} />
+      <Steps current={generated ? 3 : skillEntries ? 2 : 1} />
 
       {/* ============ ETAPE 1 ============ */}
       <Card variant="elevated">
@@ -242,7 +301,7 @@ export function NewTestPage() {
       </Card>
 
       {/* ============ ETAPE 2 ============ */}
-      {skills && (
+      {skillEntries && (
         <Card variant="elevated" className="animate-fade-in-up">
           <CardHeader>
             <div>
@@ -250,10 +309,11 @@ export function NewTestPage() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft font-mono text-xs font-bold text-accent-strong">
                   02
                 </span>
-                Competences detectees
+                Competences a evaluer
               </CardTitle>
               <CardDescription>
-                Decochez celles qui ne sont pas pertinentes pour le test.
+                Complétez avec les compétences attendues par votre entreprise.
+                Décochez celles qui ne sont pas pertinentes.
               </CardDescription>
             </div>
           </CardHeader>
@@ -265,48 +325,42 @@ export function NewTestPage() {
                   <span className="text-foreground">{llmInfo.provider}</span>
                 </div>
                 <span className="text-muted-soft">·</span>
-                <span>
-                  {llmInfo.tokens} tokens
-                </span>
+                <span>{llmInfo.tokens} tokens</span>
                 <span className="text-muted-soft">·</span>
                 <span>{llmInfo.cost} EUR</span>
               </div>
             )}
-            <div className="flex flex-wrap gap-2">
-              {skills.map((s) => {
-                const selected = selectedSkills.has(s.skillCode);
-                return (
-                  <button
-                    key={s.skillCode}
-                    onClick={() => toggleSkill(s.skillCode)}
-                    type="button"
-                    disabled={generationLocked}
-                    className={cn(
-                      'group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed',
-                      selected
-                        ? 'border-foreground bg-foreground text-background shadow-md'
-                        : 'border-border bg-surface text-muted hover:border-border-strong hover:text-foreground',
-                      generationLocked && 'opacity-70',
-                    )}
-                  >
-                    {selected ? (
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                    ) : (
-                      <X className="h-3.5 w-3.5 opacity-40" />
-                    )}
-                    {s.displayName}
-                    <span
-                      className={cn(
-                        'font-mono text-[10px]',
-                        selected ? 'text-background/60' : 'text-muted-soft',
-                      )}
-                    >
-                      {s.level.toLowerCase()}
-                    </span>
-                  </button>
-                );
-              })}
+
+            <div className="flex flex-wrap items-center gap-2">
+              {skillEntries.map((s) => (
+                <SkillPill
+                  key={s.code}
+                  displayName={s.displayName}
+                  level={s.level}
+                  isCustom={s.isCustom}
+                  selected={selectedSkills.has(s.code)}
+                  onToggleSelected={() => toggleSkill(s.code)}
+                  onChangeLevel={
+                    generationLocked
+                      ? undefined
+                      : (lvl) => updateSkillLevel(s.code, lvl)
+                  }
+                  onRemove={
+                    s.source === 'manual' && !generationLocked
+                      ? () => removeSkill(s.code)
+                      : undefined
+                  }
+                />
+              ))}
+
+              {!generationLocked && (
+                <SkillCombobox
+                  excludeCodes={skillEntries.map((s) => s.code)}
+                  onAdd={addSkill}
+                />
+              )}
             </div>
+
             <Button
               onClick={handleGenerate}
               variant="cta"
@@ -554,31 +608,206 @@ function QuestionList({ questions }: { questions: Question[] }) {
 }
 
 function QuestionPreview({ q, index }: { q: Question; index: number }) {
+  const [open, setOpen] = useState(false);
   const tone =
     q.type === 'QCM' ? 'info' : q.type === 'CODE' ? 'warning' : 'success';
   const difficultyLabel = `${q.difficulty}/5`;
 
   return (
-    <article className="grid grid-cols-[auto_1fr] gap-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm transition-colors hover:border-border-strong hover:bg-background-soft/50">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background-soft font-mono text-xs font-bold text-muted">
-        {String(index).padStart(2, '0')}
+    <article className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-colors hover:border-border-strong">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-background-soft/50"
+      >
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background-soft font-mono text-xs font-bold text-muted">
+          {String(index).padStart(2, '0')}
+        </div>
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <Badge tone={tone} variant="mono">
+              {QUESTION_TYPE_LABELS[q.type]}
+            </Badge>
+            <span className="rounded-full border border-border bg-background-soft px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-muted">
+              difficulte {difficultyLabel}
+            </span>
+          </div>
+          <p className="text-[15px] font-medium leading-6 text-foreground">
+            {q.statement || (
+              <em className="font-normal text-muted">Enonce disponible dans le payload.</em>
+            )}
+          </p>
+        </div>
+        <ChevronDown
+          className={cn(
+            'mt-2 h-4 w-4 shrink-0 text-muted transition-transform',
+            open && 'rotate-180',
+          )}
+        />
+      </button>
+
+      {open && (
+        <div className="border-t border-border bg-background-soft/40 px-4 py-4">
+          <QuestionDetail q={q} />
+        </div>
+      )}
+    </article>
+  );
+}
+
+type ParsedPayload = {
+  options?: string[];
+  correctIndex?: number;
+  explanation?: string;
+  language?: string;
+  starterCode?: string;
+  hiddenTests?: string;
+  scenario?: string;
+  expectedAnswerPoints?: string[];
+};
+
+function QuestionDetail({ q }: { q: Question }) {
+  const parsed = useMemo<ParsedPayload | null>(() => {
+    try {
+      return JSON.parse(q.jsonPayload) as ParsedPayload;
+    } catch {
+      return null;
+    }
+  }, [q.jsonPayload]);
+
+  if (!parsed) {
+    return (
+      <pre className="overflow-x-auto rounded-xl border border-border bg-surface p-3 font-mono text-[11px] text-muted">
+        {q.jsonPayload}
+      </pre>
+    );
+  }
+
+  if (q.type === 'QCM') {
+    return (
+      <div className="space-y-2">
+        {(parsed.options ?? []).map((opt, i) => {
+          const correct = parsed.correctIndex === i;
+          return (
+            <div
+              key={i}
+              className={cn(
+                'flex items-start gap-3 rounded-xl border px-3 py-2 text-sm',
+                correct
+                  ? 'border-emerald-300 bg-emerald-50 text-foreground dark:border-emerald-900 dark:bg-emerald-950/30'
+                  : 'border-border bg-surface text-foreground',
+              )}
+            >
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                {String.fromCharCode(65 + i)}
+              </span>
+              <span className="flex-1">{opt}</span>
+              {correct && (
+                <Badge tone="success" variant="mono">
+                  Correct
+                </Badge>
+              )}
+            </div>
+          );
+        })}
+        {parsed.explanation && (
+          <p className="rounded-xl border border-dashed border-border bg-surface px-3 py-2 text-xs text-muted">
+            <span className="font-semibold text-foreground">Explication : </span>
+            {parsed.explanation}
+          </p>
+        )}
       </div>
-      <div className="min-w-0">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <Badge tone={tone} variant="mono">
-            {QUESTION_TYPE_LABELS[q.type]}
-          </Badge>
-          <span className="rounded-full border border-border bg-background-soft px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-muted">
-            difficulte {difficultyLabel}
+    );
+  }
+
+  if (q.type === 'CODE') {
+    const lang = (parsed.language?.toUpperCase() as 'PHP' | 'JS') ?? 'JS';
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Badge tone="accent">{lang}</Badge>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+            Squelette propose au candidat (a completer)
           </span>
         </div>
-        <p className="text-[15px] font-medium leading-6 text-foreground">
-          {q.statement || (
-            <em className="font-normal text-muted">Enonce disponible dans le payload.</em>
-          )}
-        </p>
+
+        {parsed.starterCode ? (
+          <div className="overflow-hidden rounded-xl border border-border">
+            <CodeEditor
+              language={lang}
+              value={parsed.starterCode}
+              onChange={() => {}}
+              height="220px"
+              readOnly
+            />
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-warning/40 bg-warning/5 p-3 text-xs text-warning">
+            Aucun starterCode genere.
+          </div>
+        )}
+
+        {parsed.hiddenTests && (
+          <details className="rounded-xl border border-border bg-surface">
+            <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground">
+              <FlaskConical className="h-3.5 w-3.5 text-accent" />
+              Tests caches (executes en sandbox)
+            </summary>
+            <div className="border-t border-border">
+              <CodeEditor
+                language={lang}
+                value={parsed.hiddenTests}
+                onChange={() => {}}
+                height="140px"
+                readOnly
+              />
+            </div>
+          </details>
+        )}
+
+        {parsed.explanation && (
+          <p className="rounded-xl border border-dashed border-border bg-surface px-3 py-2 text-xs text-muted">
+            <span className="font-semibold text-foreground">Explication : </span>
+            {parsed.explanation}
+          </p>
+        )}
       </div>
-    </article>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {parsed.scenario && (
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+            <Code2 className="h-3 w-3" />
+            Scenario
+          </div>
+          <p className="whitespace-pre-wrap text-sm text-foreground">
+            {parsed.scenario}
+          </p>
+        </div>
+      )}
+      {parsed.expectedAnswerPoints && parsed.expectedAnswerPoints.length > 0 && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-950/30">
+          <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-300">
+            <ListChecks className="h-3 w-3" />
+            Points attendus
+          </div>
+          <ul className="ml-4 list-disc space-y-1 text-sm text-foreground">
+            {parsed.expectedAnswerPoints.map((p, i) => (
+              <li key={i}>{p}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {parsed.explanation && (
+        <p className="rounded-xl border border-dashed border-border bg-surface px-3 py-2 text-xs text-muted">
+          <span className="font-semibold text-foreground">Explication : </span>
+          {parsed.explanation}
+        </p>
+      )}
+    </div>
   );
 }
 

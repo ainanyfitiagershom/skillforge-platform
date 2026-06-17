@@ -144,17 +144,27 @@ SERVER_PORT=8090
 # Secret JWT (peut rester sur la valeur de demo en local)
 JWT_SECRET=change-me-in-production-this-secret-must-be-at-least-32-characters-long
 
-# Provider IA : "mock" (defaut, gratuit) | "openai" | "claude"
+# Provider IA : "mock" (defaut local, gratuit) | "github" (GRATUIT, recommande POC)
+#               | "openai" (payant) | "claude" (payant)
 LLM_PROVIDER=mock
 
 # Cles API (seulement si vous changez de provider)
+# GitHub Models : GRATUIT, ideal pour le POC (PAT scope models:read)
+GITHUB_TOKEN=
+GITHUB_MODEL=openai/gpt-4o-mini
+
+# OpenAI : payant (~5 $ min recharge)
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4o-mini
+
+# Anthropic Claude : payant
 ANTHROPIC_API_KEY=
 CLAUDE_MODEL=claude-sonnet-4-5
 ```
 
-➡️ Voir `docs/GUIDE_API_KEYS.md` pour savoir comment obtenir une clé OpenAI ou Claude.
+➡️ Voir `docs/GUIDE_API_KEYS.md` pour savoir comment obtenir une clé.
+Pour le POC, **GitHub Models est recommandé** : c'est gratuit, juste un PAT
+GitHub avec le scope `models:read` suffit.
 
 ⚠️ Le `.env` est ignoré par Git. **Ne le committez jamais.**
 
@@ -359,7 +369,7 @@ Cochez au fur et à mesure :
 - [ ] Docker Engine + Compose installés et tournent
 - [ ] Client `psql` installé
 - [ ] IntelliJ IDEA installé
-- [ ] VS Code installé (avec les extensions Java + Spring Boot + ESLint + Prettier + Tailwind)
+- [ ] VS Code installé (avec les extensions Java + Spring Boot + ESLint + Prettier + Tailwind + ES7+ React snippets)
 - [ ] Repo cloné : `git clone https://github.com/ainanyfitiagershom/skillforge-platform.git`
 - [ ] Identité Git locale configurée (`ainanyfitiagershom` / `fitiagershom@yahoo.com`)
 - [ ] PostgreSQL démarré : `docker compose -f infra/docker-compose.yml up -d`

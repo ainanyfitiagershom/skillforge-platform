@@ -134,15 +134,15 @@ public class MockLlmClient implements LlmClient {
                     """);
             case CODE -> new GeneratedQuestion(
                     QuestionType.CODE,
-                    "[MOCK CODE " + index + "] Implementer une fonction lien a " + skillCode,
+                    "[MOCK CODE " + index + "] Vous devez implementer une fonction utilitaire en " + skillCode + ". Completez le squelette ci-dessous.",
                     difficulty,
                     List.of(skillCode),
                     """
                     {
                       "language": "PHP",
-                      "starterCode": "function solve($input) {\\n  // votre code ici\\n  return null;\\n}",
-                      "hiddenTests": "function testBasic() { assertEquals(42, solve(21)); }",
-                      "explanation": "Generation factice."
+                      "starterCode": "<?php\\n/**\\n * Double la valeur passee en parametre.\\n *\\n * @param int $n entier d entree\\n * @return int 2 * n\\n *\\n * Exemple : solve(21) doit retourner 42\\n */\\nfunction solve(int $n): int {\\n    // TODO: implementer ici\\n    return 0;\\n}\\n\\n// Exemple d appel pour debug :\\necho solve(21) . \\"\\\\n\\";",
+                      "hiddenTests": "<?php\\nassert(solve(21) === 42, 'Test 1: solve(21)');\\nassert(solve(0) === 0, 'Test 2: solve(0)');\\nassert(solve(-5) === -10, 'Test 3: solve(-5)');\\necho 'OK';",
+                      "explanation": "Generation factice : il suffit de retourner $n * 2."
                     }
                     """);
             case CAS_PRATIQUE -> new GeneratedQuestion(

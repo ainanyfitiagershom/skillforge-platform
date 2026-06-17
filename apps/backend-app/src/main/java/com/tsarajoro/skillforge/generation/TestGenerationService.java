@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tsarajoro.skillforge.domain.Question;
 import com.tsarajoro.skillforge.domain.QuestionStatus;
+import com.tsarajoro.skillforge.domain.Test;
 import com.tsarajoro.skillforge.llm.GenerationRequest;
 import com.tsarajoro.skillforge.llm.LlmClient;
 import com.tsarajoro.skillforge.llm.QuestionGenerationResult;
 import com.tsarajoro.skillforge.llm.QuestionGenerationResult.GeneratedQuestion;
+import com.tsarajoro.skillforge.repository.CandidateRepository;
 import com.tsarajoro.skillforge.repository.QuestionRepository;
+import com.tsarajoro.skillforge.test.TestCompositionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,16 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-/**
- * Orchestre la generation adaptative de questions par le LLM, puis les persiste en
- * statut PENDING_REVIEW pour validation manuelle par le recruteur.
- *
- * Note : les LLM renvoient parfois des chaines JSON mal echappees (sauts de ligne dans
- * du code, guillemets non echappes...). Pour eviter de planter PostgreSQL JSONB, on
- * passe chaque payload par un sanitizer Jackson qui le re-serialise proprement, ou,
- * en cas d'echec total, le stocke dans un objet d'erreur structure.
- */
 @Service
 public class TestGenerationService {
 
@@ -34,11 +29,18 @@ public class TestGenerationService {
 
     private final LlmClient llmClient;
     private final QuestionRepository questionRepo;
+    private final CandidateRepository candidateRepo;
+    private final TestCompositionService testCompositionService;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public TestGenerationService(LlmClient llmClient, QuestionRepository questionRepo) {
+    public TestGenerationService(LlmClient llmClient,
+                                  QuestionRepository questionRepo,
+                                  CandidateRepository candidateRepo,
+                                  TestCompositionService testCompositionService) {
         this.llmClient = llmClient;
         this.questionRepo = questionRepo;
+        this.candidateRepo = candidateRepo;
+        this.testCompositionService = testCompositionService;
     }
 
     @Transactional
@@ -57,14 +59,29 @@ public class TestGenerationService {
             persisted.add(questionRepo.save(q));
         }
 
-        return new GenerationOutput(persisted, result.llmProvider(), result.llmModel(),
-                result.tokensUsed(), result.costEur().toPlainString());
+        Test test = null;
+        if (request.candidateId() != null && !persisted.isEmpty()) {
+            String candidateLabel = candidateRepo.findById(request.candidateId())
+                    .map(c -> c.getDisplayName() != null ? c.getDisplayName() : c.getEmail())
+                    .orElse("candidat");
+            String testName = "Test " + request.profileCode() + " pour " + candidateLabel;
+            test = testCompositionService.compose(
+                    testName,
+                    60,
+                    request.candidateId(),
+                    request.profileCode(),
+                    persisted.stream().map(Question::getId).toList());
+        }
+
+        return new GenerationOutput(
+                persisted,
+                test != null ? test.getId() : null,
+                result.llmProvider(),
+                result.llmModel(),
+                result.tokensUsed(),
+                result.costEur().toPlainString());
     }
 
-    /**
-     * Re-serialise un payload JSON pour eviter les erreurs de parsing PostgreSQL JSONB.
-     * Si le JSON est invalide, on stocke un objet d'erreur structure (et on log un warning).
-     */
     private String sanitizeJsonPayload(String raw) {
         if (raw == null || raw.isBlank()) {
             return "{}";
@@ -87,6 +104,7 @@ public class TestGenerationService {
 
     public record GenerationOutput(
             List<Question> questions,
+            UUID testId,
             String llmProvider,
             String llmModel,
             int tokensUsed,

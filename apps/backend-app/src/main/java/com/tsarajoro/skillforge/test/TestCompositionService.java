@@ -34,7 +34,13 @@ public class TestCompositionService {
 
     @Transactional
     public Test compose(String name, int durationMinutes, List<UUID> orderedQuestionIds) {
-        Test test = testRepo.save(Test.newTest(name, durationMinutes));
+        return compose(name, durationMinutes, null, null, orderedQuestionIds);
+    }
+
+    @Transactional
+    public Test compose(String name, int durationMinutes, UUID candidateId,
+                        String profileCode, List<UUID> orderedQuestionIds) {
+        Test test = testRepo.save(Test.newTest(name, durationMinutes, candidateId, profileCode));
         int position = 1;
         for (UUID qId : orderedQuestionIds) {
             // Validation : la question existe

@@ -11,10 +11,10 @@ SkillForge est une plateforme web sécurisée d'évaluation technique des candid
 ## Stack technique
 
 - **Backend** : Java 21 + Spring Boot 3
-- **Frontend** : React 19 + TypeScript + Vite + Tailwind CSS + Shadcn/UI
+- **Frontend** : React 19 + TypeScript + Vite + Tailwind CSS (composants custom)
 - **Base de données** : PostgreSQL 16
 - **Sandbox** : Docker + Docker Java API + seccomp
-- **IA** : Claude API (Anthropic)
+- **IA** : Multi-LLM configurable — 4 providers : `mock` (dev), `github` (GitHub Models, gratuit), `openai` (gpt-4o-mini), `claude` (Anthropic)
 - **Parsing CV** : Apache PDFBox, Apache POI, Tesseract (OCR)
 - **CI/CD** : GitHub Actions
 
@@ -88,7 +88,7 @@ Scrum, sprints de 2 semaines, 8 sprints sur 4 mois (mai à septembre 2026).
 | Document | Pour quoi faire |
 |---|---|
 | [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) | Installer et démarrer SkillForge sur un nouveau poste |
-| [`docs/GUIDE_API_KEYS.md`](docs/GUIDE_API_KEYS.md) | Obtenir et configurer une clé API OpenAI ou Claude |
+| [`docs/GUIDE_API_KEYS.md`](docs/GUIDE_API_KEYS.md) | Obtenir et configurer une clé API LLM (GitHub Models gratuit, OpenAI, Claude) |
 | [`docs/04-tests/fiche-tests-manuels.md`](docs/04-tests/fiche-tests-manuels.md) | Liste exhaustive des tests à passer (29 déjà validés + à venir) |
 | [`docs/02-conception/`](docs/02-conception/) | État de l'art, étude existant, cadrage V1, UML, MCD, architecture |
 | [`docs/03-poc/`](docs/03-poc/) | Rapports des Proofs of Concept |

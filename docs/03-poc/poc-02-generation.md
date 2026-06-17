@@ -19,11 +19,12 @@ Démontrer que l'IA est capable de **générer des questions techniques de quali
 | Brique | Implémentation |
 |---|---|
 | Interface `LlmClient` | Méthode `generateQuestions(GenerationRequest)` |
-| Implémentations | `MockLlmClient` (factice, gratuite), `OpenAiLlmClient` (réelle, GPT-4o-mini), `ClaudeLlmClient` (squelette) |
-| Endpoint REST | `POST /tests/generate` |
+| Implémentations | **4 clients** : `MockLlmClient` (factice, gratuite), `OpenAiLlmClient` (gpt-4o-mini), `GitHubModelsLlmClient` (gpt-4o-mini via GitHub Models, gratuit), `ClaudeLlmClient` (Anthropic) |
+| Endpoint REST | `POST /tests/generate` — accepte un `candidateId` optionnel ; si fourni, la génération crée automatiquement un `Test` lié au candidat (`tests.candidate_id`) et peuple `test_compositions` |
 | Persistance | Questions stockées en `PENDING_REVIEW` dans la banque |
-| Composition | `POST /tests` + `POST /tests/{id}/invite` |
+| Composition | Soit automatique (via `POST /tests/generate` avec `candidateId`), soit manuelle (`POST /tests` + `POST /tests/{id}/invite`) |
 | Accès candidat public | `GET /invitations/{token}` (payload nettoyé : pas de `correctIndex`, pas de `hiddenTests`) |
+| Revue groupée | `GET /review/by-candidate` — renvoie les questions groupées par Test + Candidate pour la page de validation |
 
 ### Format JSON de requête
 
@@ -104,8 +105,9 @@ Le POC est validé si simultanément :
 | Validations Jakarta (skillCodes, difficulty, types) | ✅ Testées |
 | Persistance en PENDING_REVIEW | ✅ Vérifié en BDD |
 | Composition + invitation + accès candidat | ✅ Testé bout-en-bout |
-| Génération **réelle** avec OpenAI | ⏳ En attente de la clé `OPENAI_API_KEY` |
-| Génération réelle avec Claude | ⏳ Implémentation `ClaudeLlmClient.generateQuestions` à finaliser |
+| Génération **réelle** avec GitHub Models (gpt-4o-mini) | ✅ Testé bout-en-bout (provider `github`, gratuit pour le POC) |
+| Génération **réelle** avec OpenAI (gpt-4o-mini) | ⏳ Switch trivial via `LLM_PROVIDER=openai` + `OPENAI_API_KEY` |
+| Génération réelle avec Claude | ⏳ `ClaudeLlmClient.generateQuestions` implémenté, à valider avec une clé `ANTHROPIC_API_KEY` |
 | Validation par 2-3 dev seniors | ⏳ À planifier avec le tuteur entreprise |
 | Rapport final chiffré | ⏳ À rédiger après exécution |
 
