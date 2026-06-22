@@ -17,6 +17,10 @@ import {
   Mail,
   Calendar,
   BriefcaseBusiness,
+  Send,
+  Link2,
+  Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -34,6 +38,38 @@ export function ReviewQuestionsPage() {
   const [editing, setEditing] = useState<{ q: ReviewQuestion; testId: string } | null>(null);
   const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
   const autoSelectedRef = useRef(false);
+
+  const [invitingTestId, setInvitingTestId] = useState<string | null>(null);
+  const [invitation, setInvitation] = useState<{ token: string; expiresAt: string } | null>(null);
+  const [inviting, setInviting] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
+  const openInvite = (testId: string) => {
+    setInvitingTestId(testId);
+    setInvitation(null);
+    setInviteError(null);
+  };
+
+  const closeInvite = () => {
+    setInvitingTestId(null);
+    setInvitation(null);
+    setInviteError(null);
+    setInviting(false);
+  };
+
+  const generateInvitation = async () => {
+    if (!invitingTestId) return;
+    setInviting(true);
+    setInviteError(null);
+    try {
+      const res = await api.inviteCandidate(invitingTestId);
+      setInvitation({ token: res.token, expiresAt: res.expiresAt });
+    } catch (err) {
+      setInviteError(err instanceof ApiError ? err.message : 'Erreur lors de la creation de l invitation');
+    } finally {
+      setInviting(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -199,6 +235,7 @@ export function ReviewQuestionsPage() {
             onBulkApprove={() => bulkApprove(current.questions)}
             onRemove={remove}
             onEdit={(q) => setEditing({ q, testId: current.testId })}
+            onInvite={() => openInvite(current.testId)}
           />
         ) : (
           <div className="flex flex-1 items-center justify-center px-6 text-center">
@@ -215,6 +252,18 @@ export function ReviewQuestionsPage() {
           onChange={(q) => setEditing({ ...editing, q })}
           onCancel={() => setEditing(null)}
           onSave={saveEdit}
+        />
+      )}
+
+      {invitingTestId && current && (
+        <InvitationModal
+          candidateEmail={current.candidateEmail}
+          candidateName={current.candidateName}
+          invitation={invitation}
+          inviting={inviting}
+          error={inviteError}
+          onGenerate={generateInvitation}
+          onClose={closeInvite}
         />
       )}
     </div>
@@ -297,6 +346,7 @@ function CandidateDetailPanel({
   onBulkApprove,
   onRemove,
   onEdit,
+  onInvite,
 }: {
   group: CandidateGroup;
   onApprove: (q: ReviewQuestion) => void;
@@ -304,6 +354,7 @@ function CandidateDetailPanel({
   onBulkApprove: () => void;
   onRemove: (q: ReviewQuestion) => void;
   onEdit: (q: ReviewQuestion) => void;
+  onInvite: () => void;
 }) {
   const counts = useMemo(() => {
     const c = { pending: 0, approved: 0, rejected: 0 };
@@ -363,12 +414,20 @@ function CandidateDetailPanel({
             </div>
           </div>
 
-          {counts.pending > 0 && (
-            <Button variant="cta" size="md" onClick={onBulkApprove}>
-              <Check className="h-3.5 w-3.5" />
-              Tout approuver ({counts.pending})
-            </Button>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {counts.pending > 0 && (
+              <Button variant="cta" size="md" onClick={onBulkApprove}>
+                <Check className="h-3.5 w-3.5" />
+                Tout approuver ({counts.pending})
+              </Button>
+            )}
+            {group.questions.length > 0 && (
+              <Button variant="primary" size="md" onClick={onInvite}>
+                <Send className="h-3.5 w-3.5" />
+                Envoyer l'invitation
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -724,6 +783,168 @@ function QuestionPayloadPreview({
           {parsed.explanation}
         </p>
       )}
+    </div>
+  );
+}
+
+function InvitationModal({
+  candidateEmail,
+  candidateName,
+  invitation,
+  inviting,
+  error,
+  onGenerate,
+  onClose,
+}: {
+  candidateEmail: string;
+  candidateName: string | null;
+  invitation: { token: string; expiresAt: string } | null;
+  inviting: boolean;
+  error: string | null;
+  onGenerate: () => void;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const link = invitation
+    ? `${window.location.origin}/candidate/passation/${invitation.token}`
+    : '';
+
+  const expiresLabel = invitation
+    ? new Date(invitation.expiresAt).toLocaleString('fr-FR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '';
+
+  const handleCopy = async () => {
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard refuse en non-HTTPS, l utilisateur peut selectionner manuellement */
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-md">
+      <Card variant="elevated" className="w-full max-w-xl animate-fade-in-up">
+        <CardHeader>
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Send className="h-4 w-4 text-accent" />
+              Envoyer l'invitation
+            </CardTitle>
+            <CardDescription>
+              {invitation
+                ? 'Lien genere — copiez-le et transmettez-le au candidat par email.'
+                : 'Un lien unique sera cree pour ce test, valable 24 heures.'}
+            </CardDescription>
+          </div>
+        </CardHeader>
+
+        <CardBody className="space-y-5">
+          <div className="rounded-2xl border border-border bg-background-soft px-4 py-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted">
+              Destinataire
+            </div>
+            <div className="mt-1 text-sm font-medium text-foreground">
+              {candidateName ?? candidateEmail}
+            </div>
+            {candidateName && (
+              <div className="text-xs text-muted">{candidateEmail}</div>
+            )}
+          </div>
+
+          {error && (
+            <div className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">
+              {error}
+            </div>
+          )}
+
+          {invitation ? (
+            <>
+              <div>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                  Lien du candidat
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={link}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="block flex-1 rounded-xl border border-border bg-surface px-4 py-2.5 font-mono text-xs text-foreground focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
+                  />
+                  <Button
+                    type="button"
+                    variant={copied ? 'primary' : 'secondary'}
+                    size="md"
+                    onClick={handleCopy}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-3.5 w-3.5" />
+                        Copie
+                      </>
+                    ) : (
+                      <>
+                        <Link2 className="h-3.5 w-3.5" />
+                        Copier
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted">
+                  <Calendar className="h-3 w-3" />
+                  Expire le {expiresLabel}
+                </p>
+              </div>
+
+              <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs font-medium text-accent-strong hover:underline"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Tester le lien dans un nouvel onglet
+              </a>
+            </>
+          ) : (
+            <p className="text-sm text-muted">
+              En cliquant sur "Generer le lien", le systeme cree une invitation
+              a usage unique. Le lien ne fonctionnera que pour ce test et
+              expirera dans 24 heures.
+            </p>
+          )}
+        </CardBody>
+
+        <div className="flex justify-end gap-2 px-6 pb-6">
+          <Button variant="ghost" onClick={onClose}>
+            {invitation ? 'Fermer' : 'Annuler'}
+          </Button>
+          {!invitation && (
+            <Button variant="cta" onClick={onGenerate} disabled={inviting}>
+              {inviting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Generation…
+                </>
+              ) : (
+                <>
+                  <Send className="h-3.5 w-3.5" />
+                  Generer le lien
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </Card>
     </div>
   );
 }
