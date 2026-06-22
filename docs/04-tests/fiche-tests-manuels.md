@@ -448,3 +448,255 @@ Recharger la page (F5) en cours de test → vérifier que les réponses sauvegar
 #### 14.10 ✅ Parsing PHPUnit et Jest (tests unitaires `SandboxRunner`)
 Lancer `mvn test` dans `apps/backend-sandbox/` :
 **Attendu :** 6 tests verts dans `TestResultParsingTest` (3 cas PHPUnit, 3 cas Jest)
+
+---
+
+## 15. Tests Sprint 6 — Invitation + Auto-grading + Vue résultats + Compte rendu IA (à tester chez vous)
+
+Ces tests valident les **3 tâches déjà terminées du Sprint 6** :
+- Tâche 1 : bouton « Envoyer l'invitation » sur la page Review
+- Tâche 2 : auto-grading par type + page Résultats (liste + détail)
+- Tâche 3 : compte rendu IA généré automatiquement + export PDF
+
+### Pré-requis
+
+```bash
+# Démarrer la stack
+docker start skillforge-postgres
+cd apps/backend-app && set -a && source .env && set +a && nohup mvn -o -q -DskipTests spring-boot:run > /tmp/sf-back.log 2>&1 &
+cd apps/frontend-web && nohup npm run dev > /tmp/sf-front.log 2>&1 &
+```
+
+Vérifier que les migrations Flyway V2, V3 et V4 se sont appliquées :
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge \
+  -c "SELECT version, description FROM flyway_schema_history ORDER BY installed_rank;"
+```
+**Attendu :** 4 lignes : V1 init, V2 test link candidate, V3 answer details, V4 report llm meta.
+
+### Bouton « Envoyer l'invitation » (Tâche 1)
+
+#### 15.1 🏠 Le bouton apparaît dans le bon contexte
+1. Se connecter en tant que recruteur sur `/login`
+2. Aller sur `/app/new-test`, uploader un CV, valider les compétences, générer un test (qui doit produire ≥1 question)
+3. Aller sur `/app/review`, sélectionner le candidat dans la sidebar
+4. Dans le header du panneau droit, le bouton **« Envoyer l'invitation »** (icône Send, bleu) doit être visible à côté de « Tout approuver »
+
+**Attendu :** le bouton n'apparaît que si `group.questions.length > 0`.
+
+#### 15.2 🏠 Modal d'invitation — état initial
+Cliquer sur **« Envoyer l'invitation »**.
+**Attendu :**
+- Modal qui s'ouvre avec un backdrop flouté
+- Titre « Envoyer l'invitation »
+- Bloc destinataire affichant le nom + email du candidat sélectionné
+- Texte explicatif : « Un lien unique sera créé pour ce test, valable 24 heures »
+- Boutons **Annuler** + **Générer le lien** (CTA noir)
+
+#### 15.3 🏠 Génération du lien et affichage
+Cliquer sur **Générer le lien**.
+**Attendu :**
+- Spinner « Génération… » brièvement, bouton désactivé
+- Un input read-only apparaît avec un lien `http://localhost:5173/candidate/passation/{token}`
+- Bouton **Copier** à droite de l'input
+- Mention « Expire le {date} » avec une vraie date à J+1
+- Lien cliquable « Tester le lien dans un nouvel onglet »
+
+#### 15.4 🏠 Copie du lien
+Cliquer **Copier** → bouton devient vert avec « Copié ». Coller dans un autre champ pour vérifier le contenu du presse-papier.
+
+#### 15.5 🏠 Vérification en base
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge \
+  -c "SELECT token, expires_at, used FROM invitations ORDER BY expires_at DESC LIMIT 1;"
+```
+**Attendu :** une ligne avec `used = false`, expiration ≈ now() + 24h.
+
+### Auto-grading par type (Tâche 2)
+
+#### 15.6 🏠 Pipeline complet bout-en-bout
+1. Approuver toutes les questions du test depuis `/app/review`
+2. Cliquer **Envoyer l'invitation** + copier le lien
+3. Ouvrir le lien en **navigation privée**
+4. Sur la page Welcome candidat : saisir email + nom, cliquer **Commencer le test**
+5. Répondre à **tous types** de questions :
+   - QCM : cocher au moins 1 option
+   - CODE : modifier le starterCode et cliquer **Exécuter** au moins 1 fois
+   - CAS_PRATIQUE : saisir un texte (≥30 caractères pour ne pas tomber sur score=30 mock)
+6. Cliquer **Soumettre le test**
+
+**Attendu :** page Done avec :
+- Anneau de score (ScoreRing) animé avec un chiffre entre 0 et 100
+- 3 mini-stats (QCM X/Y · Code X/Y · Cas X/Y), couleurs vert/orange/rouge selon le ratio
+- Encart « Et après ? » mentionnant le compte rendu IA en cours
+- Mention RGPD
+
+#### 15.7 🏠 Vérification en base des scores
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge -c "
+  SELECT q.type, a.score, a.qcm_selected_index, a.last_tests_passed, a.last_tests_total,
+         LEFT(a.grading_explanation, 80) AS explanation
+  FROM answers a
+  JOIN questions q ON q.id = a.question_id
+  JOIN passations p ON p.id = a.passation_id
+  WHERE p.id = (SELECT id FROM passations ORDER BY submitted_at DESC LIMIT 1)
+  ORDER BY q.type;"
+```
+**Attendu :**
+- QCM : `score` = 100.00 si bonne réponse, 0.00 sinon ; `qcm_selected_index` rempli ; explanation type « Bonne réponse » ou « Mauvaise réponse… »
+- CODE : `score` ≈ ratio testsPassed/testsTotal × 100 ; `last_tests_*` remplis ; explanation type « X / Y tests cachés réussis »
+- CAS_PRATIQUE : `score` entre 0 et 100 ; explanation = verdict LLM (1-2 phrases) OU « Évaluation IA indisponible » si le LLM a échoué
+
+#### 15.8 🏠 Vérification du score global pondéré
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge -c "
+  SELECT global_score, submitted_at FROM passations ORDER BY submitted_at DESC LIMIT 1;"
+```
+**Attendu :** `global_score` non-null, entre 0 et 100, cohérent avec la moyenne pondérée 30% QCM + 50% CODE + 20% CAS.
+
+### Vue résultats recruteur (Tâche 2)
+
+#### 15.9 🏠 Onglet « Résultats » dans la nav top
+Revenir sur l'app recruteur et regarder la pill nav top.
+**Attendu :** 4e onglet **« Résultats »** présent et cliquable.
+
+#### 15.10 🏠 Page liste des passations
+Cliquer **Résultats**.
+**Attendu :**
+- Titre « Performances des candidats »
+- Compteur « N terminée(s) · M en cours »
+- La passation que vous venez de soumettre apparaît en tête de liste avec :
+  - Avatar coloré avec initiales du candidat
+  - Nom + email
+  - Badge **Soumis** (vert)
+  - Profil + date + email visibles
+  - **ScoreRing** à droite (anneau coloré selon le score)
+  - Chevron à droite
+- Au survol : translation légère + ombre renforcée
+
+#### 15.11 🏠 État vide
+Pour tester l'empty state, supprimer toutes les passations en base (ou faire un compte recruteur frais).
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge -c "DELETE FROM passations;"
+```
+**Attendu :** page liste affiche une grosse icône Inbox + texte « Aucune passation enregistrée » + lien vers `/app/review`.
+(Pensez à re-créer une passation pour les tests suivants !)
+
+#### 15.12 🏠 Page détail d'une passation
+Cliquer sur la carte du candidat dans la liste.
+**Attendu :**
+- URL `/app/results/{passationId}`
+- Lien « ← Retour aux résultats » en haut
+- **Card hero** avec :
+  - Avatar coloré + nom + email + profil + date soumission
+  - Badges (Soumis, et si applicable Risque fraude)
+  - **3 StatChips** : QCM N/M, Code N/M, Cas N/M (couleurs selon ratio)
+  - **ScoreRing géant** à droite (150 px)
+- Section **Compte rendu IA** (voir tests 15.14+)
+- Liste des questions cliquables
+
+#### 15.13 🏠 Dépliage des questions
+Cliquer sur le numéro / l'énoncé d'une question pour la déplier.
+**Attendu selon le type :**
+- **QCM** : liste des options avec :
+  - Bonne réponse encadrée en **vert** + badge « Bonne réponse »
+  - Réponse du candidat marquée (badge « Réponse candidat » + couleur vert si correcte / rouge si incorrecte)
+  - Explication tirée du payload
+- **CODE** : badge langage + badge « X/Y tests » + **Monaco read-only** avec le code soumis par le candidat + `<details>` repliable « Sortie sandbox » (stdout/stderr de la dernière exécution) + `<details>` « Tests cachés utilisés »
+- **CAS_PRATIQUE** : bloc scenario + bloc « Réponse du candidat » (texte) + **encart accent « Verdict IA »** avec l'évaluation + liste des points attendus
+
+### Compte rendu IA + Export PDF (Tâche 3)
+
+#### 15.14 🏠 Génération automatique à la soumission
+Après une nouvelle passation soumise (test 15.6), vérifier dans les logs backend :
+```bash
+grep "Report: genere" /tmp/sf-back.log | tail -3
+```
+**Attendu :** ligne du type :
+```
+Report: genere pour passation {uuid} en {ms} ms (provider=github, tokens=...)
+```
+
+Vérifier en base :
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge -c "
+  SELECT recommendation, LENGTH(summary), llm_provider, tokens_used, cost_eur
+  FROM reports ORDER BY generated_at DESC LIMIT 1;"
+```
+**Attendu :** une ligne avec `recommendation` parmi HIRE/INTERVIEW/REJECT, `summary` ≥ 50 caractères, `llm_provider` = `github` ou `mock`, `tokens_used` > 0 (si vrai LLM).
+
+#### 15.15 🏠 Affichage du compte rendu sur la page détail
+Sur `/app/results/{id}`, sous la card hero.
+**Attendu :**
+- Card **Compte rendu IA** avec :
+  - **Bandeau verdict coloré** en haut (vert HIRE / orange INTERVIEW / rouge REJECT) avec icône (Check/HelpCircle/X)
+  - Label de la recommandation lisible « À embaucher / À approfondir en entretien / À écarter »
+  - Boutons **Régénérer** (ghost) + **Exporter PDF** (CTA noir) à droite
+  - **Résumé exécutif** (2-3 phrases)
+  - 2 colonnes côte à côte :
+    - « Points forts » avec icône TrendingUp verte + liste de bullets dans des mini-cards vertes
+    - « Points faibles » avec icône TrendingDown rouge + liste dans des mini-cards rouges
+  - Footer meta : « Généré le {date} · par {provider}/{model} · {N} tokens »
+
+#### 15.16 🏠 Régénération du rapport
+Cliquer **Régénérer**.
+**Attendu :** spinner sur le bouton ; après ~3-5 s le contenu se rafraîchit avec un nouveau résumé / nouvelles bullets (le LLM est non-déterministe donc le verdict peut changer). Date « Généré le » mise à jour.
+
+#### 15.17 🏠 Export PDF
+Cliquer **Exporter PDF**.
+**Attendu :**
+- Un fichier `skillforge-rapport-{slug-candidat}-{YYYY-MM-DD}.pdf` se télécharge
+- Le PDF contient 1-2 pages A4 avec :
+  - En-tête « SkillForge » à gauche + « Compte rendu d'évaluation technique » à droite
+  - Identité candidat (nom, email, profil, date passation)
+  - **Bloc gris** « SCORE GLOBAL » avec score en gros + 3 mini-stats à droite (QCM/Code/Cas)
+  - **Bandeau coloré** (couleur du verdict) avec « VERDICT : À EMBAUCHER » (ou autre)
+  - Section « Résumé exécutif »
+  - Section « Points forts » (puces noires)
+  - Section « Points faibles » (puces noires)
+  - Footer en bas de chaque page : « Généré par {provider}/{model} le {date} · SkillForge POC M2 MBDS · {N/M} »
+
+#### 15.18 🏠 Robustesse : LLM down
+Pour simuler une panne LLM, modifier temporairement `.env` :
+```bash
+# Mettre un GITHUB_TOKEN invalide
+sed -i 's/^GITHUB_TOKEN=.*/GITHUB_TOKEN=ghp_invalid/' apps/backend-app/.env
+# Redémarrer le backend
+```
+
+Refaire une passation bout-en-bout (test 15.6).
+**Attendu :**
+- La passation se finalise quand même (page Done avec score affiché)
+- Logs backend : `WARN Generation du compte rendu IA en echec pour passation ...`
+- Sur `/app/results/{id}` : la section Compte rendu affiche un encart amber « Compte rendu IA indisponible » avec un bouton **Générer le compte rendu** manuel
+- Restaurer le vrai token + cliquer Générer manuellement → le rapport se génère
+
+#### 15.19 🏠 Page candidat — encart « Et après ? »
+Après une soumission, sur `/candidate/passation/{token}/done`.
+**Attendu :** sous la card score, un nouvel encart avec icône Sparkles, label « Et après ? » et texte mentionnant la synthèse IA en cours. Le candidat ne voit JAMAIS le contenu du rapport (anti-biais RH).
+
+### Checklist récapitulative Sprint 6
+
+| # | Test | Statut |
+|---|------|--------|
+| 15.1 | Bouton « Envoyer l'invitation » visible | 🏠 |
+| 15.2 | Modal d'invitation — état initial | 🏠 |
+| 15.3 | Génération du lien | 🏠 |
+| 15.4 | Copie du lien | 🏠 |
+| 15.5 | Vérification invitation en base | 🏠 |
+| 15.6 | Pipeline complet bout-en-bout | 🏠 |
+| 15.7 | Scores stockés par type en base | 🏠 |
+| 15.8 | Score global pondéré | 🏠 |
+| 15.9 | Onglet « Résultats » présent | 🏠 |
+| 15.10 | Liste des passations | 🏠 |
+| 15.11 | Empty state | 🏠 |
+| 15.12 | Page détail (hero + ScoreRing) | 🏠 |
+| 15.13 | Dépliage questions (QCM/CODE/CAS) | 🏠 |
+| 15.14 | Génération auto du rapport | 🏠 |
+| 15.15 | Affichage du rapport | 🏠 |
+| 15.16 | Régénération du rapport | 🏠 |
+| 15.17 | Export PDF | 🏠 |
+| 15.18 | Robustesse LLM down | 🏠 |
+| 15.19 | Encart « Et après ? » côté candidat | 🏠 |
+
+**À cocher en ✅ au fur et à mesure que vous validez chaque test.**

@@ -1,13 +1,28 @@
 import { useLocation } from 'react-router-dom';
 import { Card, CardBody } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { ScoreRing } from '@/components/ScoreRing';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ScoreBreakdownView } from '@/lib/api';
 import { CheckCircle2, Sparkles, Lock } from 'lucide-react';
+import { cn } from '@/lib/cn';
+
+type DoneState = {
+  score?: number | string | null;
+  breakdown?: ScoreBreakdownView | null;
+};
+
+function parseScore(v: number | string | null | undefined): number | null {
+  if (v == null) return null;
+  const n = typeof v === 'number' ? v : parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+}
 
 export function CandidateDonePage() {
   const location = useLocation();
-  const rawScore = (location.state as { score?: number | string } | null)?.score;
-  const score = typeof rawScore === 'string' ? parseFloat(rawScore) : rawScore;
+  const state = (location.state as DoneState | null) ?? {};
+  const score = parseScore(state.score);
+  const breakdown = state.breakdown ?? null;
 
   return (
     <div className="min-h-screen bg-app-gradient text-foreground">
@@ -52,34 +67,58 @@ export function CandidateDonePage() {
           </p>
         </div>
 
-        {score !== null && score !== undefined && !Number.isNaN(score) && (
+        {score !== null && (
           <Card
             variant="elevated"
             className="w-full animate-fade-in-up p-8"
             style={{ animationDelay: '0.2s' } as React.CSSProperties}
           >
-            <CardBody>
-              <div className="mb-2 flex items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+            <CardBody className="text-center">
+              <div className="mb-3 flex items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
                 <Sparkles className="h-3 w-3 text-accent" />
                 Score indicatif
               </div>
-              <div className="font-display text-6xl font-bold tracking-tighter text-foreground">
-                {Math.round(score * 100)}
-                <span className="text-3xl text-muted">%</span>
+              <div className="flex justify-center">
+                <ScoreRing score={score} size={160} strokeWidth={14} label="Score" />
               </div>
-              <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-border">
-                <div
-                  className="h-full rounded-full bg-accent-gradient transition-all duration-1000"
-                  style={{ width: `${Math.round(score * 100)}%` }}
-                />
-              </div>
-              <p className="mt-3 text-xs text-muted">
-                Note brute des questions automatisables. Le recruteur ajoutera
-                son evaluation qualitative.
+
+              {breakdown && (
+                <div className="mt-6 grid grid-cols-3 gap-3">
+                  {breakdown.qcmTotal > 0 && (
+                    <Stat label="QCM" ok={breakdown.qcmPassed} total={breakdown.qcmTotal} />
+                  )}
+                  {breakdown.codeTotal > 0 && (
+                    <Stat label="Code" ok={breakdown.codePassed} total={breakdown.codeTotal} />
+                  )}
+                  {breakdown.casTotal > 0 && (
+                    <Stat label="Cas" ok={breakdown.casPassed} total={breakdown.casTotal} />
+                  )}
+                </div>
+              )}
+
+              <p className="mt-5 text-xs text-muted">
+                Score automatique base sur les questions automatisables et l'evaluation IA des cas
+                pratiques. Le recruteur ajoutera son avis qualitatif.
               </p>
             </CardBody>
           </Card>
         )}
+
+        <div
+          className="animate-fade-in-up max-w-md rounded-2xl border border-border bg-surface/80 px-5 py-4 text-left backdrop-blur-md"
+          style={{ animationDelay: '0.25s' } as React.CSSProperties}
+        >
+          <div className="mb-1 flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+              Et apres ?
+            </span>
+          </div>
+          <p className="text-sm text-foreground">
+            Votre evaluation est en cours de synthese par notre IA. Le recruteur
+            recevra un compte rendu detaille et vous recontactera prochainement.
+          </p>
+        </div>
 
         <div
           className="flex animate-fade-in-up items-center gap-3 rounded-full border border-border bg-surface/80 px-4 py-2 backdrop-blur-md"
@@ -90,6 +129,25 @@ export function CandidateDonePage() {
             Vos donnees seront purgees apres 12 mois conformement au RGPD.
           </p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, ok, total }: { label: string; ok: number; total: number }) {
+  const ratio = total === 0 ? 0 : ok / total;
+  const tone =
+    ratio >= 0.75
+      ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-300'
+      : ratio >= 0.5
+        ? 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-300'
+        : 'border-rose-300 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-300';
+  return (
+    <div className={cn('rounded-2xl border px-3 py-2', tone)}>
+      <div className="font-mono text-[10px] uppercase tracking-wider opacity-80">{label}</div>
+      <div className="mt-0.5 font-display text-lg font-bold tracking-tight">
+        {ok}
+        <span className="text-sm opacity-60"> / {total}</span>
       </div>
     </div>
   );
