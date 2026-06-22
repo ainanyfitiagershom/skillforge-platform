@@ -81,7 +81,7 @@ export function CandidatePassationPage() {
       const final = await api.candidateSubmit(passationId);
       sessionStorage.removeItem(`skillforge.passation.${token}`);
       navigate(`/candidate/passation/${token}/done`, {
-        state: { score: final.globalScore },
+        state: { score: final.globalScore, breakdown: final.scoreBreakdown },
       });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erreur de soumission');

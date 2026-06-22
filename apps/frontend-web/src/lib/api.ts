@@ -130,6 +130,21 @@ export const api = {
       method: 'POST',
     }),
 
+  listPassations: () =>
+    request<PassationSummary[]>('/passations'),
+
+  getPassationDetail: (passationId: string) =>
+    request<PassationDetail>(`/passations/${passationId}`),
+
+  getReport: (passationId: string) =>
+    request<ReportView | null>(`/passations/${passationId}/report`).catch((err) => {
+      if (err instanceof ApiError && err.status === 404) return null;
+      throw err;
+    }),
+
+  regenerateReport: (passationId: string) =>
+    request<ReportView>(`/passations/${passationId}/report/regenerate`, { method: 'POST' }),
+
   // ---------- Candidat (endpoints publics) ----------
 
   candidateResolveInvitation: (token: string) =>
@@ -188,15 +203,24 @@ export type CandidateInvitation = {
   questions: CandidateQuestionView[];
 };
 
+export type ScoreBreakdownView = {
+  qcmPassed: number;
+  qcmTotal: number;
+  codePassed: number;
+  codeTotal: number;
+  casPassed: number;
+  casTotal: number;
+};
+
 export type CandidatePassation = {
   id: string;
   invitationId: string;
   candidateId: string;
   startedAt: string;
   submittedAt: string | null;
-  // Jackson serialise BigDecimal en number JSON (peut etre string si grand nombre)
   globalScore: number | string | null;
   fraudRiskScore: number;
+  scoreBreakdown: ScoreBreakdownView | null;
 };
 
 export type RunCodeResult = {
@@ -288,4 +312,70 @@ export type CandidateGroup = {
   candidateEmail: string;
   candidateName: string | null;
   questions: ReviewQuestion[];
+};
+
+export type PassationSummary = {
+  passationId: string;
+  startedAt: string;
+  submittedAt: string | null;
+  globalScore: number | string | null;
+  fraudRiskScore: number;
+  candidateId: string;
+  candidateEmail: string;
+  candidateName: string | null;
+  testId: string;
+  testName: string;
+  profileCode: string;
+  testCreatedAt: string;
+};
+
+export type AnswerDetail = {
+  id: string | null;
+  questionId: string;
+  type: QuestionType;
+  statement: string;
+  difficulty: number;
+  jsonPayload: string;
+  position: number;
+  answerText: string | null;
+  submittedCode: string | null;
+  score: number | string | null;
+  qcmSelectedIndex: number | null;
+  lastTestsPassed: number | null;
+  lastTestsTotal: number | null;
+  lastStdout: string | null;
+  lastStderr: string | null;
+  gradingExplanation: string | null;
+};
+
+export type PassationDetail = {
+  passationId: string;
+  startedAt: string;
+  submittedAt: string | null;
+  globalScore: number | string | null;
+  fraudRiskScore: number;
+  candidateId: string;
+  candidateEmail: string;
+  candidateName: string | null;
+  testId: string;
+  testName: string;
+  profileCode: string;
+  testCreatedAt: string;
+  answers: AnswerDetail[];
+};
+
+export type Recommendation = 'HIRE' | 'INTERVIEW' | 'REJECT';
+
+export type ReportView = {
+  id: string;
+  passationId: string;
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  recommendation: Recommendation;
+  generatedAt: string;
+  llmProvider: string | null;
+  llmModel: string | null;
+  tokensUsed: number;
+  costEur: number | string;
 };

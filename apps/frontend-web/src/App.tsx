@@ -4,6 +4,8 @@ import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { NewTestPage } from '@/pages/NewTestPage';
 import { ReviewQuestionsPage } from '@/pages/ReviewQuestionsPage';
+import { ResultsListPage } from '@/pages/ResultsListPage';
+import { ResultDetailPage } from '@/pages/ResultDetailPage';
 import { CandidateWelcomePage } from '@/pages/CandidateWelcomePage';
 import { CandidatePassationPage } from '@/pages/CandidatePassationPage';
 import { CandidateDonePage } from '@/pages/CandidateDonePage';
@@ -34,6 +36,8 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="new-test" element={<NewTestPage />} />
         <Route path="review" element={<ReviewQuestionsPage />} />
+        <Route path="results" element={<ResultsListPage />} />
+        <Route path="results/:passationId" element={<ResultDetailPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

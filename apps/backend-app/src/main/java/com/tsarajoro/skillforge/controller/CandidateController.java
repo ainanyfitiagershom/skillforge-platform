@@ -2,6 +2,8 @@ package com.tsarajoro.skillforge.controller;
 
 import com.tsarajoro.skillforge.candidate.CandidatePassationService;
 import com.tsarajoro.skillforge.candidate.CandidatePassationService.RunCodeResult;
+import com.tsarajoro.skillforge.candidate.CandidatePassationService.ScoreBreakdown;
+import com.tsarajoro.skillforge.candidate.CandidatePassationService.SubmitResult;
 import com.tsarajoro.skillforge.domain.Passation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -16,15 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-/**
- * Endpoints PUBLICS pour le candidat (whitelist Spring Security via /candidate/**).
- *
- * Pas d'authentification JWT : le candidat n'a pas de compte SkillForge.
- * La securite repose sur :
- * - le token d'invitation a usage unique
- * - l'expiration (24 h par defaut)
- * - le statut 'used' qui se marque a la soumission
- */
+/** Endpoints publics candidat (whitelist Spring Security /candidate/**). */
 @RestController
 @RequestMapping("/candidate")
 public class CandidateController {
@@ -38,7 +32,7 @@ public class CandidateController {
     @PostMapping("/passations/start")
     public PassationView startOrResume(@Valid @RequestBody StartRequest body) {
         Passation p = service.startOrResume(body.token(), body.candidateEmail(), body.candidateDisplayName());
-        return PassationView.of(p);
+        return PassationView.of(p, null);
     }
 
     @PostMapping("/passations/{passationId}/answer-text")
@@ -57,10 +51,9 @@ public class CandidateController {
 
     @PostMapping("/passations/{passationId}/submit")
     public PassationView submit(@PathVariable UUID passationId) {
-        return PassationView.of(service.submit(passationId));
+        SubmitResult r = service.submit(passationId);
+        return PassationView.of(r.passation(), ScoreBreakdownView.of(r.breakdown()));
     }
-
-    // ---------- DTOs ----------
 
     public record StartRequest(
             @NotBlank String token,
@@ -80,16 +73,31 @@ public class CandidateController {
             String hiddenTests
     ) {}
 
+    public record ScoreBreakdownView(
+            int qcmPassed, int qcmTotal,
+            int codePassed, int codeTotal,
+            int casPassed, int casTotal) {
+        static ScoreBreakdownView of(ScoreBreakdown b) {
+            if (b == null) return null;
+            return new ScoreBreakdownView(
+                    b.qcmPassed(), b.qcmTotal(),
+                    b.codePassed(), b.codeTotal(),
+                    b.casPassed(), b.casTotal());
+        }
+    }
+
     public record PassationView(
             UUID id, UUID invitationId, UUID candidateId,
             String startedAt, String submittedAt,
-            BigDecimal globalScore, int fraudRiskScore) {
-        static PassationView of(Passation p) {
+            BigDecimal globalScore, int fraudRiskScore,
+            ScoreBreakdownView scoreBreakdown) {
+        static PassationView of(Passation p, ScoreBreakdownView breakdown) {
             return new PassationView(
                     p.getId(), p.getInvitationId(), p.getCandidateId(),
                     p.getStartedAt() == null ? null : p.getStartedAt().toString(),
                     p.getSubmittedAt() == null ? null : p.getSubmittedAt().toString(),
-                    p.getGlobalScore(), p.getFraudRiskScore());
+                    p.getGlobalScore(), p.getFraudRiskScore(),
+                    breakdown);
         }
     }
 }

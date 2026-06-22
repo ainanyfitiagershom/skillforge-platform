@@ -31,6 +31,24 @@ public class Answer {
     @Column(precision = 5, scale = 2)
     private BigDecimal score;
 
+    @Column(name = "qcm_selected_index")
+    private Integer qcmSelectedIndex;
+
+    @Column(name = "last_tests_passed")
+    private Integer lastTestsPassed;
+
+    @Column(name = "last_tests_total")
+    private Integer lastTestsTotal;
+
+    @Column(name = "last_stdout", columnDefinition = "TEXT")
+    private String lastStdout;
+
+    @Column(name = "last_stderr", columnDefinition = "TEXT")
+    private String lastStderr;
+
+    @Column(name = "grading_explanation", columnDefinition = "TEXT")
+    private String gradingExplanation;
+
     protected Answer() {}
 
     public Answer(UUID id, UUID passationId, UUID questionId,
@@ -55,8 +73,20 @@ public class Answer {
     public String getAnswerText() { return answerText; }
     public String getSubmittedCode() { return submittedCode; }
     public BigDecimal getScore() { return score; }
+    public Integer getQcmSelectedIndex() { return qcmSelectedIndex; }
+    public Integer getLastTestsPassed() { return lastTestsPassed; }
+    public Integer getLastTestsTotal() { return lastTestsTotal; }
+    public String getLastStdout() { return lastStdout; }
+    public String getLastStderr() { return lastStderr; }
+    public String getGradingExplanation() { return gradingExplanation; }
 
     public void setAnswerText(String t) { this.answerText = t; }
     public void setSubmittedCode(String c) { this.submittedCode = c; }
     public void setScore(BigDecimal s) { this.score = s; }
+    public void setQcmSelectedIndex(Integer i) { this.qcmSelectedIndex = i; }
+    public void setLastTestsPassed(Integer v) { this.lastTestsPassed = v; }
+    public void setLastTestsTotal(Integer v) { this.lastTestsTotal = v; }
+    public void setLastStdout(String s) { this.lastStdout = s; }
+    public void setLastStderr(String s) { this.lastStderr = s; }
+    public void setGradingExplanation(String s) { this.gradingExplanation = s; }
 }

@@ -1,32 +1,22 @@
 package com.tsarajoro.skillforge.llm;
 
-/**
- * Abstraction au-dessus d'un fournisseur de modele de langage.
- *
- * Permet de basculer entre OpenAI, Claude (Anthropic) ou un mock de developpement
- * sans changer le code metier. Le choix se fait via la propriete skillforge.llm.provider.
- */
+import java.util.List;
+
+/** Abstraction au-dessus d un fournisseur LLM (4 impls : mock, openai, github, claude). */
 public interface LlmClient {
 
-    /**
-     * Extrait les competences d'un CV en texte brut.
-     *
-     * @param cvText texte du CV
-     * @param profileCode code du profil cible (par exemple DEV_PHP, INT_WORDPRESS)
-     * @return resultat structure (competences + niveaux + couts API)
-     */
+    /** Extrait les competences d un CV. */
     CvExtractionResult extractSkillsFromCv(String cvText, String profileCode);
 
-    /**
-     * Genere un ensemble de questions adaptees aux competences detectees et au profil cible.
-     *
-     * @param request parametres de generation (profil, competences, types, difficulte)
-     * @return resultat structure (questions + couts API)
-     */
+    /** Genere un ensemble de questions adaptees au profil + competences. */
     QuestionGenerationResult generateQuestions(GenerationRequest request);
 
-    /**
-     * Nom du fournisseur (openai, claude, mock).
-     */
+    /** Note une reponse de type CAS_PRATIQUE : retourne score 0-100 + explication. */
+    CasGradingResult gradeCasPratique(String scenario, List<String> expectedPoints, String candidateAnswer);
+
+    /** Genere un compte rendu structure post-passation (resume + forces + faiblesses + recommandation). */
+    ReportGenerationResult generateReport(ReportGenerationResult.Input input);
+
+    /** Nom du fournisseur (mock, openai, github, claude). */
     String providerName();
 }

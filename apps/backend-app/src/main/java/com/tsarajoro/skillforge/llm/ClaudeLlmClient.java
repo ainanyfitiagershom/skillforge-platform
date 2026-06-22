@@ -45,6 +45,18 @@ public class ClaudeLlmClient implements LlmClient {
     }
 
     @Override
+    public CasGradingResult gradeCasPratique(String scenario, java.util.List<String> expectedPoints, String candidateAnswer) {
+        throw new UnsupportedOperationException(
+                "Claude LLM client not implemented yet — set skillforge.llm.provider=github or openai or mock");
+    }
+
+    @Override
+    public ReportGenerationResult generateReport(ReportGenerationResult.Input input) {
+        throw new UnsupportedOperationException(
+                "Claude LLM client not implemented yet — set skillforge.llm.provider=github or openai or mock");
+    }
+
+    @Override
     public String providerName() {
         return "claude";
     }

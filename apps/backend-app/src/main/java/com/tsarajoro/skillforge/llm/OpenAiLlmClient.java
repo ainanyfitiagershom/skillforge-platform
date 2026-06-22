@@ -238,6 +238,172 @@ public class OpenAiLlmClient implements LlmClient {
     }
 
     @Override
+    public CasGradingResult gradeCasPratique(String scenario, java.util.List<String> expectedPoints, String candidateAnswer) {
+        String systemPrompt = """
+                Tu es un evaluateur RH technique. Tu notes la reponse d un candidat a une
+                question de cas pratique, sur une echelle de 0 a 100, en te basant
+                STRICTEMENT sur les points attendus fournis.
+
+                Reponds UNIQUEMENT en JSON :
+                {"score": 0-100 entier, "explanation": "2 a 3 phrases neutres et factuelles"}
+
+                Bareme :
+                - 0-30 : reponse hors sujet, vide ou tres incomplete
+                - 31-60 : reponse partielle, couvre 1-2 points attendus
+                - 61-85 : reponse correcte couvrant la majorite des points attendus
+                - 86-100 : reponse excellente, structuree, couvre tous les points
+                """;
+
+        String userPrompt = String.format("""
+                Scenario :
+                %s
+
+                Points attendus :
+                %s
+
+                Reponse du candidat :
+                %s
+                """,
+                scenario == null ? "(non fourni)" : scenario,
+                expectedPoints == null || expectedPoints.isEmpty()
+                        ? "(aucun)"
+                        : String.join("\n- ", expectedPoints),
+                candidateAnswer == null || candidateAnswer.isBlank() ? "(vide)" : candidateAnswer);
+
+        Map<String, Object> body = Map.of(
+                "model", model,
+                "response_format", Map.of("type", "json_object"),
+                "messages", List.of(
+                        Map.of("role", "system", "content", systemPrompt),
+                        Map.of("role", "user", "content", userPrompt)));
+
+        try {
+            JsonNode response = http.post()
+                    .uri("/chat/completions")
+                    .body(body)
+                    .retrieve()
+                    .body(JsonNode.class);
+
+            String content = response.path("choices").path(0).path("message").path("content").asText();
+            JsonNode parsed = mapper.readTree(content);
+
+            int scoreInt = parsed.path("score").asInt(0);
+            if (scoreInt < 0) scoreInt = 0;
+            if (scoreInt > 100) scoreInt = 100;
+            String explanation = parsed.path("explanation").asText("Evaluation IA sans explication.");
+
+            int tokens = response.path("usage").path("total_tokens").asInt(0);
+            BigDecimal cost = BigDecimal.valueOf(tokens).multiply(new BigDecimal("0.0000005"));
+            return new CasGradingResult(
+                    BigDecimal.valueOf(scoreInt).setScale(2),
+                    explanation,
+                    providerName(),
+                    model,
+                    tokens,
+                    cost);
+        } catch (Exception e) {
+            throw new LlmCallException("openai chat/completions (grading) failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public ReportGenerationResult generateReport(ReportGenerationResult.Input input) {
+        String systemPrompt = """
+                Tu es un consultant RH technique senior. Tu rediges un compte rendu d evaluation
+                concis, factuel et neutre apres un test technique automatise.
+
+                Reponds UNIQUEMENT en JSON :
+                {
+                  "summary": "2 a 3 phrases qui resument la performance globale",
+                  "strengths": ["3 a 5 points forts concrets et identifies"],
+                  "weaknesses": ["3 a 5 points faibles concrets et constructifs"],
+                  "recommendation": "HIRE" | "INTERVIEW" | "REJECT"
+                }
+
+                Bareme recommandation :
+                - HIRE : score global >= 75 ET au moins 60% sur chaque type de question presente
+                - INTERVIEW : score global 50-74, ou >= 75 mais inegal selon les types
+                - REJECT : score global < 50 ou echec marque sur tous les types
+
+                Style : francais professionnel, phrases courtes, factuel.
+                """;
+
+        StringBuilder qSummary = new StringBuilder();
+        int idx = 1;
+        for (ReportGenerationResult.QuestionSnapshot q : input.questions()) {
+            qSummary.append(idx++).append(". [").append(q.type()).append(" diff ")
+                    .append(q.difficulty()).append("/5] ")
+                    .append(q.statement() == null ? "" : q.statement())
+                    .append(" — score: ").append(q.score() == null ? "n/a" : q.score().toPlainString())
+                    .append("/100");
+            if (q.gradingExplanation() != null && !q.gradingExplanation().isBlank()) {
+                qSummary.append(" (").append(q.gradingExplanation()).append(")");
+            }
+            qSummary.append("\n");
+        }
+
+        String userPrompt = String.format("""
+                Candidat : %s
+                Profil cible : %s
+                Score global : %s / 100
+                Repartition :
+                - QCM : %d / %d reussis
+                - CODE : %d / %d reussis
+                - CAS_PRATIQUE : %d / %d satisfaisants
+
+                Detail des questions :
+                %s
+                """,
+                input.candidateLabel(),
+                input.profileCode(),
+                input.globalScore() == null ? "n/a" : input.globalScore().toPlainString(),
+                input.qcmPassed(), input.qcmTotal(),
+                input.codePassed(), input.codeTotal(),
+                input.casPassed(), input.casTotal(),
+                qSummary.toString());
+
+        Map<String, Object> body = Map.of(
+                "model", model,
+                "response_format", Map.of("type", "json_object"),
+                "messages", List.of(
+                        Map.of("role", "system", "content", systemPrompt),
+                        Map.of("role", "user", "content", userPrompt)));
+
+        try {
+            JsonNode response = http.post()
+                    .uri("/chat/completions")
+                    .body(body)
+                    .retrieve()
+                    .body(JsonNode.class);
+
+            String content = response.path("choices").path(0).path("message").path("content").asText();
+            JsonNode parsed = mapper.readTree(content);
+
+            String summary = parsed.path("summary").asText("");
+            List<String> strengths = new ArrayList<>();
+            for (JsonNode n : parsed.path("strengths")) strengths.add(n.asText(""));
+            List<String> weaknesses = new ArrayList<>();
+            for (JsonNode n : parsed.path("weaknesses")) weaknesses.add(n.asText(""));
+
+            com.tsarajoro.skillforge.domain.Recommendation reco;
+            try {
+                reco = com.tsarajoro.skillforge.domain.Recommendation.valueOf(
+                        parsed.path("recommendation").asText("INTERVIEW").toUpperCase());
+            } catch (Exception e) {
+                reco = com.tsarajoro.skillforge.domain.Recommendation.INTERVIEW;
+            }
+
+            int tokens = response.path("usage").path("total_tokens").asInt(0);
+            BigDecimal cost = BigDecimal.valueOf(tokens).multiply(new BigDecimal("0.0000005"));
+            return new ReportGenerationResult(
+                    summary, strengths, weaknesses, reco,
+                    providerName(), model, tokens, cost);
+        } catch (Exception e) {
+            throw new LlmCallException("openai chat/completions (report) failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public String providerName() {
         return "openai";
     }

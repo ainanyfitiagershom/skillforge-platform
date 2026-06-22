@@ -161,6 +161,71 @@ public class MockLlmClient implements LlmClient {
     }
 
     @Override
+    public CasGradingResult gradeCasPratique(String scenario, java.util.List<String> expectedPoints, String candidateAnswer) {
+        int len = candidateAnswer == null ? 0 : candidateAnswer.trim().length();
+        BigDecimal score;
+        String explanation;
+        if (len < 30) {
+            score = new BigDecimal("30.00");
+            explanation = "[MOCK] Reponse trop courte (" + len + " caracteres). Le candidat n a pas developpe son raisonnement.";
+        } else if (len < 200) {
+            score = new BigDecimal("65.00");
+            explanation = "[MOCK] Reponse correcte mais incomplete. " + (expectedPoints == null ? 0 : expectedPoints.size()) + " points etaient attendus.";
+        } else {
+            score = new BigDecimal("85.00");
+            explanation = "[MOCK] Reponse detaillee et structuree, le candidat couvre l essentiel des points attendus.";
+        }
+        return new CasGradingResult(score, explanation, providerName(), "mock-judge-v1", 0, BigDecimal.ZERO);
+    }
+
+    @Override
+    public ReportGenerationResult generateReport(ReportGenerationResult.Input input) {
+        BigDecimal score = input.globalScore() == null ? BigDecimal.ZERO : input.globalScore();
+        com.tsarajoro.skillforge.domain.Recommendation reco;
+        String summary;
+        java.util.List<String> strengths;
+        java.util.List<String> weaknesses;
+
+        if (score.compareTo(new BigDecimal("75")) >= 0) {
+            reco = com.tsarajoro.skillforge.domain.Recommendation.HIRE;
+            summary = "[MOCK] " + input.candidateLabel() + " obtient un score solide de " + score
+                    + "/100 sur le profil " + input.profileCode() + ". Le candidat maitrise les fondamentaux et resout les exercices techniques avec efficacite.";
+            strengths = java.util.List.of(
+                    "Bonne maitrise des QCM (" + input.qcmPassed() + "/" + input.qcmTotal() + ")",
+                    "Resolution efficace des exercices CODE",
+                    "Raisonnement structure dans les cas pratiques");
+            weaknesses = java.util.List.of(
+                    "Quelques approximations sur les questions de difficulte 4-5",
+                    "Marge de progression sur l optimisation");
+        } else if (score.compareTo(new BigDecimal("50")) >= 0) {
+            reco = com.tsarajoro.skillforge.domain.Recommendation.INTERVIEW;
+            summary = "[MOCK] " + input.candidateLabel() + " obtient un score moyen de " + score
+                    + "/100 sur le profil " + input.profileCode() + ". Le candidat a des bases mais des lacunes a explorer en entretien.";
+            strengths = java.util.List.of(
+                    "Bonne comprehension des concepts QCM",
+                    "Capacite a structurer une reponse ecrite");
+            weaknesses = java.util.List.of(
+                    "Difficultes a finaliser les exercices CODE",
+                    "Manque de profondeur sur les cas pratiques",
+                    "Score CODE : " + input.codePassed() + "/" + input.codeTotal());
+        } else {
+            reco = com.tsarajoro.skillforge.domain.Recommendation.REJECT;
+            summary = "[MOCK] " + input.candidateLabel() + " obtient un score insuffisant de " + score
+                    + "/100 sur le profil " + input.profileCode() + ". Niveau technique en-dessous des attentes pour le poste.";
+            strengths = java.util.List.of(
+                    "Bonne volonte dans la redaction des reponses ouvertes");
+            weaknesses = java.util.List.of(
+                    "Echec sur la majorite des QCM (" + input.qcmPassed() + "/" + input.qcmTotal() + ")",
+                    "Aucun exercice CODE finalise",
+                    "Compreneur partielle des cas pratiques");
+        }
+
+        return new ReportGenerationResult(
+                summary, strengths, weaknesses, reco,
+                providerName(), "mock-report-v1", 0, BigDecimal.ZERO);
+    }
+
+    @Override
     public String providerName() {
         return "mock";
     }
