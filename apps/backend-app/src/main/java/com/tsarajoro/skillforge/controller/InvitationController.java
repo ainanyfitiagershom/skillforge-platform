@@ -1,5 +1,8 @@
 package com.tsarajoro.skillforge.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tsarajoro.skillforge.domain.Question;
 import com.tsarajoro.skillforge.domain.QuestionType;
 import com.tsarajoro.skillforge.repository.InvitationRepository;
@@ -22,6 +25,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/invitations")
 public class InvitationController {
+
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     private final InvitationService invitationService;
     private final InvitationRepository invitationRepo;
@@ -54,14 +59,22 @@ public class InvitationController {
     public record CandidateQuestionView(UUID id, QuestionType type, String statement,
                                          int difficulty, String publicPayload) {
         static CandidateQuestionView sanitize(Question q) {
-            // Pour le candidat, on retire les champs sensibles (correctIndex, hiddenTests, etc.).
-            // Strategie simple : on enleve juste 'correctIndex' du JSON ; un sanitizer plus
-            // complet sera mis en place au Sprint 4 quand la passation reelle sera codee.
-            String payload = q.getJsonPayload()
-                    .replaceAll("\"correctIndex\"\\s*:\\s*\\d+,?", "")
-                    .replaceAll("\"hiddenTests\"\\s*:\\s*\"[^\"]*\",?", "");
+            String payload = sanitizePayload(q.getJsonPayload());
             return new CandidateQuestionView(q.getId(), q.getType(), q.getStatement(),
                     q.getDifficulty(), payload);
+        }
+
+        private static String sanitizePayload(String rawPayload) {
+            try {
+                JsonNode node = JSON.readTree(rawPayload);
+                if (node instanceof ObjectNode object) {
+                    object.remove(List.of("correctIndex", "hiddenTests", "explanation"));
+                    return JSON.writeValueAsString(object);
+                }
+                return "{}";
+            } catch (Exception ignored) {
+                return "{}";
+            }
         }
     }
 

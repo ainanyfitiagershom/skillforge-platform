@@ -328,7 +328,6 @@ function QuestionCard({
               questionId={question.id}
               language={(payload.language as 'PHP' | 'JS') ?? 'JS'}
               starterCode={payload.starterCode ?? ''}
-              hiddenTests={payload.hiddenTests ?? null}
               code={state?.code ?? payload.starterCode ?? ''}
               runResult={state?.runResult}
               running={state?.running ?? false}
@@ -461,7 +460,6 @@ function CodeAnswerEditor({
   questionId,
   language,
   starterCode: _starter,
-  hiddenTests,
   code,
   runResult,
   running,
@@ -471,7 +469,6 @@ function CodeAnswerEditor({
   questionId: string;
   language: 'PHP' | 'JS';
   starterCode: string;
-  hiddenTests: string | null;
   code: string;
   runResult?: RunCodeResult;
   running: boolean;
@@ -485,7 +482,6 @@ function CodeAnswerEditor({
         questionId,
         language,
         code,
-        hiddenTests,
       );
       onChange({ runResult: result, running: false });
     } catch (err) {

@@ -108,8 +108,10 @@ public class CandidatePassationService {
     @Transactional
     public RunCodeResult runCode(UUID passationId, UUID questionId, String language,
                                   String userCode, String hiddenTests) {
+        Question question = questionRepo.findById(questionId).orElseThrow();
+        String trustedHiddenTests = extractTextField(question.getJsonPayload(), "hiddenTests");
         JsonNode resp = sandboxClient.execute(new SandboxExecuteRequest(
-                language, userCode, hiddenTests, null));
+                language, userCode, trustedHiddenTests, null));
 
         String status = resp.path("status").asText("ERROR");
         int exitCode = resp.path("exitCode").asInt(-1);
@@ -137,6 +139,16 @@ public class CandidatePassationService {
 
         return new RunCodeResult(status, exitCode, stdout, stderr, durationMs,
                 testsPassed, testsTotal, score);
+    }
+
+    private String extractTextField(String jsonPayload, String field) {
+        try {
+            JsonNode node = mapper.readTree(jsonPayload);
+            JsonNode value = node.get(field);
+            return value == null || value.isNull() ? null : value.asText();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Transactional

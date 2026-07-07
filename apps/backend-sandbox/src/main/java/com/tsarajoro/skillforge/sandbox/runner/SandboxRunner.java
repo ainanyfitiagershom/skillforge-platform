@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.Frame;
@@ -192,7 +193,7 @@ public class SandboxRunner {
         long nanoCpus = (long) (props.cpus() * 1_000_000_000L);
 
         // Monter le workdir local en /work en read-only (le code ne peut pas se modifier)
-        Bind workBind = new Bind(workDir.toAbsolutePath().toString(), new Volume("/work"), true);
+        Bind workBind = new Bind(workDir.toAbsolutePath().toString(), new Volume("/work"), AccessMode.ro);
 
         HostConfig hc = HostConfig.newHostConfig()
                 .withBinds(workBind)
@@ -245,7 +246,7 @@ public class SandboxRunner {
     private String[] buildCommand(Language lang, boolean hasTests) {
         if (lang == Language.PHP) {
             return hasTests
-                    ? new String[]{"phpunit", "--colors=never", "HiddenTest.php"}
+                    ? new String[]{"phpunit", "--colors=never", "--do-not-cache-result", "HiddenTest.php"}
                     : new String[]{"php", "solution.php"};
         }
         if (lang == Language.JS) {

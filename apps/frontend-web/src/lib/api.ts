@@ -173,12 +173,11 @@ export const api = {
     questionId: string,
     language: 'PHP' | 'JS',
     userCode: string,
-    hiddenTests: string | null,
   ) =>
     request<RunCodeResult>(`/candidate/passations/${passationId}/run-code`, {
       method: 'POST',
       auth: false,
-      body: { questionId, language, userCode, hiddenTests },
+      body: { questionId, language, userCode },
     }),
 
   candidateSubmit: (passationId: string) =>
