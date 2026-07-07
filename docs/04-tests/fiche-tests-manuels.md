@@ -700,3 +700,322 @@ Après une soumission, sur `/candidate/passation/{token}/done`.
 | 15.19 | Encart « Et après ? » côté candidat | 🏠 |
 
 **À cocher en ✅ au fur et à mesure que vous validez chaque test.**
+
+---
+
+## 16. Tests Sprint 6 — Anti-fraude candidat (à tester chez vous)
+
+Ces tests valident la **Tâche 4 du Sprint 6** : détection anti-fraude multi-signaux pondérés côté candidat, stockage en base, affichage recruteur.
+
+### Pré-requis
+
+Vérifier que la migration Flyway V5 est appliquée :
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge \
+  -c "SELECT version, description FROM flyway_schema_history ORDER BY installed_rank;"
+```
+**Attendu :** ligne V5 présente (`fraud metadata`).
+
+Vérifier la colonne :
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge -c "\d fraud_events"
+```
+**Attendu :** colonne `metadata jsonb` présente, index `idx_fraud_events_occurred_at`.
+
+### Test unitaire scoring
+
+#### 16.1 ✅ FraudScoringTest (5 cas verts)
+```bash
+cd apps/backend-app && mvn -o -q test -Dtest=FraudScoringTest
+```
+**Attendu :** 5 tests verts (0 events, null, 1 focus loss = 25, mix = 85, plafond = 100).
+
+### Consentement RGPD (page Welcome candidat)
+
+#### 16.2 🏠 Encart anti-fraude visible + checkbox obligatoire
+Ouvrir un lien d'invitation candidat (`/candidate/passation/{token}`) après saisie email + nom.
+**Attendu :**
+- Encart bleu accent avec icône Eye et titre « Analyse anti-fraude pendant la passation »
+- Paragraphe explicatif mentionnant : changements d'onglet, copier-coller volumineux, timings anormalement rapides
+- Checkbox « J'accepte l'analyse anti-fraude durant ma passation, conformément au RGPD »
+- Bouton **désactivé** (grisé) tant que la checkbox n'est pas cochée, avec texte « Acceptez l'analyse anti-fraude pour continuer »
+
+#### 16.3 🏠 Consentement persisté en sessionStorage
+Cocher la checkbox + démarrer la passation. Puis dans la console DevTools :
+```javascript
+JSON.parse(sessionStorage.getItem('skillforge.passation.<TOKEN>'))
+```
+**Attendu :** objet avec `fraudConsent: true` et `fraudConsentAt` (ISO timestamp).
+
+### Détection des 4 signaux (bout-en-bout)
+
+Reprendre une passation en cours (`/candidate/passation/{token}/run`).
+
+#### 16.4 🏠 Perte de focus (FOCUS_LOSS)
+Alt-Tab pendant 5 secondes vers un autre onglet, puis revenir.
+**Attendu :**
+- Banner jaune en bas-droite : « Sortie de l'onglet détectée · Événement enregistré pour le recruteur » (3 s puis disparaît)
+- DB : `SELECT event_type, metadata FROM fraud_events ORDER BY occurred_at DESC LIMIT 1;` → `FOCUS_LOSS` avec `metadata->>'durationMs'` ≈ 5000
+
+#### 16.5 🏠 Copier-coller suspect (PASTE_SUSPICIOUS)
+Coller un texte de ≥ 300 caractères dans une zone de réponse CAS_PRATIQUE (Ctrl+V).
+**Attendu :**
+- Banner « Copier-coller volumineux détecté »
+- DB : nouvelle ligne `PASTE_SUSPICIOUS` avec `metadata->>'pastedLength'` = longueur exacte
+
+#### 16.6 🏠 Réponse anormalement rapide (FAST_ANSWER)
+Sur une nouvelle question CAS_PRATIQUE, coller un texte de 500 caractères moins de 5 s après l'affichage.
+**Attendu :**
+- 2 banners consécutifs (PASTE + FAST_ANSWER, throttlés à 3 s)
+- DB : 2 events, dont un `FAST_ANSWER` avec `metadata` contenant `elapsedMs`, `answerLength`, `questionId`
+
+#### 16.7 🏠 DevTools détectés (DEVTOOLS_OPEN)
+Ouvrir la console navigateur (F12).
+**Attendu :**
+- Banner « Outils développeur détectés » (une seule fois par session, même si on ferme/rouvre)
+- DB : 1 event `DEVTOOLS_OPEN` avec `metadata` contenant `heightDiff` ou `widthDiff` > 160
+
+### Score agrégé + robustesse
+
+#### 16.8 🏠 Score agrégé pondéré
+Après les 4 signaux (16.4 à 16.7), consulter la passation :
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge \
+  -c "SELECT fraud_risk_score FROM passations ORDER BY started_at DESC LIMIT 1;"
+```
+**Attendu :** `fraud_risk_score` = 25 + 30 + 20 + 10 = **85** (plafond à 100).
+
+#### 16.9 🏠 Throttle par type
+Coller 3 textes de 300 caractères en 1 seconde chacun.
+**Attendu :** 1 seul event PASTE_SUSPICIOUS enregistré (throttle 3 s par type). Vérifier compteur en DB.
+
+#### 16.10 🏠 Robustesse endpoint spam (plafond 100 events)
+Script :
+```bash
+TOKEN=$(cat apps/backend-app/.env | grep JWT | head -1)
+for i in $(seq 1 200); do
+  curl -s -X POST http://localhost:8090/candidate/passations/<PASSATION_ID>/fraud-event \
+    -H "Content-Type: application/json" \
+    -d '{"eventType":"FOCUS_LOSS","metadata":"{\"durationMs\":1500}"}' > /dev/null
+done
+docker exec skillforge-postgres psql -U skillforge -d skillforge \
+  -c "SELECT count(*) FROM fraud_events WHERE passation_id = '<PASSATION_ID>';"
+```
+**Attendu :** count exactement = 100 (les 100 suivants ignorés silencieusement). Logs backend : `Fraud: plafond de 100 events atteint`.
+
+#### 16.11 🏠 Backend down : passation continue
+Arrêter Spring Boot pendant la passation, faire un signal (Alt-Tab).
+**Attendu :** aucune erreur front, la passation continue normalement, pas de crash sur `useFraudTracker`.
+
+### Vue recruteur
+
+#### 16.12 🏠 Badge Risque fraude sur ResultDetailPage
+Après une passation soumise avec fraud_risk_score ≥ 21 :
+Se connecter recruteur, aller sur `/app/results/{id}`.
+**Attendu :**
+- Badge rouge « Risque fraude 85 » dans le header hero (déjà présent avant Sprint 6 mais activé maintenant)
+
+#### 16.13 🏠 Section FraudSection dépliable
+Sur la même page.
+**Attendu :**
+- Nouvelle section **entre** la card hero et la section « Compte rendu IA »
+- Header coloré (vert si score < 21, orange si 21-50, rouge si ≥ 51)
+- Icône ShieldAlert (ou ShieldCheck si low)
+- Score `X / 100` + label « Signaux mineurs » / « Risque élevé — à vérifier »
+- Chips avec compteurs par type (« 1× Sortie d'onglet », « 1× Copier-coller volumineux »…)
+- Bouton « Timeline complète (N événements) » qui déplie une liste chronologique
+
+#### 16.14 🏠 Timeline détaillée avec metadata décodée
+Cliquer sur « Timeline complète ».
+**Attendu :** pour chaque event :
+- Icône par type
+- Titre lisible (« Sortie d'onglet », « Copier-coller volumineux »…)
+- Timestamp relatif (« il y a 4 min ») avec tooltip absolu au survol
+- Ligne descriptive selon type :
+  - FOCUS_LOSS → « Absent de l'onglet pendant environ 5s »
+  - PASTE_SUSPICIOUS → « 342 caractères collés en une fois »
+  - FAST_ANSWER → « 456 caractères écrits en 3.2s »
+  - DEVTOOLS_OPEN → « Ouverture détectée via l'écart taille de fenêtre »
+- Note en bas de section : « Ces signaux sont indicatifs. Ils ne prouvent pas la fraude mais méritent une vérification en entretien. »
+
+#### 16.15 🏠 Passation sans fraude : section masquée
+Faire une passation propre (aucun signal détecté).
+**Attendu :** aucune section FraudSection affichée sur `/app/results/{id}` (retour `null` si `fraudEvents.length === 0`).
+
+### Checklist récapitulative Sprint 6 — Anti-fraude
+
+| # | Test | Statut |
+|---|------|--------|
+| 16.1 | Test unitaire FraudScoringTest | ✅ |
+| 16.2 | Consentement RGPD + checkbox obligatoire | 🏠 |
+| 16.3 | Consentement persisté en sessionStorage | 🏠 |
+| 16.4 | Perte de focus détectée | 🏠 |
+| 16.5 | Copier-coller suspect détecté | 🏠 |
+| 16.6 | Réponse anormalement rapide détectée | 🏠 |
+| 16.7 | DevTools détectés (une fois) | 🏠 |
+| 16.8 | Score agrégé pondéré = 85 | 🏠 |
+| 16.9 | Throttle par type | 🏠 |
+| 16.10 | Plafond 100 events (anti-spam) | 🏠 |
+| 16.11 | Backend down : passation continue | 🏠 |
+| 16.12 | Badge Risque fraude visible recruteur | 🏠 |
+| 16.13 | Section FraudSection dépliable | 🏠 |
+| 16.14 | Timeline détaillée avec metadata | 🏠 |
+| 16.15 | Section masquée si zéro signal | 🏠 |
+
+---
+
+## 17. Tests Sprint 6 — Dashboard analytique + POC 4 (à tester chez vous)
+
+Ces tests valident la **Tâche 5 du Sprint 6** : dashboard analytique recruteur avec KPIs, 3 graphiques Recharts, section « Questions à revoir », passations récentes et export CSV multi-fichiers.
+
+### Pré-requis
+
+- Migrations V1 à V5 appliquées.
+- Au moins **3 passations soumises** en base pour voir des stats significatives (sinon les cas dégénérés s'affichent).
+
+### Tests unitaires backend
+
+#### 17.1 ✅ PointBiserialTest — 11 cas verts
+```bash
+cd apps/backend-app && mvn -o -q test -Dtest=PointBiserialTest
+```
+**Attendu :** 11 tests verts couvrant :
+- Cas parfaitement discriminant (rpb ≈ 0.9798)
+- Cas anti-discriminant (rpb ≈ -0.9798)
+- Cas mixte réaliste (rpb ≈ 0.8851)
+- Données insuffisantes → null
+- Cas dégénéré p=1 → null
+- Classification qualitative (TOO_EASY, POOR_DISCRIMINANT, GOOD, INSUFFICIENT_DATA)
+- Seuils par type (QCM 100, CODE 75, CAS 60)
+- Échappement CSV (guillemets, virgules, sauts de ligne)
+
+### Endpoints backend (curl avec JWT recruteur)
+
+#### 17.2 🏠 GET /analytics/kpis
+```bash
+JWT=<votre-jwt-recruteur>
+curl -s http://localhost:8090/analytics/kpis -H "Authorization: Bearer $JWT" | python3 -m json.tool
+```
+**Attendu :** JSON avec 8 champs (totalCandidates, submittedPassations, totalPassations, avgGlobalScore, approvedQuestions, reportsGenerated, avgFraudScore, highFraudCount).
+
+#### 17.3 🏠 GET /analytics/scores-distribution
+**Attendu :** array de **10 buckets exactement** couvrant 0-10, 10-20, ..., 90-100 (même les buckets vides sont présents avec `count: 0`).
+
+#### 17.4 🏠 GET /analytics/questions-stats
+**Attendu :** array trié par `discriminantPower` desc (les meilleures questions en tête). Vérifier qu'au moins une question a un `qualityLabel` != null.
+
+#### 17.5 🏠 GET /analytics/skills-avg
+**Attendu :** array de skills avec avgScore. Si `question_skills` est vide → array de profils (`category: "Profil"`) — voir test 17.13 pour le fallback.
+
+#### 17.6 🏠 GET /analytics/recent-candidates
+**Attendu :** array max **10** dernières passations soumises, triées desc par date.
+
+#### 17.7 🏠 GET /analytics/export/candidates.csv
+```bash
+curl -s http://localhost:8090/analytics/export/candidates.csv -H "Authorization: Bearer $JWT" | head -3
+```
+**Attendu :**
+- Content-Type: `text/csv; charset=utf-8`
+- Ligne 1 = header : `passation_id,candidate_name,candidate_email,profile_code,submitted_at,global_score,fraud_risk_score,recommendation`
+- Cellules contenant virgule ou guillemet correctement échappées
+
+#### 17.8 🏠 GET /analytics/export/questions-stats.csv
+**Attendu :** header `question_id,type,difficulty,usages,difficulty_index,avg_score,discriminant_power,quality_label,statement`.
+
+### UI Dashboard `/app`
+
+#### 17.9 🏠 Empty state (aucune passation soumise)
+Si la base est vide, se connecter recruteur → `/app`.
+**Attendu :**
+- Card centrée avec icône Sparkles
+- Titre « Pas encore de passations soumises »
+- Sous-titre explicatif
+- 2 boutons CTA : « Démarrer un test » (noir) et « Banque de questions » (secondaire)
+- Aucun graphique affiché
+- Pas de bouton « Exporter CSV » visible
+
+#### 17.10 🏠 Dashboard avec données
+Après avoir au moins 3 passations soumises, aller sur `/app`.
+**Attendu (structure verticale)** :
+1. Header « Vue d'ensemble du recrutement » + bouton **« Exporter CSV »** en haut à droite
+2. **Row 4 KPIs** : Candidats évalués, Score moyen (tone success), Questions validées, Risque fraude (tone danger si > 0)
+3. **Chart 1** : « Distribution des scores » (BarChart) avec colonnes coloriées selon la tranche (vert ≥75, orange 50-74, rouge <50). Tooltip custom au survol.
+4. **Row 2 charts** : Scatter « Pouvoir discriminant × Difficulté » (points colorés par qualité, taille par utilisations, légende en bas) + BarChart horizontal « Score moyen par compétence » (ou fallback « par profil »).
+5. **Section « Questions à revoir »** avec les problématiques (badges QualityChip colorés + stats mono)
+6. **Section « Passations récentes »** : tableau avec 10 lignes (nom, profil, date, score coloré, verdict IA, badge fraude si > 0, lien Détail)
+
+#### 17.11 🏠 Cas dégénéré : question insuffisamment utilisée
+Si une question a moins de 3 utilisations :
+**Attendu sur le scatter :** point absent (filtré côté frontend).
+**Attendu dans /analytics/questions-stats :** `qualityLabel = "INSUFFICIENT_DATA"` et `discriminantPower = null`.
+
+#### 17.12 🏠 Cas dégénéré : tous les candidats réussissent une question
+**Attendu :** `qualityLabel = "TOO_EASY"` et `discriminantPower = null` (SD des successes = 0 → point-bisériale indéfinie).
+
+#### 17.13 🏠 Fallback `question_skills` vide
+Vider la table :
+```bash
+docker exec skillforge-postgres psql -U skillforge -d skillforge -c "TRUNCATE question_skills;"
+```
+Recharger `/app`.
+**Attendu :** Chart 3 affiche « Score moyen par profil » (titre changé, sous-titre « Référentiel de compétences non peuplé : fallback sur profil du test »), barres = codes de profil (DEV_PHP, etc.).
+
+### Export CSV
+
+#### 17.14 🏠 Clic bouton « Exporter CSV »
+Sur `/app` avec données, cliquer **Exporter CSV**.
+**Attendu :**
+- Loader court sur le bouton (2 icônes spin)
+- Téléchargement automatique d'un fichier `skillforge-analytics-YYYY-MM-DD.zip`
+- Décompression → 3 fichiers :
+  - `candidates.csv` : lisible dans Excel/LibreOffice, encodage UTF-8, 8 colonnes header + N lignes
+  - `questions_stats.csv` : 9 colonnes, trié par discriminant_power desc
+  - `README.txt` : documentation des colonnes de chaque CSV + explication de la méthode point-bisériale + date de génération
+
+#### 17.15 🏠 Validation scipy du pouvoir discriminant
+Sur une machine avec Python + scipy :
+```python
+from scipy.stats import pointbiserialr
+# Copier le vecteur x (0/1 = échec/réussite) et y (score global) d'une question
+# depuis /analytics/questions-stats en filtrant la DB directement
+x = [1,1,1,0,0,0]
+y = [90, 80, 85, 50, 45, 40]
+print(pointbiserialr(x, y))
+```
+**Attendu :** valeur scipy ≈ **0.9798**, cohérente avec ce que renvoie l'API SkillForge à ε = 1e-3 près.
+
+### Robustesse
+
+#### 17.16 🏠 Une des 5 requêtes échoue
+Couper temporairement une des routes (par ex. renommer skills-avg côté back), recharger `/app`.
+**Attendu :** message d'erreur en haut du dashboard, mais les autres sections restent visibles (`Promise.all().catch()` global). Restaurer ensuite.
+
+#### 17.17 🏠 Sécurité endpoints
+Sans JWT ou avec JWT candidat :
+```bash
+curl -i http://localhost:8090/analytics/kpis
+curl -i -H "Authorization: Bearer <jwt-candidat>" http://localhost:8090/analytics/kpis
+```
+**Attendu :** `401 Unauthorized` ou `403 Forbidden` selon le cas.
+
+### Checklist récapitulative Sprint 6 — Dashboard analytique
+
+| # | Test | Statut |
+|---|------|--------|
+| 17.1 | PointBiserialTest 11 cas verts | ✅ |
+| 17.2 | GET /kpis | 🏠 |
+| 17.3 | GET /scores-distribution (10 buckets) | 🏠 |
+| 17.4 | GET /questions-stats trié desc | 🏠 |
+| 17.5 | GET /skills-avg | 🏠 |
+| 17.6 | GET /recent-candidates max 10 | 🏠 |
+| 17.7 | GET candidates.csv (CSV valide) | 🏠 |
+| 17.8 | GET questions-stats.csv | 🏠 |
+| 17.9 | Empty state dashboard | 🏠 |
+| 17.10 | Dashboard complet 4 KPIs + 3 graphiques + 2 sections | 🏠 |
+| 17.11 | Question INSUFFICIENT_DATA | 🏠 |
+| 17.12 | Question TOO_EASY (rpb null) | 🏠 |
+| 17.13 | Fallback question_skills vide | 🏠 |
+| 17.14 | Export ZIP contient 3 fichiers | 🏠 |
+| 17.15 | Validation scipy du calcul | 🏠 |
+| 17.16 | Robustesse Promise.all | 🏠 |
+| 17.17 | Sécurité endpoints (401/403) | 🏠 |

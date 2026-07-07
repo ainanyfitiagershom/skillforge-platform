@@ -119,7 +119,7 @@ Le POC est validé si simultanément :
 ## 6. Plan post-POC
 
 Si le POC est validé :
-- Activation de la **boucle d'amélioration continue** au Sprint 6 : les questions discriminantes sont priorisées et regénérées moins souvent (réduction des coûts).
+- Activation de la **boucle d'amélioration continue** via le POC 4 (cf. `poc-04-statistiques.md`) : les questions discriminantes sont mesurées automatiquement (pouvoir discriminant point-bisérial) et les questions à problème (TOO_EASY, TOO_HARD, POOR_DISCRIMINANT) sont signalées au recruteur dans le dashboard analytique `/app`. Le recruteur peut alors éditer ou retirer les questions signalées.
 
 Si le POC est partiellement validé (60-75 %) :
 - Enrichir le prompt système avec des **exemples few-shot** issus de la banque Tsarajoro.

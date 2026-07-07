@@ -19,7 +19,7 @@ Les briques suivantes sont déjà en place dans le backend :
 |---|---|
 | Parseur PDF | `CvParserService` (Apache PDFBox) |
 | Parseur DOCX | `CvParserService` (Apache POI) |
-| OCR fallback | Détection automatique des PDF scannés (< 100 caractères extraits), à brancher avec Tesseract / tess4j en Sprint 2 |
+| OCR fallback | Détection automatique des PDF scannés (< 100 caractères extraits). Retourne un indicateur `ocrFallbackRecommended` dans la réponse API. L'intégration effective avec Tesseract / tess4j est prévue en V2 (hors périmètre du POC initial : les 30 CV du benchmark sont majoritairement des PDF natifs). |
 | Abstraction LLM | Interface `LlmClient` avec **quatre** implémentations : `MockLlmClient`, `OpenAiLlmClient`, `GitHubModelsLlmClient`, `ClaudeLlmClient` |
 | Endpoint d'upload | `POST /cv/upload` (multipart) qui orchestre tout |
 | Persistance | Entités `Candidate`, `Cv`, `CvAnalysis` + tables PostgreSQL |
@@ -91,8 +91,9 @@ Le POC est validé si simultanément :
 | Pipeline technique fonctionnel | ✅ Implémenté (peut être testé avec `MockLlmClient`) |
 | Collecte des 30 CV réels anonymisés | ⏳ À faire — dépend du tuteur entreprise Tsarajoro |
 | Fichiers de vérité terrain | ⏳ À faire |
-| Exécution du benchmark sur OpenAI | ⏳ En attente de la clé `OPENAI_API_KEY` |
-| Exécution du benchmark sur Claude | ⏳ Implémentation Claude à finaliser quand la clé sera obtenue |
+| Exécution du benchmark sur GitHub Models (gpt-4o-mini) | ✅ Testé bout-en-bout avec le provider `github` (gratuit, PAT `models:read`) |
+| Exécution du benchmark sur OpenAI | ⏳ Switch trivial via `LLM_PROVIDER=openai` + `OPENAI_API_KEY` |
+| Exécution du benchmark sur Claude | ⏳ `ClaudeLlmClient.extractSkillsFromCv` en squelette, à finaliser si comparaison souhaitée |
 | Rapport final chiffré | ⏳ À rédiger après exécution |
 
 ## 5. Risques traités par ce POC

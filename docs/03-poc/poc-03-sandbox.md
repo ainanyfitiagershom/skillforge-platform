@@ -107,7 +107,7 @@ Le POC est validé si simultanément :
 Si validé :
 - Documenter les flags dans le rapport de stage (chapitre Cybersécurité).
 - Faire relire la configuration par M. Tsinjo (tuteur Cybersécurité).
-- Passer au Sprint 5 (auto-grading + compte rendu IA).
+- Enchaîner sur les Sprints suivants : auto-grading (Sprint 6 tâche 2, ✅ fait), compte rendu IA (Sprint 6 tâche 3, ✅ fait), anti-fraude (Sprint 6 tâche 4, ✅ fait) et statistiques discriminantes (Sprint 6 tâche 5 / POC 4, ✅ fait — cf. `poc-04-statistiques.md`).
 
 Si partiellement validé (par exemple 1 attaque sur 30 réussit) :
 - Analyser la faille précisément (CVE applicable ?).
