@@ -4,10 +4,13 @@ import com.tsarajoro.skillforge.candidate.CandidatePassationService;
 import com.tsarajoro.skillforge.candidate.CandidatePassationService.RunCodeResult;
 import com.tsarajoro.skillforge.candidate.CandidatePassationService.ScoreBreakdown;
 import com.tsarajoro.skillforge.candidate.CandidatePassationService.SubmitResult;
+import com.tsarajoro.skillforge.domain.FraudEventType;
 import com.tsarajoro.skillforge.domain.Passation;
+import com.tsarajoro.skillforge.fraud.FraudDetectionService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,9 +27,11 @@ import java.util.UUID;
 public class CandidateController {
 
     private final CandidatePassationService service;
+    private final FraudDetectionService fraudService;
 
-    public CandidateController(CandidatePassationService service) {
+    public CandidateController(CandidatePassationService service, FraudDetectionService fraudService) {
         this.service = service;
+        this.fraudService = fraudService;
     }
 
     @PostMapping("/passations/start")
@@ -54,6 +59,19 @@ public class CandidateController {
         SubmitResult r = service.submit(passationId);
         return PassationView.of(r.passation(), ScoreBreakdownView.of(r.breakdown()));
     }
+
+    @PostMapping("/passations/{passationId}/fraud-event")
+    public ResponseEntity<Void> reportFraudEvent(@PathVariable UUID passationId,
+                                                  @Valid @RequestBody FraudEventRequest body) {
+        fraudService.recordEvent(passationId, body.eventType(),
+                body.metadata() == null ? "{}" : body.metadata());
+        return ResponseEntity.noContent().build();
+    }
+
+    public record FraudEventRequest(
+            @NotNull FraudEventType eventType,
+            String metadata
+    ) {}
 
     public record StartRequest(
             @NotBlank String token,

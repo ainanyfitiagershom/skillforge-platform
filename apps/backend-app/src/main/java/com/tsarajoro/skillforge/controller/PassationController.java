@@ -149,6 +149,25 @@ public class PassationController {
                     (String) r.get("grading_explanation")));
         }
 
+        String fraudSql = """
+                SELECT id, event_type, occurred_at, metadata::text AS metadata
+                FROM fraud_events
+                WHERE passation_id = :pid
+                ORDER BY occurred_at ASC
+                """;
+        @SuppressWarnings("unchecked")
+        List<Tuple> fraudRows = em.createNativeQuery(fraudSql, Tuple.class)
+                .setParameter("pid", id)
+                .getResultList();
+        List<FraudEventView> fraudEvents = new ArrayList<>();
+        for (Tuple r : fraudRows) {
+            fraudEvents.add(new FraudEventView(
+                    (UUID) r.get("id"),
+                    (String) r.get("event_type"),
+                    toOffsetDateTime(r.get("occurred_at")),
+                    (String) r.get("metadata")));
+        }
+
         return ResponseEntity.ok(new PassationDetail(
                 (UUID) h.get("passation_id"),
                 toOffsetDateTime(h.get("started_at")),
@@ -162,7 +181,8 @@ public class PassationController {
                 (String) h.get("test_name"),
                 (String) h.get("profile_code"),
                 toOffsetDateTime(h.get("test_created_at")),
-                answers));
+                answers,
+                fraudEvents));
     }
 
     @GetMapping("/{id}/report")
@@ -215,7 +235,14 @@ public class PassationController {
             String testName,
             String profileCode,
             OffsetDateTime testCreatedAt,
-            List<AnswerDetail> answers) {}
+            List<AnswerDetail> answers,
+            List<FraudEventView> fraudEvents) {}
+
+    public record FraudEventView(
+            UUID id,
+            String eventType,
+            OffsetDateTime occurredAt,
+            String metadata) {}
 
     public record AnswerDetail(
             UUID id,

@@ -186,7 +186,52 @@ export const api = {
       method: 'POST',
       auth: false,
     }),
+
+  reportFraudEvent: (
+    passationId: string,
+    eventType: FraudEventType,
+    metadata: Record<string, unknown> = {},
+  ) =>
+    request<void>(`/candidate/passations/${passationId}/fraud-event`, {
+      method: 'POST',
+      auth: false,
+      body: { eventType, metadata: JSON.stringify(metadata) },
+    }).catch(() => {
+      /* silent : ne jamais bloquer la passation candidat */
+    }),
+
+  getAnalyticsKpis: () =>
+    request<AnalyticsKpis>('/analytics/kpis'),
+
+  getScoresDistribution: () =>
+    request<ScoreBucket[]>('/analytics/scores-distribution'),
+
+  getQuestionsStats: () =>
+    request<QuestionStats[]>('/analytics/questions-stats'),
+
+  getSkillsAvg: () =>
+    request<SkillAverage[]>('/analytics/skills-avg'),
+
+  getRecentCandidates: () =>
+    request<RecentCandidate[]>('/analytics/recent-candidates'),
+
+  fetchCandidatesCsv: () => fetchBlob('/analytics/export/candidates.csv'),
+
+  fetchQuestionsStatsCsv: () => fetchBlob('/analytics/export/questions-stats.csv'),
 };
+
+async function fetchBlob(path: string): Promise<Blob> {
+  const tokens = loadTokens();
+  const headers = new Headers();
+  if (tokens?.accessToken) {
+    headers.set('Authorization', `Bearer ${tokens.accessToken}`);
+  }
+  const res = await fetch(`/api${path}`, { headers });
+  if (!res.ok) {
+    throw new ApiError(res.status, res.statusText);
+  }
+  return res.blob();
+}
 
 // ---------- Types candidat ----------
 
@@ -348,6 +393,20 @@ export type AnswerDetail = {
   gradingExplanation: string | null;
 };
 
+export type FraudEventType =
+  | 'FOCUS_LOSS'
+  | 'PASTE_SUSPICIOUS'
+  | 'FAST_ANSWER'
+  | 'DEVTOOLS_OPEN';
+
+export type FraudEventView = {
+  id: string;
+  eventType: FraudEventType;
+  occurredAt: string;
+  /** JSON serialise en string : { durationMs?, pastedLength?, questionId?, elapsedMs?, answerLength? } */
+  metadata: string | null;
+};
+
 export type PassationDetail = {
   passationId: string;
   startedAt: string;
@@ -362,6 +421,7 @@ export type PassationDetail = {
   profileCode: string;
   testCreatedAt: string;
   answers: AnswerDetail[];
+  fraudEvents: FraudEventView[];
 };
 
 export type Recommendation = 'HIRE' | 'INTERVIEW' | 'REJECT';
@@ -378,4 +438,61 @@ export type ReportView = {
   llmModel: string | null;
   tokensUsed: number;
   costEur: number | string;
+};
+
+// ============ Analytics (Tache 5 Sprint 6) ============
+
+export type AnalyticsKpis = {
+  totalCandidates: number;
+  submittedPassations: number;
+  totalPassations: number;
+  avgGlobalScore: number | string | null;
+  approvedQuestions: number;
+  reportsGenerated: number;
+  avgFraudScore: number | string | null;
+  highFraudCount: number;
+};
+
+export type ScoreBucket = {
+  min: number;
+  max: number;
+  count: number;
+};
+
+export type QuestionQualityLabel =
+  | 'GOOD'
+  | 'TOO_EASY'
+  | 'TOO_HARD'
+  | 'POOR_DISCRIMINANT'
+  | 'INSUFFICIENT_DATA';
+
+export type QuestionStats = {
+  id: string;
+  type: QuestionType;
+  statement: string;
+  difficulty: number;
+  usages: number;
+  difficultyIndex: number | string | null;
+  avgScore: number | string | null;
+  discriminantPower: number | string | null;
+  qualityLabel: QuestionQualityLabel;
+};
+
+export type SkillAverage = {
+  code: string;
+  displayName: string;
+  category: string;
+  avgScore: number | string | null;
+  candidateCount: number;
+};
+
+export type RecentCandidate = {
+  passationId: string;
+  submittedAt: string | null;
+  candidateName: string | null;
+  candidateEmail: string;
+  profileCode: string;
+  globalScore: number | string | null;
+  recommendation: Recommendation | null;
+  fraudRiskScore: number;
 };

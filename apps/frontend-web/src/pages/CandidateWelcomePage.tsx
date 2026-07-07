@@ -9,6 +9,7 @@ import { ApiError, api } from '@/lib/api';
 import {
   AlertCircle,
   ArrowRight,
+  Eye,
   Lock,
   ShieldCheck,
   Sparkles,
@@ -27,6 +28,7 @@ export function CandidateWelcomePage() {
 
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [fraudConsent, setFraudConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -56,14 +58,19 @@ export function CandidateWelcomePage() {
 
   const handleStart = async (e: FormEvent) => {
     e.preventDefault();
-    if (!token) return;
+    if (!token || !fraudConsent) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
       const passation = await api.candidateStartPassation(token, email, displayName);
       sessionStorage.setItem(
         `skillforge.passation.${token}`,
-        JSON.stringify({ id: passation.id, candidateEmail: email }),
+        JSON.stringify({
+          id: passation.id,
+          candidateEmail: email,
+          fraudConsent: true,
+          fraudConsentAt: new Date().toISOString(),
+        }),
       );
       navigate(`/candidate/passation/${token}/run`);
     } catch (err) {
@@ -176,6 +183,33 @@ export function CandidateWelcomePage() {
                     />
                   </div>
 
+                  <div className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-4">
+                    <div className="mb-3 flex items-start gap-2.5">
+                      <Eye className="mt-0.5 h-4 w-4 shrink-0 text-accent-strong" />
+                      <div className="text-xs leading-relaxed text-foreground">
+                        <p className="mb-1 font-semibold">Analyse anti-fraude pendant la passation</p>
+                        <p className="text-muted">
+                          Pour preserver l equite entre candidats, votre navigation est
+                          analysee automatiquement (changements d onglet, copier-coller
+                          volumineux, timings anormalement rapides). Ces signaux sont
+                          agreges en un score de risque consulte par le recruteur. Ils
+                          ne bloquent pas votre passation.
+                        </p>
+                      </div>
+                    </div>
+                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-surface px-3 py-2.5 text-xs font-medium text-foreground transition-colors hover:bg-background-soft">
+                      <input
+                        type="checkbox"
+                        checked={fraudConsent}
+                        onChange={(e) => setFraudConsent(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-accent-strong focus:ring-accent"
+                      />
+                      <span>
+                        J accepte l analyse anti-fraude durant ma passation, conformement au RGPD.
+                      </span>
+                    </label>
+                  </div>
+
                   {submitError && (
                     <div className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">
                       {submitError}
@@ -186,11 +220,13 @@ export function CandidateWelcomePage() {
                     type="submit"
                     variant="cta"
                     size="xl"
-                    disabled={submitting}
+                    disabled={submitting || !fraudConsent}
                     className="w-full"
                   >
                     {submitting ? (
                       'Demarrage…'
+                    ) : !fraudConsent ? (
+                      'Acceptez l analyse anti-fraude pour continuer'
                     ) : (
                       <>
                         Commencer le test

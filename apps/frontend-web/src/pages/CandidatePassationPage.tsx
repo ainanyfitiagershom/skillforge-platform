@@ -8,9 +8,11 @@ import { CodeEditor } from '@/components/CodeEditor';
 import {
   ApiError,
   CandidateQuestionView,
+  FraudEventType,
   RunCodeResult,
   api,
 } from '@/lib/api';
+import { useFraudTracker, FraudSignal } from '@/lib/useFraudTracker';
 import {
   Check,
   ChevronLeft,
@@ -19,7 +21,9 @@ import {
   Clock,
   AlertCircle,
   Loader2,
+  ShieldAlert,
 } from 'lucide-react';
+import { cn } from '@/lib/cn';
 
 export function CandidatePassationPage() {
   const { token } = useParams<{ token: string }>();
@@ -27,7 +31,10 @@ export function CandidatePassationPage() {
 
   const [questions, setQuestions] = useState<CandidateQuestionView[] | null>(null);
   const [passationId, setPassationId] = useState<string | null>(null);
+  const [fraudConsent, setFraudConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const tracker = useFraudTracker(passationId, fraudConsent);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
@@ -50,6 +57,7 @@ export function CandidatePassationPage() {
           try {
             const parsed = JSON.parse(raw);
             setPassationId(parsed.id);
+            setFraudConsent(parsed.fraudConsent === true);
           } catch {
             setError('Session corrompue. Recommencez depuis le lien initial.');
           }
@@ -67,11 +75,25 @@ export function CandidatePassationPage() {
     [questions, currentIndex],
   );
 
+  const questionMountedAt = useRef<Record<string, number>>({});
+  useEffect(() => {
+    if (currentQuestion && questionMountedAt.current[currentQuestion.id] == null) {
+      questionMountedAt.current[currentQuestion.id] = Date.now();
+    }
+  }, [currentQuestion]);
+
   const updateAnswer = (questionId: string, patch: Partial<AnswerState>) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: { ...prev[questionId], ...patch },
     }));
+
+    if (fraudConsent && patch.text != null) {
+      const mountedAt = questionMountedAt.current[questionId];
+      if (mountedAt) {
+        tracker.signalFastAnswer(questionId, Date.now() - mountedAt, patch.text.length);
+      }
+    }
   };
 
   const handleSubmit = async () => {
@@ -190,6 +212,47 @@ export function CandidatePassationPage() {
           )}
         </div>
       </main>
+
+      <FraudBanner signal={tracker.lastSignal} />
+    </div>
+  );
+}
+
+const FRAUD_LABELS: Record<FraudEventType, string> = {
+  FOCUS_LOSS: 'Sortie de l onglet detectee',
+  PASTE_SUSPICIOUS: 'Copier-coller volumineux detecte',
+  FAST_ANSWER: 'Temps de reponse inhabituel detecte',
+  DEVTOOLS_OPEN: 'Outils developpeur detectes',
+};
+
+function FraudBanner({ signal }: { signal: FraudSignal | null }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!signal) return;
+    setVisible(true);
+    const t = window.setTimeout(() => setVisible(false), 3500);
+    return () => window.clearTimeout(t);
+  }, [signal]);
+
+  if (!signal || !visible) return null;
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={cn(
+        'fixed bottom-6 right-6 z-50 flex max-w-sm items-start gap-3 rounded-2xl',
+        'border border-amber-300 bg-amber-50 px-4 py-3 shadow-lg backdrop-blur-md',
+        'dark:border-amber-700 dark:bg-amber-950/50',
+        'animate-fade-in-up',
+      )}
+    >
+      <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" />
+      <div className="text-xs text-amber-900 dark:text-amber-100">
+        <div className="font-semibold">{FRAUD_LABELS[signal.type]}</div>
+        <div className="mt-0.5 opacity-80">Evenement enregistre pour le recruteur.</div>
+      </div>
     </div>
   );
 }

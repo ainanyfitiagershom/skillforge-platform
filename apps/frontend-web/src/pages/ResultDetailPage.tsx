@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { CodeEditor } from '@/components/CodeEditor';
 import { ScoreRing } from '@/components/ScoreRing';
 import { ReportSection } from '@/components/ReportSection';
+import { FraudSection } from '@/components/FraudSection';
 import { AnswerDetail, PassationDetail, api } from '@/lib/api';
 import {
   ArrowLeft,
@@ -244,6 +245,8 @@ export function ResultDetailPage() {
       </Card>
 
       {/* Compte rendu IA */}
+      <FraudSection passation={detail} />
+
       <ReportSection passation={detail} />
 
       {/* Liste des questions */}
