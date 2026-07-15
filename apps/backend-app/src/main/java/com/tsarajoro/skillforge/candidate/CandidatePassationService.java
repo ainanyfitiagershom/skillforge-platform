@@ -88,6 +88,31 @@ public class CandidatePassationService {
                 });
     }
 
+    /** Reconstitue l etat d une passation en cours (pour restaurer l UI apres un F5 candidat). */
+    @Transactional(readOnly = true)
+    public PassationState getState(UUID passationId) {
+        Passation p = passationRepo.findById(passationId).orElseThrow();
+        List<Answer> answers = answerRepo.findByPassationId(passationId);
+        List<AnswerSnapshot> snapshots = new ArrayList<>();
+        for (Answer a : answers) {
+            snapshots.add(new AnswerSnapshot(
+                    a.getQuestionId(),
+                    a.getAnswerText(),
+                    a.getSubmittedCode(),
+                    a.getQcmSelectedIndex(),
+                    a.getLastTestsPassed(),
+                    a.getLastTestsTotal(),
+                    a.getLastStdout(),
+                    a.getLastStderr(),
+                    a.getScore()));
+        }
+        return new PassationState(
+                p.getId(),
+                p.getStartedAt(),
+                p.getSubmittedAt(),
+                snapshots);
+    }
+
     @Transactional
     public Answer saveTextAnswer(UUID passationId, UUID questionId, String answerText) {
         Answer existing = answerRepo
@@ -373,4 +398,21 @@ public class CandidatePassationService {
             int testsTotal,
             double score
     ) {}
+
+    public record PassationState(
+            UUID id,
+            OffsetDateTime startedAt,
+            OffsetDateTime submittedAt,
+            List<AnswerSnapshot> answers) {}
+
+    public record AnswerSnapshot(
+            UUID questionId,
+            String answerText,
+            String submittedCode,
+            Integer qcmSelectedIndex,
+            Integer lastTestsPassed,
+            Integer lastTestsTotal,
+            String lastStdout,
+            String lastStderr,
+            BigDecimal score) {}
 }

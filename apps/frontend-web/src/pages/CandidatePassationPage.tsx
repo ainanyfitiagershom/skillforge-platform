@@ -28,51 +28,118 @@ import { cn } from '@/lib/cn';
 export function CandidatePassationPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const indexStorageKey = token ? `skillforge.passation.${token}.index` : null;
 
   const [questions, setQuestions] = useState<CandidateQuestionView[] | null>(null);
   const [passationId, setPassationId] = useState<string | null>(null);
   const [fraudConsent, setFraudConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
 
   const tracker = useFraudTracker(passationId, fraudConsent);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Lecture synchrone de l index sauvegarde AVANT le premier render, pour eviter
+  // que l'effet de persistance ecrase "0" par-dessus la vraie valeur au mount.
+  const [currentIndex, setCurrentIndex] = useState<number>(() => {
+    if (!token) return 0;
+    const saved = sessionStorage.getItem(`skillforge.passation.${token}.index`);
+    if (!saved) return 0;
+    const n = parseInt(saved, 10);
+    return Number.isNaN(n) || n < 0 ? 0 : n;
+  });
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  // Chrono : recalcule elapsed a partir de startedAt (persistant en base) plutot que d un compteur local.
   const [elapsedSec, setElapsedSec] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setElapsedSec((s) => s + 1), 1000);
+    if (startedAt == null) return;
+    const tick = () => setElapsedSec(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+    tick();
+    const t = setInterval(tick, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [startedAt]);
 
   useEffect(() => {
     if (!token) return;
+    let cancelled = false;
+
     api
       .candidateResolveInvitation(token)
       .then((res) => {
+        if (cancelled) return;
         setQuestions(res.questions);
         const raw = sessionStorage.getItem(`skillforge.passation.${token}`);
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw);
-            setPassationId(parsed.id);
-            setFraudConsent(parsed.fraudConsent === true);
-          } catch {
-            setError('Session corrompue. Recommencez depuis le lien initial.');
-          }
-        } else {
+        if (!raw) {
           setError("Vous n'avez pas commence le test. Revenez sur l'accueil.");
+          return;
         }
+        let sessionData: { id: string; fraudConsent?: boolean };
+        try {
+          sessionData = JSON.parse(raw);
+        } catch {
+          setError('Session corrompue. Recommencez depuis le lien initial.');
+          return;
+        }
+        setPassationId(sessionData.id);
+        setFraudConsent(sessionData.fraudConsent === true);
+
+        // Restauration de l etat serveur (F5 candidat, changement d onglet...)
+        api
+          .candidateGetState(sessionData.id)
+          .then((state) => {
+            if (cancelled) return;
+            setStartedAt(new Date(state.startedAt).getTime());
+            const restored: Record<string, AnswerState> = {};
+            for (const a of state.answers) {
+              const s: AnswerState = {};
+              if (a.answerText != null) s.text = a.answerText;
+              if (a.submittedCode != null) s.code = a.submittedCode;
+              if (a.qcmSelectedIndex != null) s.qcmIndex = a.qcmSelectedIndex;
+              if (a.lastTestsTotal != null && a.lastTestsTotal > 0) {
+                s.runResult = {
+                  status: 'OK',
+                  exitCode: 0,
+                  stdout: a.lastStdout ?? '',
+                  stderr: a.lastStderr ?? '',
+                  durationMs: 0,
+                  testsPassed: a.lastTestsPassed ?? 0,
+                  testsTotal: a.lastTestsTotal,
+                  score: a.score == null
+                    ? 0
+                    : (typeof a.score === 'number' ? a.score : parseFloat(a.score)) / 100,
+                };
+              }
+              restored[a.questionId] = s;
+            }
+            setAnswers(restored);
+          })
+          .catch(() => {
+            // Sans etat serveur, on demarre a zero (nouvelle passation).
+            setStartedAt(Date.now());
+          });
       })
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : 'Erreur de chargement'),
-      );
-  }, [token]);
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Erreur de chargement');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, indexStorageKey]);
+
+  // Clamp defensif : si l index sauvegarde depasse le nombre de questions
+  // (ex: passation regeneree avec moins de questions), on retombe sur 0.
+  const safeIndex = questions && currentIndex >= questions.length ? 0 : currentIndex;
+
+  // Persistance de l index courant a chaque changement.
+  useEffect(() => {
+    if (indexStorageKey) sessionStorage.setItem(indexStorageKey, String(safeIndex));
+  }, [safeIndex, indexStorageKey]);
 
   const currentQuestion = useMemo(
-    () => (questions ? questions[currentIndex] : null),
-    [questions, currentIndex],
+    () => (questions ? questions[safeIndex] : null),
+    [questions, safeIndex],
   );
 
   const questionMountedAt = useRef<Record<string, number>>({});
@@ -102,6 +169,7 @@ export function CandidatePassationPage() {
     try {
       const final = await api.candidateSubmit(passationId);
       sessionStorage.removeItem(`skillforge.passation.${token}`);
+      if (indexStorageKey) sessionStorage.removeItem(indexStorageKey);
       navigate(`/candidate/passation/${token}/done`, {
         state: { score: final.globalScore, breakdown: final.scoreBreakdown },
       });
@@ -163,7 +231,7 @@ export function CandidatePassationPage() {
           </div>
           <div className="flex items-center gap-3">
             <Badge tone="muted">
-              Question {currentIndex + 1} / {questions.length}
+              Question {safeIndex + 1} / {questions.length}
             </Badge>
             <Badge tone="accent">
               <Clock className="h-3 w-3" />
@@ -175,7 +243,7 @@ export function CandidatePassationPage() {
         <div className="h-1 bg-background-soft">
           <div
             className="h-full bg-accent-gradient transition-all duration-300"
-            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+            style={{ width: `${((safeIndex + 1) / questions.length) * 100}%` }}
           />
         </div>
       </header>
@@ -192,15 +260,15 @@ export function CandidatePassationPage() {
           <Button
             variant="secondary"
             size="lg"
-            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            disabled={currentIndex === 0}
+            onClick={() => setCurrentIndex(Math.max(0, safeIndex - 1))}
+            disabled={safeIndex === 0}
           >
             <ChevronLeft className="h-4 w-4" />
             Precedente
           </Button>
 
-          {currentIndex < questions.length - 1 ? (
-            <Button variant="cta" size="lg" onClick={() => setCurrentIndex((i) => i + 1)}>
+          {safeIndex < questions.length - 1 ? (
+            <Button variant="cta" size="lg" onClick={() => setCurrentIndex(safeIndex + 1)}>
               Suivante
               <ChevronRight className="h-4 w-4" />
             </Button>

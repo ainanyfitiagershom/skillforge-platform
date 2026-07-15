@@ -186,6 +186,11 @@ export const api = {
       auth: false,
     }),
 
+  candidateGetState: (passationId: string) =>
+    request<CandidatePassationState>(`/candidate/passations/${passationId}/state`, {
+      auth: false,
+    }),
+
   reportFraudEvent: (
     passationId: string,
     eventType: FraudEventType,
@@ -265,6 +270,25 @@ export type CandidatePassation = {
   globalScore: number | string | null;
   fraudRiskScore: number;
   scoreBreakdown: ScoreBreakdownView | null;
+};
+
+export type CandidateAnswerSnapshot = {
+  questionId: string;
+  answerText: string | null;
+  submittedCode: string | null;
+  qcmSelectedIndex: number | null;
+  lastTestsPassed: number | null;
+  lastTestsTotal: number | null;
+  lastStdout: string | null;
+  lastStderr: string | null;
+  score: number | string | null;
+};
+
+export type CandidatePassationState = {
+  id: string;
+  startedAt: string;
+  submittedAt: string | null;
+  answers: CandidateAnswerSnapshot[];
 };
 
 export type RunCodeResult = {

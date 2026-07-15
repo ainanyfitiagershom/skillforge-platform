@@ -1,6 +1,7 @@
 package com.tsarajoro.skillforge.controller;
 
 import com.tsarajoro.skillforge.candidate.CandidatePassationService;
+import com.tsarajoro.skillforge.candidate.CandidatePassationService.PassationState;
 import com.tsarajoro.skillforge.candidate.CandidatePassationService.RunCodeResult;
 import com.tsarajoro.skillforge.candidate.CandidatePassationService.ScoreBreakdown;
 import com.tsarajoro.skillforge.candidate.CandidatePassationService.SubmitResult;
@@ -13,6 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,6 +54,11 @@ public class CandidateController {
                                   @Valid @RequestBody RunCodeRequest body) {
         return service.runCode(passationId, body.questionId(), body.language(),
                 body.userCode(), body.hiddenTests());
+    }
+
+    @GetMapping("/passations/{passationId}/state")
+    public PassationState state(@PathVariable UUID passationId) {
+        return service.getState(passationId);
     }
 
     @PostMapping("/passations/{passationId}/submit")
