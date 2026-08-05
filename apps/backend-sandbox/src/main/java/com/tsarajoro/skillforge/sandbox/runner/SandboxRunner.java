@@ -83,9 +83,15 @@ public class SandboxRunner {
             HostConfig hostConfig = buildHardenedHostConfig(workDir);
 
             // 3) Creer le conteneur
+            //    --entrypoint vide : on court-circuite docker-entrypoint.sh qui casse
+            //    quand toutes les capabilities Linux sont droppees (le script shell
+            //    a besoin d au moins CAP_DAC_READ_SEARCH pour resoudre "command -v").
+            //    En executant directement php/node, on evite le probleme sans affaiblir
+            //    la securite (les binaires sont deja monkey-tested par le RUN du Dockerfile).
             CreateContainerResponse created = docker.createContainerCmd(image)
                     .withHostConfig(hostConfig)
                     .withWorkingDir("/work")
+                    .withEntrypoint(new String[]{})
                     .withCmd(buildCommand(req.language(), req.hiddenTests() != null && !req.hiddenTests().isBlank()))
                     .withUser("1001:1001")
                     .withName("skillforge-sb-" + UUID.randomUUID().toString().substring(0, 8))
@@ -223,18 +229,38 @@ public class SandboxRunner {
 
     /**
      * Ecrit user-code et hidden-tests dans le workdir local.
+     * Le workdir est cree en 700 par defaut : on l'ouvre en 755 et les fichiers en 644
+     * pour que l'utilisateur non-privilegie 1001 du conteneur puisse lire les sources.
      */
     private void writeFiles(Path workDir, ExecutionRequest req) throws IOException {
+        setPosixPermissions(workDir, "rwxr-xr-x");
         if (req.language() == Language.PHP) {
-            Files.writeString(workDir.resolve("solution.php"), req.userCode());
+            Path sol = workDir.resolve("solution.php");
+            Files.writeString(sol, req.userCode());
+            setPosixPermissions(sol, "rw-r--r--");
             if (req.hiddenTests() != null && !req.hiddenTests().isBlank()) {
-                Files.writeString(workDir.resolve("HiddenTest.php"), req.hiddenTests());
+                Path tests = workDir.resolve("HiddenTest.php");
+                Files.writeString(tests, req.hiddenTests());
+                setPosixPermissions(tests, "rw-r--r--");
             }
         } else if (req.language() == Language.JS) {
-            Files.writeString(workDir.resolve("solution.js"), req.userCode());
+            Path sol = workDir.resolve("solution.js");
+            Files.writeString(sol, req.userCode());
+            setPosixPermissions(sol, "rw-r--r--");
             if (req.hiddenTests() != null && !req.hiddenTests().isBlank()) {
-                Files.writeString(workDir.resolve("hidden.test.js"), req.hiddenTests());
+                Path tests = workDir.resolve("hidden.test.js");
+                Files.writeString(tests, req.hiddenTests());
+                setPosixPermissions(tests, "rw-r--r--");
             }
+        }
+    }
+
+    private void setPosixPermissions(Path path, String perms) {
+        try {
+            Files.setPosixFilePermissions(path,
+                    java.nio.file.attribute.PosixFilePermissions.fromString(perms));
+        } catch (UnsupportedOperationException | IOException e) {
+            log.debug("cannot set posix permissions on {}: {}", path, e.getMessage());
         }
     }
 
@@ -250,9 +276,24 @@ public class SandboxRunner {
                     : new String[]{"php", "solution.php"};
         }
         if (lang == Language.JS) {
-            return hasTests
-                    ? new String[]{"jest", "--colors=false", "hidden.test.js"}
-                    : new String[]{"node", "solution.js"};
+            // Node 20 Permission Model : bloque toute lecture FS hors /work et /usr/local/lib
+            // (dependances Jest via require). Sans autorisation --allow-child-process, empeche
+            // aussi tout spawn de sous-process. --max-old-space-size limite V8 en RAM.
+            String[] hardened = {
+                    "node",
+                    "--experimental-permission",
+                    "--allow-fs-read=/work",
+                    "--allow-fs-read=/usr/local/lib/node_modules",
+                    "--allow-fs-read=/usr/lib",
+                    "--max-old-space-size=200"
+            };
+            String[] target = hasTests
+                    ? new String[]{"/usr/local/bin/jest", "--colors=false", "hidden.test.js"}
+                    : new String[]{"solution.js"};
+            String[] full = new String[hardened.length + target.length];
+            System.arraycopy(hardened, 0, full, 0, hardened.length);
+            System.arraycopy(target, 0, full, hardened.length, target.length);
+            return full;
         }
         throw new IllegalArgumentException("unsupported language " + lang);
     }

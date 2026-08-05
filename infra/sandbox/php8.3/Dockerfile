@@ -28,6 +28,9 @@ RUN apk add --no-cache --virtual .build-deps curl \
     && chmod +x /usr/local/bin/phpunit \
     && apk del .build-deps
 
+# Copier le php.ini durci (disable_functions, open_basedir, allow_url_fopen off, ...)
+COPY skillforge-php.ini /usr/local/etc/php/conf.d/zz-skillforge.ini
+
 # Creer un utilisateur non privilegie pour l'execution
 RUN addgroup -g 1001 -S sandbox \
     && adduser -u 1001 -S sandbox -G sandbox
@@ -37,6 +40,11 @@ WORKDIR /work
 
 # Verification rapide au build : PHP + PHPUnit doivent etre en place
 RUN php --version && phpunit --version
+
+# Durcissement final : disable_functions PHP bloque deja shell_exec/system/exec/backticks cote PHP.
+# On garde /bin/sh accessible (docker-php-entrypoint en a besoin). Le vrai bouclier reste :
+#   php.ini disable_functions + open_basedir + allow_url_fopen=Off  (script niveau PHP)
+#   + Docker --network=none, --cap-drop=ALL, seccomp, user 1001, readonly-rootfs  (niveau OS)
 
 # Par defaut, on ne fait rien — la commande sera passee par docker run
 CMD ["php", "--version"]

@@ -23,4 +23,13 @@ WORKDIR /work
 # Verification au build
 RUN node --version && jest --version
 
+# Durcissement final : /bin/sh ne peut pas etre chmod 700 (docker-entrypoint.sh en depend).
+# On chmod 700 uniquement les utilitaires unix qui servent aux attaques via
+# child_process.exec/spawn (cat, ls, whoami, id...) mais qu'aucun cas VALID Node ne necessite.
+# Le shell /bin/sh reste 755 pour l'entrypoint, mais sans utilitaires, exec("cat X") echoue.
+RUN for f in cat ls whoami id ps kill mkdir chmod chown wget curl nc netcat; do \
+      [ -f /bin/$f ] && chmod 700 /bin/$f || true; \
+      [ -f /usr/bin/$f ] && chmod 700 /usr/bin/$f || true; \
+    done
+
 CMD ["node", "--version"]
