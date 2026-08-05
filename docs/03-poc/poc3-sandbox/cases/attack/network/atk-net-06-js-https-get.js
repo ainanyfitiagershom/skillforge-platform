@@ -1,0 +1,1 @@
+const https=require("https");https.get("https://example.com",r=>{console.log("PWNED_HTTPS "+r.statusCode);process.exit(0);}).on("error",e=>{console.error("blocked "+e.code);process.exit(1);});setTimeout(()=>{console.error("timeout");process.exit(1);},4000);

@@ -1,0 +1,1202 @@
+[
+  {
+    "id": "atk-bns-01-php-open-basedir",
+    "language": "PHP",
+    "category": "bonus",
+    "verdict": "BLOCKED",
+    "description": "Contourner open_basedir via chdir puis ..",
+    "codeFile": "attack/bonus/atk-bns-01-php-open-basedir.php"
+  },
+  {
+    "id": "atk-bns-02-js-eval-import",
+    "language": "JS",
+    "category": "bonus",
+    "verdict": "BLOCKED",
+    "description": "Import dynamique fs via eval string",
+    "codeFile": "attack/bonus/atk-bns-02-js-eval-import.js"
+  },
+  {
+    "id": "atk-esc-01-php-shell-exec",
+    "language": "PHP",
+    "category": "escape",
+    "verdict": "BLOCKED",
+    "description": "shell_exec id",
+    "codeFile": "attack/escape/atk-esc-01-php-shell-exec.php"
+  },
+  {
+    "id": "atk-esc-02-php-system",
+    "language": "PHP",
+    "category": "escape",
+    "verdict": "BLOCKED",
+    "description": "system() ls",
+    "codeFile": "attack/escape/atk-esc-02-php-system.php"
+  },
+  {
+    "id": "atk-esc-03-php-exec",
+    "language": "PHP",
+    "category": "escape",
+    "verdict": "BLOCKED",
+    "description": "exec() cat passwd",
+    "codeFile": "attack/escape/atk-esc-03-php-exec.php"
+  },
+  {
+    "id": "atk-esc-04-php-backticks",
+    "language": "PHP",
+    "category": "escape",
+    "verdict": "BLOCKED",
+    "description": "Backticks whoami",
+    "codeFile": "attack/escape/atk-esc-04-php-backticks.php"
+  },
+  {
+    "id": "atk-esc-05-js-child-exec",
+    "language": "JS",
+    "category": "escape",
+    "verdict": "BLOCKED",
+    "description": "child_process.exec",
+    "codeFile": "attack/escape/atk-esc-05-js-child-exec.js"
+  },
+  {
+    "id": "atk-esc-06-js-spawn",
+    "language": "JS",
+    "category": "escape",
+    "verdict": "BLOCKED",
+    "description": "spawn ls /",
+    "codeFile": "attack/escape/atk-esc-06-js-spawn.js"
+  },
+  {
+    "id": "atk-esc-07-js-eval",
+    "language": "JS",
+    "category": "escape",
+    "verdict": "BLOCKED",
+    "description": "eval require child_process",
+    "codeFile": "attack/escape/atk-esc-07-js-eval.js"
+  },
+  {
+    "id": "atk-esc-08-php-eval",
+    "language": "PHP",
+    "category": "escape",
+    "verdict": "BLOCKED",
+    "description": "eval() code shell",
+    "codeFile": "attack/escape/atk-esc-08-php-eval.php"
+  },
+  {
+    "id": "atk-fork-01-php-while-true",
+    "language": "PHP",
+    "category": "fork-dos",
+    "verdict": "BLOCKED",
+    "description": "Boucle infinie PHP",
+    "codeFile": "attack/fork-dos/atk-fork-01-php-while-true.php"
+  },
+  {
+    "id": "atk-fork-02-php-recursion",
+    "language": "PHP",
+    "category": "fork-dos",
+    "verdict": "BLOCKED",
+    "description": "Recursion infinie stack overflow",
+    "codeFile": "attack/fork-dos/atk-fork-02-php-recursion.php"
+  },
+  {
+    "id": "atk-fork-03-js-while-true",
+    "language": "JS",
+    "category": "fork-dos",
+    "verdict": "BLOCKED",
+    "description": "Boucle infinie JS",
+    "codeFile": "attack/fork-dos/atk-fork-03-js-while-true.js"
+  },
+  {
+    "id": "atk-fork-04-js-recursion",
+    "language": "JS",
+    "category": "fork-dos",
+    "verdict": "BLOCKED",
+    "description": "Recursion infinie JS",
+    "codeFile": "attack/fork-dos/atk-fork-04-js-recursion.js"
+  },
+  {
+    "id": "atk-fork-05-php-fork-bomb",
+    "language": "PHP",
+    "category": "fork-dos",
+    "verdict": "BLOCKED",
+    "description": "Fork bomb via pcntl_fork",
+    "codeFile": "attack/fork-dos/atk-fork-05-php-fork-bomb.php"
+  },
+  {
+    "id": "atk-fork-06-js-child-process",
+    "language": "JS",
+    "category": "fork-dos",
+    "verdict": "BLOCKED",
+    "description": "child_process.fork bomb",
+    "codeFile": "attack/fork-dos/atk-fork-06-js-child-process.js"
+  },
+  {
+    "id": "atk-fork-07-js-setinterval",
+    "language": "JS",
+    "category": "fork-dos",
+    "verdict": "BLOCKED",
+    "description": "setInterval qui spawn",
+    "codeFile": "attack/fork-dos/atk-fork-07-js-setinterval.js"
+  },
+  {
+    "id": "atk-fork-08-php-usleep-loop",
+    "language": "PHP",
+    "category": "fork-dos",
+    "verdict": "BLOCKED",
+    "description": "Boucle avec usleep pour eviter idle detect",
+    "codeFile": "attack/fork-dos/atk-fork-08-php-usleep-loop.php"
+  },
+  {
+    "id": "atk-fsr-01-php-passwd",
+    "language": "PHP",
+    "category": "fs-read",
+    "verdict": "BLOCKED",
+    "description": "Lecture /etc/passwd",
+    "codeFile": "attack/fs-read/atk-fsr-01-php-passwd.php"
+  },
+  {
+    "id": "atk-fsr-02-php-shadow",
+    "language": "PHP",
+    "category": "fs-read",
+    "verdict": "BLOCKED",
+    "description": "Lecture /etc/shadow (protege)",
+    "codeFile": "attack/fs-read/atk-fsr-02-php-shadow.php"
+  },
+  {
+    "id": "atk-fsr-03-php-proc-environ",
+    "language": "PHP",
+    "category": "fs-read",
+    "verdict": "BLOCKED",
+    "description": "Lecture /proc/self/environ",
+    "codeFile": "attack/fs-read/atk-fsr-03-php-proc-environ.php"
+  },
+  {
+    "id": "atk-fsr-04-php-ssh-key",
+    "language": "PHP",
+    "category": "fs-read",
+    "verdict": "BLOCKED",
+    "description": "Lecture .ssh/id_rsa root",
+    "codeFile": "attack/fs-read/atk-fsr-04-php-ssh-key.php"
+  },
+  {
+    "id": "atk-fsr-05-js-passwd",
+    "language": "JS",
+    "category": "fs-read",
+    "verdict": "BLOCKED",
+    "description": "JS lit /etc/passwd",
+    "codeFile": "attack/fs-read/atk-fsr-05-js-passwd.js"
+  },
+  {
+    "id": "atk-fsr-06-js-proc-mounts",
+    "language": "JS",
+    "category": "fs-read",
+    "verdict": "BLOCKED",
+    "description": "JS lit /proc/mounts",
+    "codeFile": "attack/fs-read/atk-fsr-06-js-proc-mounts.js"
+  },
+  {
+    "id": "atk-fsr-07-php-listdir-host",
+    "language": "PHP",
+    "category": "fs-read",
+    "verdict": "BLOCKED",
+    "description": "Listing / racine host",
+    "codeFile": "attack/fs-read/atk-fsr-07-php-listdir-host.php"
+  },
+  {
+    "id": "atk-fsr-08-js-hostname",
+    "language": "JS",
+    "category": "fs-read",
+    "verdict": "BLOCKED",
+    "description": "os.hostname os.userInfo",
+    "codeFile": "attack/fs-read/atk-fsr-08-js-hostname.js"
+  },
+  {
+    "id": "atk-fsw-01-php-write-tmp",
+    "language": "PHP",
+    "category": "fs-write",
+    "verdict": "BLOCKED",
+    "description": "Ecriture dans /tmp",
+    "codeFile": "attack/fs-write/atk-fsw-01-php-write-tmp.php"
+  },
+  {
+    "id": "atk-fsw-02-php-write-etc",
+    "language": "PHP",
+    "category": "fs-write",
+    "verdict": "BLOCKED",
+    "description": "Ecriture dans /etc (readonly)",
+    "codeFile": "attack/fs-write/atk-fsw-02-php-write-etc.php"
+  },
+  {
+    "id": "atk-fsw-03-php-chmod",
+    "language": "PHP",
+    "category": "fs-write",
+    "verdict": "BLOCKED",
+    "description": "chmod fichier systeme",
+    "codeFile": "attack/fs-write/atk-fsw-03-php-chmod.php"
+  },
+  {
+    "id": "atk-fsw-04-js-write-tmp",
+    "language": "JS",
+    "category": "fs-write",
+    "verdict": "BLOCKED",
+    "description": "JS write /tmp",
+    "codeFile": "attack/fs-write/atk-fsw-04-js-write-tmp.js"
+  },
+  {
+    "id": "atk-fsw-05-js-write-work",
+    "language": "JS",
+    "category": "fs-write",
+    "verdict": "BLOCKED",
+    "description": "Reecrire /work (mount readonly)",
+    "codeFile": "attack/fs-write/atk-fsw-05-js-write-work.js"
+  },
+  {
+    "id": "atk-fsw-06-php-mkdir-root",
+    "language": "PHP",
+    "category": "fs-write",
+    "verdict": "BLOCKED",
+    "description": "mkdir dans /",
+    "codeFile": "attack/fs-write/atk-fsw-06-php-mkdir-root.php"
+  },
+  {
+    "id": "atk-fsw-07-js-mkdir-host",
+    "language": "JS",
+    "category": "fs-write",
+    "verdict": "BLOCKED",
+    "description": "mkdir /root",
+    "codeFile": "attack/fs-write/atk-fsw-07-js-mkdir-host.js"
+  },
+  {
+    "id": "atk-fsw-08-php-symlink",
+    "language": "PHP",
+    "category": "fs-write",
+    "verdict": "BLOCKED",
+    "description": "Symlink /etc/passwd",
+    "codeFile": "attack/fs-write/atk-fsw-08-php-symlink.php"
+  },
+  {
+    "id": "atk-mem-01-php-string",
+    "language": "PHP",
+    "category": "memory",
+    "verdict": "BLOCKED",
+    "description": "Alloc string 512 Mo",
+    "codeFile": "attack/memory/atk-mem-01-php-string.php"
+  },
+  {
+    "id": "atk-mem-02-php-array-grow",
+    "language": "PHP",
+    "category": "memory",
+    "verdict": "BLOCKED",
+    "description": "Array 10M entrees",
+    "codeFile": "attack/memory/atk-mem-02-php-array-grow.php"
+  },
+  {
+    "id": "atk-mem-03-php-recurse-string",
+    "language": "PHP",
+    "category": "memory",
+    "verdict": "BLOCKED",
+    "description": "String doubling",
+    "codeFile": "attack/memory/atk-mem-03-php-recurse-string.php"
+  },
+  {
+    "id": "atk-mem-04-js-buffer",
+    "language": "JS",
+    "category": "memory",
+    "verdict": "BLOCKED",
+    "description": "Buffer 512 Mo (force RSS via fill)",
+    "codeFile": "attack/memory/atk-mem-04-js-buffer.js"
+  },
+  {
+    "id": "atk-mem-05-js-array-grow",
+    "language": "JS",
+    "category": "memory",
+    "verdict": "BLOCKED",
+    "description": "Array push 10M objets",
+    "codeFile": "attack/memory/atk-mem-05-js-array-grow.js"
+  },
+  {
+    "id": "atk-mem-06-js-string-double",
+    "language": "JS",
+    "category": "memory",
+    "verdict": "BLOCKED",
+    "description": "String doubling JS",
+    "codeFile": "attack/memory/atk-mem-06-js-string-double.js"
+  },
+  {
+    "id": "atk-mem-07-php-fill-arr",
+    "language": "PHP",
+    "category": "memory",
+    "verdict": "BLOCKED",
+    "description": "array_fill enorme",
+    "codeFile": "attack/memory/atk-mem-07-php-fill-arr.php"
+  },
+  {
+    "id": "atk-mem-08-js-typed-array",
+    "language": "JS",
+    "category": "memory",
+    "verdict": "BLOCKED",
+    "description": "Float64Array 512 Mo (avec ecriture)",
+    "codeFile": "attack/memory/atk-mem-08-js-typed-array.js"
+  },
+  {
+    "id": "atk-net-01-php-fsockopen",
+    "language": "PHP",
+    "category": "network",
+    "verdict": "BLOCKED",
+    "description": "fsockopen vers Google",
+    "codeFile": "attack/network/atk-net-01-php-fsockopen.php"
+  },
+  {
+    "id": "atk-net-02-php-file-get-http",
+    "language": "PHP",
+    "category": "network",
+    "verdict": "BLOCKED",
+    "description": "file_get_contents http",
+    "codeFile": "attack/network/atk-net-02-php-file-get-http.php"
+  },
+  {
+    "id": "atk-net-03-php-curl",
+    "language": "PHP",
+    "category": "network",
+    "verdict": "BLOCKED",
+    "description": "curl_exec vers domaine externe",
+    "codeFile": "attack/network/atk-net-03-php-curl.php"
+  },
+  {
+    "id": "atk-net-04-php-dns",
+    "language": "PHP",
+    "category": "network",
+    "verdict": "BLOCKED",
+    "description": "DNS lookup gethostbyname",
+    "codeFile": "attack/network/atk-net-04-php-dns.php"
+  },
+  {
+    "id": "atk-net-05-js-http-get",
+    "language": "JS",
+    "category": "network",
+    "verdict": "BLOCKED",
+    "description": "http.get vers Google",
+    "codeFile": "attack/network/atk-net-05-js-http-get.js"
+  },
+  {
+    "id": "atk-net-06-js-https-get",
+    "language": "JS",
+    "category": "network",
+    "verdict": "BLOCKED",
+    "description": "https.get vers domaine externe",
+    "codeFile": "attack/network/atk-net-06-js-https-get.js"
+  },
+  {
+    "id": "atk-net-07-js-dns-lookup",
+    "language": "JS",
+    "category": "network",
+    "verdict": "BLOCKED",
+    "description": "dns.lookup",
+    "codeFile": "attack/network/atk-net-07-js-dns-lookup.js"
+  },
+  {
+    "id": "atk-net-08-js-net-socket",
+    "language": "JS",
+    "category": "network",
+    "verdict": "BLOCKED",
+    "description": "net.Socket TCP brut",
+    "codeFile": "attack/network/atk-net-08-js-net-socket.js"
+  },
+  {
+    "id": "js-01-fizzbuzz",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "FizzBuzz 1 a 15",
+    "codeFile": "valid/js/js-01-fizzbuzz.js"
+  },
+  {
+    "id": "js-02-factorielle",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Factorielle recursive",
+    "codeFile": "valid/js/js-02-factorielle.js"
+  },
+  {
+    "id": "js-03-fibonacci",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "10 Fibonacci",
+    "codeFile": "valid/js/js-03-fibonacci.js"
+  },
+  {
+    "id": "js-04-reverse-string",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Reverse string",
+    "codeFile": "valid/js/js-04-reverse-string.js"
+  },
+  {
+    "id": "js-05-palindrome",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Palindrome",
+    "codeFile": "valid/js/js-05-palindrome.js"
+  },
+  {
+    "id": "js-06-tri-bulles",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Bubble sort",
+    "codeFile": "valid/js/js-06-tri-bulles.js"
+  },
+  {
+    "id": "js-07-somme-array",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Somme reduce",
+    "codeFile": "valid/js/js-07-somme-array.js"
+  },
+  {
+    "id": "js-08-json-stringify",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "JSON stringify",
+    "codeFile": "valid/js/js-08-json-stringify.js"
+  },
+  {
+    "id": "js-09-json-parse",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "JSON parse",
+    "codeFile": "valid/js/js-09-json-parse.js"
+  },
+  {
+    "id": "js-10-regex-email",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Regex email",
+    "codeFile": "valid/js/js-10-regex-email.js"
+  },
+  {
+    "id": "js-11-replace-all",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "replaceAll",
+    "codeFile": "valid/js/js-11-replace-all.js"
+  },
+  {
+    "id": "js-12-split-reverse",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "split reverse join",
+    "codeFile": "valid/js/js-12-split-reverse.js"
+  },
+  {
+    "id": "js-13-filter-even",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "filter pairs",
+    "codeFile": "valid/js/js-13-filter-even.js"
+  },
+  {
+    "id": "js-14-map-square",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "map carre",
+    "codeFile": "valid/js/js-14-map-square.js"
+  },
+  {
+    "id": "js-15-reduce-product",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "reduce produit",
+    "codeFile": "valid/js/js-15-reduce-product.js"
+  },
+  {
+    "id": "js-16-count-words",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "split space count",
+    "codeFile": "valid/js/js-16-count-words.js"
+  },
+  {
+    "id": "js-17-uppercase",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "toUpperCase",
+    "codeFile": "valid/js/js-17-uppercase.js"
+  },
+  {
+    "id": "js-18-substring",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "slice negatif",
+    "codeFile": "valid/js/js-18-substring.js"
+  },
+  {
+    "id": "js-19-date-format",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "toISOString",
+    "codeFile": "valid/js/js-19-date-format.js"
+  },
+  {
+    "id": "js-20-template",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "template string",
+    "codeFile": "valid/js/js-20-template.js"
+  },
+  {
+    "id": "js-21-closure",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Closure counter",
+    "codeFile": "valid/js/js-21-closure.js"
+  },
+  {
+    "id": "js-22-slice",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Array slice",
+    "codeFile": "valid/js/js-22-slice.js"
+  },
+  {
+    "id": "js-23-concat-spread",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Spread concat",
+    "codeFile": "valid/js/js-23-concat-spread.js"
+  },
+  {
+    "id": "js-24-unique-set",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Set unique",
+    "codeFile": "valid/js/js-24-unique-set.js"
+  },
+  {
+    "id": "js-25-sort-desc",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "sort desc",
+    "codeFile": "valid/js/js-25-sort-desc.js"
+  },
+  {
+    "id": "js-26-object-keys",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Object.keys sorted",
+    "codeFile": "valid/js/js-26-object-keys.js"
+  },
+  {
+    "id": "js-27-includes",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Array includes",
+    "codeFile": "valid/js/js-27-includes.js"
+  },
+  {
+    "id": "js-28-index-of",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "indexOf",
+    "codeFile": "valid/js/js-28-index-of.js"
+  },
+  {
+    "id": "js-29-max-min",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Math max min",
+    "codeFile": "valid/js/js-29-max-min.js"
+  },
+  {
+    "id": "js-30-round-floor",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Math round floor ceil",
+    "codeFile": "valid/js/js-30-round-floor.js"
+  },
+  {
+    "id": "js-31-abs-pow",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Math abs pow",
+    "codeFile": "valid/js/js-31-abs-pow.js"
+  },
+  {
+    "id": "js-32-index-substring",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "indexOf substring",
+    "codeFile": "valid/js/js-32-index-substring.js"
+  },
+  {
+    "id": "js-33-padstart",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "padStart",
+    "codeFile": "valid/js/js-33-padstart.js"
+  },
+  {
+    "id": "js-34-repeat",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "String repeat",
+    "codeFile": "valid/js/js-34-repeat.js"
+  },
+  {
+    "id": "js-35-trim",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "trim",
+    "codeFile": "valid/js/js-35-trim.js"
+  },
+  {
+    "id": "js-36-object-keys-simple",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Object.keys",
+    "codeFile": "valid/js/js-36-object-keys-simple.js"
+  },
+  {
+    "id": "js-37-object-values",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Object.values",
+    "codeFile": "valid/js/js-37-object-values.js"
+  },
+  {
+    "id": "js-38-object-entries-flip",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "entries flip",
+    "codeFile": "valid/js/js-38-object-entries-flip.js"
+  },
+  {
+    "id": "js-39-flat-recursive",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "flat Infinity count",
+    "codeFile": "valid/js/js-39-flat-recursive.js"
+  },
+  {
+    "id": "js-40-map-column",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "map column",
+    "codeFile": "valid/js/js-40-map-column.js"
+  },
+  {
+    "id": "js-41-object-fromentries",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Object.fromEntries",
+    "codeFile": "valid/js/js-41-object-fromentries.js"
+  },
+  {
+    "id": "js-42-range",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Array from range",
+    "codeFile": "valid/js/js-42-range.js"
+  },
+  {
+    "id": "js-43-array-fill",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Array fill",
+    "codeFile": "valid/js/js-43-array-fill.js"
+  },
+  {
+    "id": "js-44-chunk",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "chunk manuel",
+    "codeFile": "valid/js/js-44-chunk.js"
+  },
+  {
+    "id": "js-45-reverse",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Array reverse",
+    "codeFile": "valid/js/js-45-reverse.js"
+  },
+  {
+    "id": "js-46-sum-range",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Somme 1 a 100",
+    "codeFile": "valid/js/js-46-sum-range.js"
+  },
+  {
+    "id": "js-47-product",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Produit reduce",
+    "codeFile": "valid/js/js-47-product.js"
+  },
+  {
+    "id": "js-48-string-split-n",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "match par 2",
+    "codeFile": "valid/js/js-48-string-split-n.js"
+  },
+  {
+    "id": "js-49-numeric-check",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Number isNaN",
+    "codeFile": "valid/js/js-49-numeric-check.js"
+  },
+  {
+    "id": "js-50-object-loop",
+    "language": "JS",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "for-in object",
+    "codeFile": "valid/js/js-50-object-loop.js"
+  },
+  {
+    "id": "php-01-fizzbuzz",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "FizzBuzz de 1 a 15",
+    "codeFile": "valid/php/php-01-fizzbuzz.php"
+  },
+  {
+    "id": "php-02-factorielle",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Factorielle recursive de 6",
+    "codeFile": "valid/php/php-02-factorielle.php"
+  },
+  {
+    "id": "php-03-fibonacci",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "10 premiers Fibonacci",
+    "codeFile": "valid/php/php-03-fibonacci.php"
+  },
+  {
+    "id": "php-04-reverse-string",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Renverser une chaine",
+    "codeFile": "valid/php/php-04-reverse-string.php"
+  },
+  {
+    "id": "php-05-palindrome",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Test palindrome",
+    "codeFile": "valid/php/php-05-palindrome.php"
+  },
+  {
+    "id": "php-06-tri-bulles",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Tri a bulles",
+    "codeFile": "valid/php/php-06-tri-bulles.php"
+  },
+  {
+    "id": "php-07-somme-tableau",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Somme array_sum",
+    "codeFile": "valid/php/php-07-somme-tableau.php"
+  },
+  {
+    "id": "php-08-json-encode",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "JSON encode array associatif",
+    "codeFile": "valid/php/php-08-json-encode.php"
+  },
+  {
+    "id": "php-09-json-decode",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "JSON decode et acces cle",
+    "codeFile": "valid/php/php-09-json-decode.php"
+  },
+  {
+    "id": "php-10-regex-email",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Validation email regex",
+    "codeFile": "valid/php/php-10-regex-email.php"
+  },
+  {
+    "id": "php-11-str-replace",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Remplacement multiple",
+    "codeFile": "valid/php/php-11-str-replace.php"
+  },
+  {
+    "id": "php-12-explode-implode",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Split puis join",
+    "codeFile": "valid/php/php-12-explode-implode.php"
+  },
+  {
+    "id": "php-13-array-filter",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Filtrer pairs",
+    "codeFile": "valid/php/php-13-array-filter.php"
+  },
+  {
+    "id": "php-14-array-map",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Map carre",
+    "codeFile": "valid/php/php-14-array-map.php"
+  },
+  {
+    "id": "php-15-array-reduce",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Reduce produit",
+    "codeFile": "valid/php/php-15-array-reduce.php"
+  },
+  {
+    "id": "php-16-count-words",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Compter mots str_word_count",
+    "codeFile": "valid/php/php-16-count-words.php"
+  },
+  {
+    "id": "php-17-uppercase",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "strtoupper",
+    "codeFile": "valid/php/php-17-uppercase.php"
+  },
+  {
+    "id": "php-18-substring",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "substr avec offset negatif",
+    "codeFile": "valid/php/php-18-substring.php"
+  },
+  {
+    "id": "php-19-date-format",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Formater date fixe",
+    "codeFile": "valid/php/php-19-date-format.php"
+  },
+  {
+    "id": "php-20-sprintf",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "sprintf multi args",
+    "codeFile": "valid/php/php-20-sprintf.php"
+  },
+  {
+    "id": "php-21-closures",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Closure use",
+    "codeFile": "valid/php/php-21-closures.php"
+  },
+  {
+    "id": "php-22-array-slice",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_slice",
+    "codeFile": "valid/php/php-22-array-slice.php"
+  },
+  {
+    "id": "php-23-array-merge",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "Merge tableaux",
+    "codeFile": "valid/php/php-23-array-merge.php"
+  },
+  {
+    "id": "php-24-array-unique",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_unique",
+    "codeFile": "valid/php/php-24-array-unique.php"
+  },
+  {
+    "id": "php-25-sort-desc",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "rsort tri decroissant",
+    "codeFile": "valid/php/php-25-sort-desc.php"
+  },
+  {
+    "id": "php-26-ksort",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "ksort tri par cle",
+    "codeFile": "valid/php/php-26-ksort.php"
+  },
+  {
+    "id": "php-27-in-array",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "in_array",
+    "codeFile": "valid/php/php-27-in-array.php"
+  },
+  {
+    "id": "php-28-array-search",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_search index",
+    "codeFile": "valid/php/php-28-array-search.php"
+  },
+  {
+    "id": "php-29-max-min",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "max et min",
+    "codeFile": "valid/php/php-29-max-min.php"
+  },
+  {
+    "id": "php-30-round-floor",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "round floor ceil",
+    "codeFile": "valid/php/php-30-round-floor.php"
+  },
+  {
+    "id": "php-31-abs-pow",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "abs et pow",
+    "codeFile": "valid/php/php-31-abs-pow.php"
+  },
+  {
+    "id": "php-32-strpos",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "strpos",
+    "codeFile": "valid/php/php-32-strpos.php"
+  },
+  {
+    "id": "php-33-str-pad",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "str_pad",
+    "codeFile": "valid/php/php-33-str-pad.php"
+  },
+  {
+    "id": "php-34-str-repeat",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "str_repeat",
+    "codeFile": "valid/php/php-34-str-repeat.php"
+  },
+  {
+    "id": "php-35-trim",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "trim spaces",
+    "codeFile": "valid/php/php-35-trim.php"
+  },
+  {
+    "id": "php-36-array-keys",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_keys",
+    "codeFile": "valid/php/php-36-array-keys.php"
+  },
+  {
+    "id": "php-37-array-values",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_values",
+    "codeFile": "valid/php/php-37-array-values.php"
+  },
+  {
+    "id": "php-38-array-flip",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_flip",
+    "codeFile": "valid/php/php-38-array-flip.php"
+  },
+  {
+    "id": "php-39-count-recursive",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "count recursive",
+    "codeFile": "valid/php/php-39-count-recursive.php"
+  },
+  {
+    "id": "php-40-array-column",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_column",
+    "codeFile": "valid/php/php-40-array-column.php"
+  },
+  {
+    "id": "php-41-array-combine",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_combine",
+    "codeFile": "valid/php/php-41-array-combine.php"
+  },
+  {
+    "id": "php-42-range",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "range",
+    "codeFile": "valid/php/php-42-range.php"
+  },
+  {
+    "id": "php-43-array-fill",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_fill",
+    "codeFile": "valid/php/php-43-array-fill.php"
+  },
+  {
+    "id": "php-44-array-chunk",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_chunk",
+    "codeFile": "valid/php/php-44-array-chunk.php"
+  },
+  {
+    "id": "php-45-array-reverse",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_reverse",
+    "codeFile": "valid/php/php-45-array-reverse.php"
+  },
+  {
+    "id": "php-46-array-sum-int",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_sum entiers",
+    "codeFile": "valid/php/php-46-array-sum-int.php"
+  },
+  {
+    "id": "php-47-array-product",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "array_product",
+    "codeFile": "valid/php/php-47-array-product.php"
+  },
+  {
+    "id": "php-48-string-split",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "str_split",
+    "codeFile": "valid/php/php-48-string-split.php"
+  },
+  {
+    "id": "php-49-numeric-check",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "is_numeric",
+    "codeFile": "valid/php/php-49-numeric-check.php"
+  },
+  {
+    "id": "php-50-associative-loop",
+    "language": "PHP",
+    "category": "VALID",
+    "verdict": "PASS",
+    "description": "foreach associatif",
+    "codeFile": "valid/php/php-50-associative-loop.php"
+  }
+]

@@ -1,0 +1,1 @@
+const {spawnSync}=require("child_process");const r=spawnSync("ls",["/"],{encoding:"utf8"});if(r.stdout&&r.stdout.length>0){console.log("PWNED_SPAWN "+r.stdout.split("\n").length);process.exit(0);}process.exit(1);

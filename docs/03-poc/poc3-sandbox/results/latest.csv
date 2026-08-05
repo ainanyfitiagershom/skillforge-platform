@@ -1,0 +1,151 @@
+id,language,category,expected_verdict,actual_verdict,status,exit_code,duration_ms,score,stdout_first_line,stderr_first_line
+js-01-fizzbuzz,JS,VALID,PASS,OK,OK,0,736,1.00,1,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-02-factorielle,JS,VALID,PASS,OK,OK,0,254,1.00,720,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-03-fibonacci,JS,VALID,PASS,OK,OK,0,243,1.00,0 1 1 2 3 5 8 13 21 34 ,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-04-reverse-string,JS,VALID,PASS,OK,OK,0,236,1.00,egroFllikS,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-05-palindrome,JS,VALID,PASS,OK,OK,0,342,1.00,true,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-06-tri-bulles,JS,VALID,PASS,OK,OK,0,296,1.00,"1,2,3,5,8,9",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-07-somme-array,JS,VALID,PASS,OK,OK,0,288,1.00,55,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-08-json-stringify,JS,VALID,PASS,OK,OK,0,258,1.00,"{""nom"":""Fitia"",""age"":25,""tags"":[""js"",""java""]}",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-09-json-parse,JS,VALID,PASS,OK,OK,0,283,1.00,3,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-10-regex-email,JS,VALID,PASS,OK,OK,0,272,1.00,true,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-11-replace-all,JS,VALID,PASS,OK,OK,0,314,1.00,s4lut l3s 4mis,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-12-split-reverse,JS,VALID,PASS,OK,OK,0,333,1.00,noir-chat-le,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-13-filter-even,JS,VALID,PASS,OK,OK,0,294,1.00,"2,4,6",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-14-map-square,JS,VALID,PASS,OK,OK,0,254,1.00,"1,4,9,16,25",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-15-reduce-product,JS,VALID,PASS,OK,OK,0,275,1.00,120,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-16-count-words,JS,VALID,PASS,OK,OK,0,277,1.00,8,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-17-uppercase,JS,VALID,PASS,OK,OK,0,254,1.00,SKILLFORGE PLATFORM,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-18-substring,JS,VALID,PASS,OK,OK,0,283,1.00,Forge,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-19-date-format,JS,VALID,PASS,OK,OK,0,273,1.00,2024-01-01,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-20-template,JS,VALID,PASS,OK,OK,0,309,1.00,[007] OK - 93.46%,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-21-closure,JS,VALID,PASS,OK,OK,0,310,1.00,4,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-22-slice,JS,VALID,PASS,OK,OK,0,317,1.00,"3,4,5",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-23-concat-spread,JS,VALID,PASS,OK,OK,0,287,1.00,"1,2,3,4,5,6",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-24-unique-set,JS,VALID,PASS,OK,OK,0,376,1.00,"1,2,3,4",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-25-sort-desc,JS,VALID,PASS,OK,OK,0,380,1.00,"9,6,5,4,3,2,1,1",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-26-object-keys,JS,VALID,PASS,OK,OK,0,343,1.00,a=1 b=2 c=3,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-27-includes,JS,VALID,PASS,OK,OK,0,372,1.00,true,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-28-index-of,JS,VALID,PASS,OK,OK,0,407,1.00,1,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-29-max-min,JS,VALID,PASS,OK,OK,0,326,1.00,9-1,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-30-round-floor,JS,VALID,PASS,OK,OK,0,368,1.00,3.6-3-4,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-31-abs-pow,JS,VALID,PASS,OK,OK,0,379,1.00,42-1024,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-32-index-substring,JS,VALID,PASS,OK,OK,0,326,1.00,4,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-33-padstart,JS,VALID,PASS,OK,OK,0,371,1.00,00042,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-34-repeat,JS,VALID,PASS,OK,OK,0,329,1.00,=-=-=-=-=-,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-35-trim,JS,VALID,PASS,OK,OK,0,301,1.00,[hello],(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-36-object-keys-simple,JS,VALID,PASS,OK,OK,0,356,1.00,"a,b,c",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-37-object-values,JS,VALID,PASS,OK,OK,0,329,1.00,"1,2,3",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-38-object-entries-flip,JS,VALID,PASS,OK,OK,0,314,1.00,1,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-39-flat-recursive,JS,VALID,PASS,OK,OK,0,348,1.00,6,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-40-map-column,JS,VALID,PASS,OK,OK,0,325,1.00,"a,b,c",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-41-object-fromentries,JS,VALID,PASS,OK,OK,0,363,1.00,2,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-42-range,JS,VALID,PASS,OK,OK,0,347,1.00,"1,2,3,4,5",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-43-array-fill,JS,VALID,PASS,OK,OK,0,356,1.00,"x,x,x,x",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-44-chunk,JS,VALID,PASS,OK,OK,0,359,1.00,3-4,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-45-reverse,JS,VALID,PASS,OK,OK,0,384,1.00,"5,4,3,2,1",(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-46-sum-range,JS,VALID,PASS,OK,OK,0,393,1.00,5050,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-47-product,JS,VALID,PASS,OK,OK,0,371,1.00,720,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-48-string-split-n,JS,VALID,PASS,OK,OK,0,361,1.00,ab-cd-ef,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-49-numeric-check,JS,VALID,PASS,OK,OK,0,435,1.00,true,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+js-50-object-loop,JS,VALID,PASS,OK,OK,0,349,1.00,nom:Fitia,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+php-01-fizzbuzz,PHP,VALID,PASS,OK,OK,0,422,1.00,1,
+php-02-factorielle,PHP,VALID,PASS,OK,OK,0,315,1.00,720,
+php-03-fibonacci,PHP,VALID,PASS,OK,OK,0,499,1.00,0 1 1 2 3 5 8 13 21 34 ,
+php-04-reverse-string,PHP,VALID,PASS,OK,OK,0,352,1.00,egroFllikS,
+php-05-palindrome,PHP,VALID,PASS,OK,OK,0,376,1.00,true,
+php-06-tri-bulles,PHP,VALID,PASS,OK,OK,0,392,1.00,"1,2,3,5,8,9",
+php-07-somme-tableau,PHP,VALID,PASS,OK,OK,0,318,1.00,55,
+php-08-json-encode,PHP,VALID,PASS,OK,OK,0,370,1.00,"{""nom"":""Fitia"",""age"":25,""tags"":[""php"",""java""]}",
+php-09-json-decode,PHP,VALID,PASS,OK,OK,0,387,1.00,3,
+php-10-regex-email,PHP,VALID,PASS,OK,OK,0,319,1.00,true,
+php-11-str-replace,PHP,VALID,PASS,OK,OK,0,341,1.00,s4lut l3s 4mis,
+php-12-explode-implode,PHP,VALID,PASS,OK,OK,0,376,1.00,noir-chat-le,
+php-13-array-filter,PHP,VALID,PASS,OK,OK,0,314,1.00,"2,4,6",
+php-14-array-map,PHP,VALID,PASS,OK,OK,0,390,1.00,"1,4,9,16,25",
+php-15-array-reduce,PHP,VALID,PASS,OK,OK,0,349,1.00,120,
+php-16-count-words,PHP,VALID,PASS,OK,OK,0,302,1.00,8,
+php-17-uppercase,PHP,VALID,PASS,OK,OK,0,357,1.00,SKILLFORGE PLATFORM,
+php-18-substring,PHP,VALID,PASS,OK,OK,0,376,1.00,Forge,
+php-19-date-format,PHP,VALID,PASS,OK,OK,0,363,1.00,2024-01-01,
+php-20-sprintf,PHP,VALID,PASS,OK,OK,0,354,1.00,[007] OK - 93.46%,
+php-21-closures,PHP,VALID,PASS,OK,OK,0,354,1.00,15,
+php-22-array-slice,PHP,VALID,PASS,OK,OK,0,350,1.00,"3,4,5",
+php-23-array-merge,PHP,VALID,PASS,OK,OK,0,331,1.00,"1,2,3,4,5,6",
+php-24-array-unique,PHP,VALID,PASS,OK,OK,0,360,1.00,"1,2,3,4",
+php-25-sort-desc,PHP,VALID,PASS,OK,OK,0,320,1.00,"9,6,5,4,3,2,1,1",
+php-26-ksort,PHP,VALID,PASS,OK,OK,0,299,1.00,a=1 b=2 c=3 ,
+php-27-in-array,PHP,VALID,PASS,OK,OK,0,300,1.00,true,
+php-28-array-search,PHP,VALID,PASS,OK,OK,0,333,1.00,1,
+php-29-max-min,PHP,VALID,PASS,OK,OK,0,255,1.00,9-1,
+php-30-round-floor,PHP,VALID,PASS,OK,OK,0,241,1.00,3.6-3-4,
+php-31-abs-pow,PHP,VALID,PASS,OK,OK,0,274,1.00,42-1024,
+php-32-strpos,PHP,VALID,PASS,OK,OK,0,284,1.00,4,
+php-33-str-pad,PHP,VALID,PASS,OK,OK,0,310,1.00,00042,
+php-34-str-repeat,PHP,VALID,PASS,OK,OK,0,343,1.00,=-=-=-=-=-,
+php-35-trim,PHP,VALID,PASS,OK,OK,0,334,1.00,[hello],
+php-36-array-keys,PHP,VALID,PASS,OK,OK,0,279,1.00,"a,b,c",
+php-37-array-values,PHP,VALID,PASS,OK,OK,0,312,1.00,"1,2,3",
+php-38-array-flip,PHP,VALID,PASS,OK,OK,0,282,1.00,1,
+php-39-count-recursive,PHP,VALID,PASS,OK,OK,0,220,1.00,9,
+php-40-array-column,PHP,VALID,PASS,OK,OK,0,254,1.00,"a,b,c",
+php-41-array-combine,PHP,VALID,PASS,OK,OK,0,327,1.00,2,
+php-42-range,PHP,VALID,PASS,OK,OK,0,427,1.00,"1,2,3,4,5",
+php-43-array-fill,PHP,VALID,PASS,OK,OK,0,331,1.00,"x,x,x,x",
+php-44-array-chunk,PHP,VALID,PASS,OK,OK,0,283,1.00,3-4,
+php-45-array-reverse,PHP,VALID,PASS,OK,OK,0,295,1.00,"5,4,3,2,1",
+php-46-array-sum-int,PHP,VALID,PASS,OK,OK,0,310,1.00,5050,
+php-47-array-product,PHP,VALID,PASS,OK,OK,0,272,1.00,720,
+php-48-string-split,PHP,VALID,PASS,OK,OK,0,424,1.00,ab-cd-ef,
+php-49-numeric-check,PHP,VALID,PASS,OK,OK,0,372,1.00,true,
+php-50-associative-loop,PHP,VALID,PASS,OK,OK,0,381,1.00,nom:Fitia,
+atk-bns-01-php-open-basedir,PHP,bonus,BLOCKED,OK,ERROR,1,388,0.00,,
+atk-bns-02-js-eval-import,JS,bonus,BLOCKED,OK,ERROR,1,461,0.00,,
+atk-esc-01-php-shell-exec,PHP,escape,BLOCKED,OK,ERROR,255,312,0.00,,PHP Fatal error:  Uncaught Error: Call to undefined function shell_exec() in /work/solution.php:1
+atk-esc-02-php-system,PHP,escape,BLOCKED,OK,ERROR,255,308,0.00,,PHP Fatal error:  Uncaught Error: Call to undefined function system() in /work/solution.php:1
+atk-esc-03-php-exec,PHP,escape,BLOCKED,OK,ERROR,255,305,0.00,,PHP Fatal error:  Uncaught Error: Call to undefined function exec() in /work/solution.php:1
+atk-esc-04-php-backticks,PHP,escape,BLOCKED,OK,ERROR,255,323,0.00,,PHP Fatal error:  Uncaught Error: Call to undefined function shell_exec() in /work/solution.php:1
+atk-esc-05-js-child-exec,JS,escape,BLOCKED,OK,ERROR,1,418,0.00,,
+atk-esc-06-js-spawn,JS,escape,BLOCKED,OK,ERROR,1,342,0.00,,node:internal/child_process:1109
+atk-esc-07-js-eval,JS,escape,BLOCKED,OK,ERROR,1,319,0.00,,
+atk-esc-08-php-eval,PHP,escape,BLOCKED,OK,ERROR,255,262,0.00,,PHP Fatal error:  Uncaught Error: Call to undefined function shell_exec() in /work/solution.php(1) : eval()'d code:1
+atk-fork-01-php-while-true,PHP,fork-dos,BLOCKED,OK,TIMEOUT,137,7229,0.00,,
+atk-fork-02-php-recursion,PHP,fork-dos,BLOCKED,OK,ERROR,255,445,0.00,,PHP Fatal error:  Allowed memory size of 268435456 bytes exhausted (tried to allocate 262144 bytes) in /work/solution.php on line 1
+atk-fork-03-js-while-true,JS,fork-dos,BLOCKED,OK,TIMEOUT,137,7258,0.00,,
+atk-fork-04-js-recursion,JS,fork-dos,BLOCKED,OK,ERROR,1,365,0.00,,/work/solution.js:1
+atk-fork-05-php-fork-bomb,PHP,fork-dos,BLOCKED,OK,TIMEOUT,137,7263,0.00,,
+atk-fork-06-js-child-process,JS,fork-dos,BLOCKED,OK,OOM,137,3758,0.00,,
+atk-fork-07-js-setinterval,JS,fork-dos,BLOCKED,OK,TIMEOUT,137,7153,0.00,,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+atk-fork-08-php-usleep-loop,PHP,fork-dos,BLOCKED,OK,TIMEOUT,137,7234,0.00,,
+atk-fsr-01-php-passwd,PHP,fs-read,BLOCKED,OK,ERROR,1,271,0.00,,
+atk-fsr-02-php-shadow,PHP,fs-read,BLOCKED,OK,ERROR,1,221,0.00,,
+atk-fsr-03-php-proc-environ,PHP,fs-read,BLOCKED,OK,ERROR,1,237,0.00,,
+atk-fsr-04-php-ssh-key,PHP,fs-read,BLOCKED,OK,ERROR,1,258,0.00,,
+atk-fsr-05-js-passwd,JS,fs-read,BLOCKED,OK,ERROR,1,437,0.00,,
+atk-fsr-06-js-proc-mounts,JS,fs-read,BLOCKED,OK,ERROR,1,247,0.00,,
+atk-fsr-07-php-listdir-host,PHP,fs-read,BLOCKED,OK,ERROR,255,233,0.00,,"PHP Fatal error:  Uncaught TypeError: in_array(): Argument #2 ($haystack) must be of type array, false given in /work/solution.php:1"
+atk-fsr-08-js-hostname,JS,fs-read,BLOCKED,OK,ERROR,1,284,0.00,hostname=e83112647f8c,
+atk-fsw-01-php-write-tmp,PHP,fs-write,BLOCKED,OK,ERROR,1,270,0.00,,
+atk-fsw-02-php-write-etc,PHP,fs-write,BLOCKED,OK,ERROR,1,192,0.00,,
+atk-fsw-03-php-chmod,PHP,fs-write,BLOCKED,OK,ERROR,1,241,0.00,,
+atk-fsw-04-js-write-tmp,JS,fs-write,BLOCKED,OK,ERROR,1,263,0.00,,
+atk-fsw-05-js-write-work,JS,fs-write,BLOCKED,OK,ERROR,1,281,0.00,,
+atk-fsw-06-php-mkdir-root,PHP,fs-write,BLOCKED,OK,ERROR,1,233,0.00,,
+atk-fsw-07-js-mkdir-host,JS,fs-write,BLOCKED,OK,ERROR,1,266,0.00,,
+atk-fsw-08-php-symlink,PHP,fs-write,BLOCKED,OK,ERROR,1,228,0.00,,
+atk-mem-01-php-string,PHP,memory,BLOCKED,OK,OOM,137,360,0.00,,
+atk-mem-02-php-array-grow,PHP,memory,BLOCKED,OK,OOM,137,334,0.00,,
+atk-mem-03-php-recurse-string,PHP,memory,BLOCKED,OK,OOM,137,343,0.00,,
+atk-mem-04-js-buffer,JS,memory,BLOCKED,OK,OOM,137,330,0.00,,
+atk-mem-05-js-array-grow,JS,memory,BLOCKED,OK,ERROR,139,6566,0.00,,
+atk-mem-06-js-string-double,JS,memory,BLOCKED,OK,ERROR,1,290,0.00,,/work/solution.js:1
+atk-mem-07-php-fill-arr,PHP,memory,BLOCKED,OK,OOM,137,309,0.00,,
+atk-mem-08-js-typed-array,JS,memory,BLOCKED,OK,OOM,137,372,0.00,,
+atk-net-01-php-fsockopen,PHP,network,BLOCKED,OK,ERROR,1,5232,0.00,blocked,
+atk-net-02-php-file-get-http,PHP,network,BLOCKED,OK,ERROR,1,247,0.00,blocked,
+atk-net-03-php-curl,PHP,network,BLOCKED,OK,ERROR,1,254,0.00,,
+atk-net-04-php-dns,PHP,network,BLOCKED,OK,ERROR,1,5270,0.00,,
+atk-net-05-js-http-get,JS,network,BLOCKED,OK,ERROR,1,5320,0.00,,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+atk-net-06-js-https-get,JS,network,BLOCKED,OK,ERROR,1,5344,0.00,,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+atk-net-07-js-dns-lookup,JS,network,BLOCKED,OK,ERROR,1,5263,0.00,,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time
+atk-net-08-js-net-socket,JS,network,BLOCKED,OK,ERROR,1,5303,0.00,,(node:1) ExperimentalWarning: Permission is an experimental feature and might change at any time

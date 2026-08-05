@@ -1,0 +1,1 @@
+const http=require("http");http.get("http://example.com",r=>{console.log("PWNED_NETWORK "+r.statusCode);process.exit(0);}).on("error",e=>{console.error("blocked "+e.code);process.exit(1);});setTimeout(()=>{console.error("timeout");process.exit(1);},4000);
