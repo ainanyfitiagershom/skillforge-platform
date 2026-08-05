@@ -1019,3 +1019,62 @@ curl -i -H "Authorization: Bearer <jwt-candidat>" http://localhost:8090/analytic
 | 17.15 | Validation scipy du calcul | 🏠 |
 | 17.16 | Robustesse Promise.all | 🏠 |
 | 17.17 | Sécurité endpoints (401/403) | 🏠 |
+
+---
+
+## Retours de recette le 2026-08-05
+
+### [UX-01] Identifier le candidat par un code unique plutôt que par nom complet saisi librement
+
+- **Où** : `http://localhost:5173/candidate/passation/{token}`, page d'identification candidat avant le démarrage du test.
+- **Capture écran** : capture fournie pendant la recette, montrant l'écran "Test technique SkillForge" avec les champs `Email`, `Nom complet`, l'encart "Analyse anti-fraude pendant la passation" et le bouton désactivé "Acceptez l'analyse anti-fraude pour continuer".
+- **Étapes** :
+  1. Le recruteur génère une invitation depuis `/app/review`.
+  2. Le candidat ouvre le lien d'invitation.
+  3. La page d'identification demande actuellement un email et un nom complet.
+  4. Le candidat peut saisir librement un nom, par exemple `Mialy Rasoanirina`.
+- **Attendu proposé** :
+  - Envoyer réellement l'invitation par email au candidat.
+  - Associer l'invitation à un identifiant unique ou à un code/mot de passe temporaire.
+  - Sur la page candidat, demander ce code unique au lieu de demander un nom complet libre.
+  - Après validation du code, afficher automatiquement l'identité liée à l'invitation, ou au minimum verrouiller les informations déjà connues côté recruteur.
+- **Observé** :
+  - Le candidat peut modifier librement son nom complet avant de commencer.
+  - Cela crée un risque d'erreur d'identité ou d'usurpation légère si le lien est transféré.
+  - Le lien unique existe déjà, mais il n'est pas complété par une vérification d'identité côté candidat.
+- **Pourquoi c'est important** :
+  - Le recruteur invite déjà une personne précise avec un email candidat.
+  - L'identité affichée dans les résultats devrait être celle de l'invitation ou être confirmée par un code envoyé par email.
+  - Un code unique améliore la traçabilité et évite qu'un candidat saisisse un autre nom.
+- **Gravité** : Mineur pour le POC, Majeur si la plateforme est utilisée avec de vrais candidats.
+- **Proposition fonctionnelle** :
+  - Générer `invitation_code` ou `candidate_access_code` en plus du token.
+  - Envoyer ce code par email au candidat.
+  - Remplacer ou compléter le champ `Nom complet` par un champ `Code d'accès`.
+  - Préremplir le nom/email depuis l'invitation après vérification du code.
+  - Conserver l'obligation de consentement anti-fraude avant de démarrer.
+
+### [BUG-01] Les cas pratiques sont comptés réussis même avec une réponse incohérente en mode mock
+
+- **Où** : `http://localhost:5173/candidate/passation/{token}/done`, page finale candidat après soumission.
+- **Capture écran** : capture fournie pendant la recette, montrant la page "Merci d'avoir passé le test" avec score indicatif `20`, QCM `0/5`, CODE `0/3`, CAS `2/2`.
+- **Étapes** :
+  1. Ouvrir une invitation candidat.
+  2. Commencer la passation.
+  3. Répondre faux aux QCM.
+  4. Ne pas exécuter correctement les questions CODE.
+  5. Sur les 2 CAS_PRATIQUES, saisir/coller du texte non pertinent ou "n'importe quoi".
+  6. Soumettre le test.
+- **Attendu** :
+  - Les CAS_PRATIQUES devraient être notés selon la pertinence réelle de la réponse par rapport au scénario et aux points attendus.
+  - Une réponse incohérente devrait obtenir un score faible et ne pas être comptée comme réussie.
+- **Observé** :
+  - La page finale affiche `CAS 2/2` malgré des réponses non pertinentes.
+  - En base, les CAS ont obtenu des scores `65.00` et `85.00`, donc ils sont comptés réussis car le seuil de réussite est `>= 60`.
+  - La cause technique observée est le mode `mock` : `MockLlmClient.gradeCasPratique` note principalement selon la longueur de la réponse (`<30` caractères = 30, `<200` = 65, sinon = 85), sans analyse sémantique.
+- **Gravité** : Majeur pour la fiabilité du score en recette, acceptable uniquement comme limite explicite du mode mock.
+- **Proposition** :
+  - Indiquer clairement dans l'UI ou dans la documentation que l'évaluation CAS en mode mock est factice.
+  - Pour la recette fonctionnelle, tester les CAS avec un vrai provider LLM si disponible.
+  - Améliorer le mock pour détecter au minimum les réponses manifestement incohérentes ou hors sujet.
+  - Option possible : ne pas afficher `CAS X/Y` comme réussite réelle quand `llmProvider = mock`, mais afficher "évaluation simulée".
