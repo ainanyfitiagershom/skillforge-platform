@@ -1,0 +1,4 @@
+# Fichiers intermediaires generes par run-scan.sh (nettoyes en fin de scan
+# quand tout se passe bien, orphelins possibles sur run interrompu).
+.automation-*.yaml
+.openapi-*.json
