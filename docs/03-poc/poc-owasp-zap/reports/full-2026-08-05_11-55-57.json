@@ -1,0 +1,99 @@
+{
+	"@programName": "ZAP",
+	"@version": "2.17.0",
+	"@generated": "Wed, 5 Aug 2026 11:59:04",
+	"created": "2026-08-05T11:59:04.605155568Z",
+	"site":[ 
+		{
+			"@name": "http://host.docker.internal:8090",
+			"@host": "host.docker.internal",
+			"@port": "8090",
+			"@ssl": "false",
+			"alerts": [ 
+				{
+					"pluginid": "10111",
+					"alertRef": "10111",
+					"alert": "Authentication Request Identified",
+					"name": "Authentication Request Identified",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>The given request has been identified as an authentication request. The 'Other Info' field contains a set of key=value lines which identify any relevant fields. If the request is in a context which has an Authentication Method set to \"Auto-Detect\" then this rule will change the authentication to match the request identified.</p>",
+					"instances":[ 
+						{
+							"id": "0",
+							"uri": "http://host.docker.internal:8090/auth/login",
+							"nodeName": "http:\/\/host.docker.internal:8090\/auth\/login ()({email,password})",
+							"method": "POST",
+							"param": "email",
+							"attack": "",
+							"evidence": "password",
+							"otherinfo": "userParam=email\nuserValue=zaproxy@example.com\npasswordParam=password"
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>",
+					"otherinfo": "<p>userParam=email</p><p>userValue=zaproxy@example.com</p><p>passwordParam=password</p>",
+					"reference": "<p>https://www.zaproxy.org/docs/desktop/addons/authentication-helper/auth-req-id/</p>",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "32"
+				},
+				{
+					"pluginid": "10104",
+					"alertRef": "10104",
+					"alert": "User Agent Fuzzer",
+					"name": "User Agent Fuzzer",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>Check for differences in response based on fuzzed User Agent (eg. mobile sites, access as a Search Engine Crawler). Compares the response statuscode and the hashcode of the response body with the original response.</p>",
+					"instances":[ 
+						{
+							"id": "18",
+							"uri": "http://host.docker.internal:8090/passations/id/report/regenerate",
+							"nodeName": "http:\/\/host.docker.internal:8090\/passations\/id\/report\/regenerate",
+							"method": "POST",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "19",
+							"uri": "http://host.docker.internal:8090/tests",
+							"nodeName": "http:\/\/host.docker.internal:8090\/tests",
+							"method": "POST",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "1",
+							"uri": "http://host.docker.internal:8090/tests",
+							"nodeName": "http:\/\/host.docker.internal:8090\/tests ()({name,durationMinutes,orderedQuestionIds:[]})",
+							"method": "POST",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "3",
+					"systemic": true,
+					"solution": "",
+					"otherinfo": "",
+					"reference": "<p>https://owasp.org/wstg</p>",
+					"cweid": "0",
+					"wascid": "0",
+					"sourceid": "210"
+				}
+			]
+		}
+	],
+	"sequences":[
+	]
+
+}

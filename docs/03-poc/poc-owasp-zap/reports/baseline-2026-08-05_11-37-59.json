@@ -1,0 +1,49 @@
+{
+	"@programName": "ZAP",
+	"@version": "2.17.0",
+	"@generated": "Wed, 5 Aug 2026 11:38:11",
+	"created": "2026-08-05T11:38:11.210008881Z",
+	"site":[ 
+		{
+			"@name": "http://host.docker.internal:8090",
+			"@host": "host.docker.internal",
+			"@port": "8090",
+			"@ssl": "false",
+			"alerts": [ 
+				{
+					"pluginid": "10111",
+					"alertRef": "10111",
+					"alert": "Authentication Request Identified",
+					"name": "Authentication Request Identified",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>The given request has been identified as an authentication request. The 'Other Info' field contains a set of key=value lines which identify any relevant fields. If the request is in a context which has an Authentication Method set to \"Auto-Detect\" then this rule will change the authentication to match the request identified.</p>",
+					"instances":[ 
+						{
+							"id": "0",
+							"uri": "http://host.docker.internal:8090/auth/login",
+							"nodeName": "http:\/\/host.docker.internal:8090\/auth\/login ()({email,password})",
+							"method": "POST",
+							"param": "email",
+							"attack": "",
+							"evidence": "password",
+							"otherinfo": "userParam=email\nuserValue=zaproxy@example.com\npasswordParam=password"
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>",
+					"otherinfo": "<p>userParam=email</p><p>userValue=zaproxy@example.com</p><p>passwordParam=password</p>",
+					"reference": "<p>https://www.zaproxy.org/docs/desktop/addons/authentication-helper/auth-req-id/</p>",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "32"
+				}
+			]
+		}
+	],
+	"sequences":[
+	]
+
+}
