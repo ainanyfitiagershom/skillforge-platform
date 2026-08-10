@@ -233,7 +233,14 @@ public class CandidatePassationService {
         return new SubmitResult(saved, new ScoreBreakdown(
                 qcm.passed, qcm.total,
                 code.passed, code.total,
-                cas.passed, cas.total));
+                cas.passed, cas.total,
+                cas.total > 0 && isMockLlm()));
+    }
+
+    /** True si le LLM configure est un mock : les scores CAS sont a considerer comme simules. */
+    private boolean isMockLlm() {
+        String p = llmClient.providerName();
+        return p != null && p.toLowerCase().contains("mock");
     }
 
     private void gradeQcm(Question q, Answer a, TypeBucket bucket) {
@@ -327,7 +334,8 @@ public class CandidatePassationService {
             b.total++;
             if (a.getScore() != null && a.getScore().compareTo(new BigDecimal("60.00")) >= 0) b.passed++;
         }
-        return new ScoreBreakdown(qcm.passed, qcm.total, code.passed, code.total, cas.passed, cas.total);
+        return new ScoreBreakdown(qcm.passed, qcm.total, code.passed, code.total, cas.passed, cas.total,
+                cas.total > 0 && isMockLlm());
     }
 
     private Integer parseQcmIndex(UUID questionId, String text) {
@@ -384,7 +392,8 @@ public class CandidatePassationService {
     public record ScoreBreakdown(
             int qcmPassed, int qcmTotal,
             int codePassed, int codeTotal,
-            int casPassed, int casTotal) {}
+            int casPassed, int casTotal,
+            boolean casGradingSimulated) {}
 
     public record SubmitResult(Passation passation, ScoreBreakdown breakdown) {}
 

@@ -242,22 +242,32 @@ public class MockLlmClient implements LlmClient {
         return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
+    /**
+     * Notation CAS_PRATIQUE en mode mock : aucune analyse semantique n est possible
+     * sans vrai LLM. On borne intentionnellement le score sous le seuil de reussite
+     * (60/100) pour eviter les faux positifs, et on marque clairement le resultat
+     * comme "SIMULE" dans l explication et le prompt hash (utilise par l UI pour
+     * afficher un badge d avertissement).
+     */
     @Override
     public CasGradingResult gradeCasPratique(String scenario, java.util.List<String> expectedPoints, String candidateAnswer) {
         int len = candidateAnswer == null ? 0 : candidateAnswer.trim().length();
         BigDecimal score;
         String explanation;
-        if (len < 30) {
-            score = new BigDecimal("30.00");
-            explanation = "[MOCK] Reponse trop courte (" + len + " caracteres). Le candidat n a pas developpe son raisonnement.";
+        if (len == 0) {
+            score = new BigDecimal("0.00");
+            explanation = "[SIMULE] Aucune reponse fournie.";
+        } else if (len < 30) {
+            score = new BigDecimal("10.00");
+            explanation = "[SIMULE - mode demo] Reponse trop courte (" + len + " caracteres) pour etre evaluee par le mock. Aucune analyse semantique en mode demo, seule la longueur est prise en compte.";
         } else if (len < 200) {
-            score = new BigDecimal("65.00");
-            explanation = "[MOCK] Reponse correcte mais incomplete. " + (expectedPoints == null ? 0 : expectedPoints.size()) + " points etaient attendus.";
+            score = new BigDecimal("25.00");
+            explanation = "[SIMULE - mode demo] Reponse de longueur moyenne (" + len + " caracteres). Le mock ne peut pas juger de la pertinence : configurez LLM_PROVIDER=openai/github/claude pour une vraie evaluation.";
         } else {
-            score = new BigDecimal("85.00");
-            explanation = "[MOCK] Reponse detaillee et structuree, le candidat couvre l essentiel des points attendus.";
+            score = new BigDecimal("40.00");
+            explanation = "[SIMULE - mode demo] Reponse detaillee (" + len + " caracteres). Le mock note uniquement la longueur, pas le contenu : configurez LLM_PROVIDER=openai/github/claude pour une vraie evaluation.";
         }
-        return new CasGradingResult(score, explanation, providerName(), "mock-judge-v1", 0, BigDecimal.ZERO);
+        return new CasGradingResult(score, explanation, providerName(), "mock-judge-v2-simulated", 0, BigDecimal.ZERO);
     }
 
     @Override

@@ -1054,7 +1054,7 @@ curl -i -H "Authorization: Bearer <jwt-candidat>" http://localhost:8090/analytic
   - Préremplir le nom/email depuis l'invitation après vérification du code.
   - Conserver l'obligation de consentement anti-fraude avant de démarrer.
 
-### [BUG-01] Les cas pratiques sont comptés réussis même avec une réponse incohérente en mode mock
+### [BUG-01] ✅ CORRIGÉ — Les cas pratiques sont comptés réussis même avec une réponse incohérente en mode mock
 
 - **Où** : `http://localhost:5173/candidate/passation/{token}/done`, page finale candidat après soumission.
 - **Capture écran** : capture fournie pendant la recette, montrant la page "Merci d'avoir passé le test" avec score indicatif `20`, QCM `0/5`, CODE `0/3`, CAS `2/2`.
@@ -1078,3 +1078,9 @@ curl -i -H "Authorization: Bearer <jwt-candidat>" http://localhost:8090/analytic
   - Pour la recette fonctionnelle, tester les CAS avec un vrai provider LLM si disponible.
   - Améliorer le mock pour détecter au minimum les réponses manifestement incohérentes ou hors sujet.
   - Option possible : ne pas afficher `CAS X/Y` comme réussite réelle quand `llmProvider = mock`, mais afficher "évaluation simulée".
+- **Correction appliquée** :
+  - `MockLlmClient.gradeCasPratique` : scores plafonnés à 40/100 (donc jamais réussi puisque seuil = 60), explications préfixées `[SIMULE - mode demo]` incitant à configurer un vrai provider LLM.
+  - `ScoreBreakdown` enrichi d'un flag `casGradingSimulated` (positionné à true si le LLM courant est un mock ET s'il y a au moins un CAS).
+  - `PassationView` / `ScoreBreakdownView` propagent le flag jusqu'au frontend.
+  - `CandidateDonePage` : le label devient "Cas (simulé)" et une bannière d'avertissement ambre explique au candidat que l'évaluation CAS n'est pas fiable en mode démo, le recruteur ajustera manuellement.
+  - À vérifier lors de la prochaine recette : reproduire les mêmes étapes, `CAS 2/2` doit désormais être `CAS 0/2` (ou proche) et la bannière ambre doit apparaître.

@@ -259,6 +259,7 @@ export type ScoreBreakdownView = {
   codeTotal: number;
   casPassed: number;
   casTotal: number;
+  casGradingSimulated: boolean;
 };
 
 export type CandidatePassation = {

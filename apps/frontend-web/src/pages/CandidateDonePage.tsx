@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { ScoreRing } from '@/components/ScoreRing';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ScoreBreakdownView } from '@/lib/api';
-import { CheckCircle2, Sparkles, Lock } from 'lucide-react';
+import { CheckCircle2, Sparkles, Lock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 type DoneState = {
@@ -91,13 +91,28 @@ export function CandidateDonePage() {
                     <Stat label="Code" ok={breakdown.codePassed} total={breakdown.codeTotal} />
                   )}
                   {breakdown.casTotal > 0 && (
-                    <Stat label="Cas" ok={breakdown.casPassed} total={breakdown.casTotal} />
+                    <Stat
+                      label={breakdown.casGradingSimulated ? 'Cas (simulé)' : 'Cas'}
+                      ok={breakdown.casPassed}
+                      total={breakdown.casTotal}
+                    />
                   )}
                 </div>
               )}
 
+              {breakdown?.casGradingSimulated && (
+                <div className="mt-4 flex items-start gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-3 py-2 text-left text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    L'évaluation des cas pratiques a été faite en <strong>mode démo</strong> (aucune analyse
+                    sémantique). Le score indicatif ci-dessus n'est pas fiable ; le recruteur ajustera
+                    manuellement.
+                  </span>
+                </div>
+              )}
+
               <p className="mt-5 text-xs text-muted">
-                Score automatique base sur les questions automatisables et l'evaluation IA des cas
+                Score automatique basé sur les questions automatisables et l'évaluation IA des cas
                 pratiques. Le recruteur ajoutera son avis qualitatif.
               </p>
             </CardBody>

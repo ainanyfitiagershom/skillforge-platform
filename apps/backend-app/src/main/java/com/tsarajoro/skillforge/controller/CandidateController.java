@@ -101,13 +101,15 @@ public class CandidateController {
     public record ScoreBreakdownView(
             int qcmPassed, int qcmTotal,
             int codePassed, int codeTotal,
-            int casPassed, int casTotal) {
+            int casPassed, int casTotal,
+            boolean casGradingSimulated) {
         static ScoreBreakdownView of(ScoreBreakdown b) {
             if (b == null) return null;
             return new ScoreBreakdownView(
                     b.qcmPassed(), b.qcmTotal(),
                     b.codePassed(), b.codeTotal(),
-                    b.casPassed(), b.casTotal());
+                    b.casPassed(), b.casTotal(),
+                    b.casGradingSimulated());
         }
     }
 
