@@ -18,6 +18,22 @@ spring:
     enabled: true
     baseline-on-migrate: true
 
+  # SMTP pour l envoi des invitations candidat.
+  # En dev : Mailpit SkillForge du docker-compose (skillforge-mailpit sur localhost:1026,
+  #          UI web http://localhost:8026).
+  # En prod : override via variables d env (Gmail SMTP, SendGrid, AWS SES, etc.).
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1026}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:false}
+          starttls:
+            enable: ${SMTP_STARTTLS:false}
+
 server:
   port: ${SERVER_PORT:8090}  # 8080 deja pris par Traefik d'un autre projet
 
@@ -39,7 +55,7 @@ skillforge:
     access-ttl-minutes: 30
     refresh-ttl-days: 7
   llm:
-    provider: ${LLM_PROVIDER:mock}  # mock | openai | github | claude
+    provider: ${LLM_PROVIDER:mock}  # mock | openai | github | claude | groq
     openai:
       api-key: ${OPENAI_API_KEY:}
       model: ${OPENAI_MODEL:gpt-4o-mini}
@@ -50,8 +66,21 @@ skillforge:
     claude:
       api-key: ${ANTHROPIC_API_KEY:}
       model: ${CLAUDE_MODEL:claude-sonnet-4-5}
+    # Groq : API compatible OpenAI, free tier tres genereux (30 req/min).
+    # Modeles conseilles : llama-3.3-70b-versatile (qualite max), llama-3.1-8b-instant (vitesse).
+    # Cle a creer sur https://console.groq.com/keys
+    groq:
+      api-key: ${GROQ_API_KEY:}
+      model: ${GROQ_MODEL:llama-3.3-70b-versatile}
   rgpd:
     cv-retention-months: 12
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+    from: ${MAIL_FROM:no-reply@skillforge.local}
+    from-name: ${MAIL_FROM_NAME:SkillForge - Tsarajoro}
+    # URL publique du frontend (utilisee pour construire le lien candidat dans l email).
+    # En dev : http://localhost:5173. En prod : URL SkillForge Tsarajoro.
+    frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
   sandbox:
     # URL du service backend-sandbox (port 8091 par defaut)
     url: ${SANDBOX_URL:http://localhost:8091}

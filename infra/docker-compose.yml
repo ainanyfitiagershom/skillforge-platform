@@ -24,6 +24,27 @@ services:
       timeout: 5s
       retries: 5
 
+  # Faux serveur SMTP + interface web pour capturer les emails envoyes par le backend
+  # (invitations candidats). Independant du mailpit Linkuma pour ne pas melanger les
+  # projets. Ports mappes en 1026 (SMTP) et 8026 (UI) pour ne pas taper sur ceux qui
+  # pourraient etre pris par d autres projets (Mailpit par defaut = 1025 / 8025).
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: skillforge-mailpit
+    restart: unless-stopped
+    ports:
+      - "1026:1025"   # SMTP (backend Spring -> Mailpit)
+      - "8026:8025"   # UI web (http://localhost:8026)
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+      MP_MAX_MESSAGES: 500
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8025/api/v1/info"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
 volumes:
   skillforge_pgdata:
     name: skillforge_pgdata
