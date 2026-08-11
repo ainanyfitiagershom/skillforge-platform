@@ -1024,7 +1024,7 @@ curl -i -H "Authorization: Bearer <jwt-candidat>" http://localhost:8090/analytic
 
 ## Retours de recette le 2026-08-05
 
-### [UX-01] Identifier le candidat par un code unique plutôt que par nom complet saisi librement
+### [UX-01] ✅ CORRIGÉ (variante) — Identifier le candidat par un code unique plutôt que par nom complet saisi librement
 
 - **Où** : `http://localhost:5173/candidate/passation/{token}`, page d'identification candidat avant le démarrage du test.
 - **Capture écran** : capture fournie pendant la recette, montrant l'écran "Test technique SkillForge" avec les champs `Email`, `Nom complet`, l'encart "Analyse anti-fraude pendant la passation" et le bouton désactivé "Acceptez l'analyse anti-fraude pour continuer".
@@ -1053,6 +1053,46 @@ curl -i -H "Authorization: Bearer <jwt-candidat>" http://localhost:8090/analytic
   - Remplacer ou compléter le champ `Nom complet` par un champ `Code d'accès`.
   - Préremplir le nom/email depuis l'invitation après vérification du code.
   - Conserver l'obligation de consentement anti-fraude avant de démarrer.
+- **Correction appliquée** (variante sans SMTP en dev, plus simple mais couvre le même besoin) :
+  - Le recruteur associait déjà l'invitation à un candidat précis via `test.candidate_id` (V2 migration). Aucune nouvelle migration nécessaire.
+  - Endpoint `GET /invitations/{token}` enrichi : retourne maintenant `candidateEmail`, `candidateDisplayName` et `profileCode` du candidat pré-établi.
+  - Frontend `CandidateWelcomePage` : quand l'invitation contient une identité, les deux champs `Email` et `Nom complet` sont remplacés par un bloc **lecture seule** vert « Identité vérifiée par le recruteur » (icône 🔒). Le candidat ne peut plus saisir un autre nom.
+  - Backend `startOrResume` : verrouille l'identité côté serveur. Si l'email saisi ne correspond pas au candidat pré-établi de l'invitation → **HTTP 403** (`SecurityException` mappée dans le GlobalExceptionHandler).
+  - Le lien reste unique + expirable (comportement inchangé), mais est maintenant **infalsifiable** au niveau identité.
+- **Complément — vrai code d'accès à 6 chiffres (V2 du fix)** :
+  - Migration `V6__invitation_access_code.sql` : nouvelle colonne `invitations.access_code VARCHAR(6)`.
+  - `Invitation.newInvitation` génère un code aléatoire à 6 chiffres via `SecureRandom` à chaque création (ex : `042817`).
+  - `MailService` : le template HTML de l'email contient maintenant un **bloc bien visible** (fond bleu, gros chiffres espacés `letter-spacing:0.35em`) avec le code d'accès et la mention *"Ce code sera demandé sur la page de démarrage"*.
+  - Endpoint public `GET /invitations/{token}` : renvoie `requiresAccessCode: boolean` **mais jamais le code lui-même** (secret, connu du candidat uniquement via l'email).
+  - `CandidateWelcomePage` : nouveau champ **"Code d'accès"** obligatoire quand `requiresAccessCode=true`, avec input `inputMode=numeric`, `maxLength=6`, `pattern=[0-9]{6}`, filtrage anti-caractères non-numériques, style **font-mono 2xl tracking-[0.35em]** cohérent avec l'email.
+  - Backend `startOrResume` : valide le code saisi contre `invitation.accessCode`. Retourne **403** (`SecurityException`) si manquant ou différent. Pas de re-vérification à la reprise d'une passation déjà démarrée.
+  - `InvitationResponse` (endpoint recruteur `/tests/{id}/invite`) : renvoie aussi `accessCode` pour que la modale d'invitation puisse l'afficher/le copier au recruteur (utile si l'email SMTP échoue, le recruteur peut transmettre le code manuellement).
+  - `InvitationModal` : nouveau bloc "**Code d'accès candidat**" avec input lecture seule (fond bleu, gros chiffres) + bouton "Copier".
+  - Rétrocompatibilité : les invitations pré-V6 sans code (`access_code IS NULL`) restent utilisables sans code (`requiresAccessCode=false`).
+- **Défense en profondeur totale (UX-01 final)** : token unique du lien + verrouillage d'identité (email doit correspondre au candidat lié au test) + code d'accès à 6 chiffres reçu par email. Un attaquant qui intercepte le lien doit AUSSI intercepter le mail pour démarrer.
+- **À vérifier lors de la prochaine recette** :
+  - Générer invitation depuis `/app/review` → la modale affiche le code d'accès en gros chiffres bleus + email envoyé au candidat.
+  - Vérifier dans Mailpit (http://localhost:8026) que l'email contient bien le bloc bleu avec le code.
+  - Ouvrir le lien candidat dans navigateur privé → champ "Code d'accès" présent, refuse les non-chiffres, limite à 6 caractères.
+  - Tester en saisissant un mauvais code → 403 avec message "Code d acces invalide".
+  - Saisir le vrai code → passation démarre normalement.
+- **Complément — envoi automatique du lien par email** :
+  - `spring-boot-starter-mail` ajouté au pom.
+  - Nouveau `MailService.sendInvitationLink(email, name, token, profileLabel, ttlHours)` avec template HTML responsive (bouton CTA + lien de secours + mention TTL).
+  - `TestController.invite` appelle le service après création de l'invitation. Échec SMTP silencieux (le lien reste copiable manuellement).
+  - `InvitationResponse` enrichie de `emailSent` + `candidateEmail` pour que le frontend confirme visuellement l'envoi.
+  - `InvitationModal` :
+    - Badge vert **"Email envoyé à …"** avec icône enveloppe quand `emailSent=true`.
+    - Badge ambre **"Envoi automatique indisponible"** quand `emailSent=false` (SMTP KO, le recruteur copie manuellement).
+  - Config SMTP :
+    - **Dev** : Mailpit du stack Linkuma (SMTP `172.25.0.3:1025`, UI web http://mail.linkuma.local) — préconfiguré.
+    - **Prod** : override via env vars `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_AUTH`, `SMTP_STARTTLS`, `MAIL_FROM`, `MAIL_FROM_NAME`, `FRONTEND_BASE_URL`.
+    - Kill switch : `MAIL_ENABLED=false` désactive complètement l'envoi.
+- **À vérifier lors de la prochaine recette** :
+  - Générer une invitation depuis `/app/review` pour un candidat qui a déjà un CV (donc `test.candidate_id` peuplé).
+  - Ouvrir le lien dans un navigateur privé.
+  - Vérifier que le formulaire d'identification affiche le bloc vert avec nom + email en lecture seule.
+  - Vérifier que le nom affiché correspond exactement au candidat lié au test dans `/app/review`.
 
 ### [BUG-01] ✅ CORRIGÉ — Les cas pratiques sont comptés réussis même avec une réponse incohérente en mode mock
 
