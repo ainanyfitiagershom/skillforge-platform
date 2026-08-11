@@ -126,7 +126,14 @@ export const api = {
     }),
 
   inviteCandidate: (testId: string) =>
-    request<{ id: string; token: string; expiresAt: string }>(`/tests/${testId}/invite`, {
+    request<{
+      id: string;
+      token: string;
+      expiresAt: string;
+      accessCode: string | null;
+      emailSent: boolean;
+      candidateEmail: string | null;
+    }>(`/tests/${testId}/invite`, {
       method: 'POST',
     }),
 
@@ -154,11 +161,12 @@ export const api = {
     token: string,
     candidateEmail: string,
     candidateDisplayName: string,
+    accessCode: string | null,
   ) =>
     request<CandidatePassation>('/candidate/passations/start', {
       method: 'POST',
       auth: false,
-      body: { token, candidateEmail, candidateDisplayName },
+      body: { token, candidateEmail, candidateDisplayName, accessCode },
     }),
 
   candidateSaveTextAnswer: (passationId: string, questionId: string, answerText: string) =>
@@ -249,6 +257,10 @@ export type CandidateQuestionView = {
 
 export type CandidateInvitation = {
   testId: string;
+  candidateEmail: string | null;
+  candidateDisplayName: string | null;
+  profileCode: string | null;
+  requiresAccessCode: boolean;
   questions: CandidateQuestionView[];
 };
 

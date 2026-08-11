@@ -28,6 +28,9 @@ export function CandidateWelcomePage() {
 
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [accessCode, setAccessCode] = useState('');
+  const [requiresAccessCode, setRequiresAccessCode] = useState(false);
+  const [identityLocked, setIdentityLocked] = useState(false);
   const [fraudConsent, setFraudConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -43,12 +46,19 @@ export function CandidateWelcomePage() {
       .then((res) => {
         setTokenStatus('valid');
         setQuestionsCount(res.questions.length);
+        setRequiresAccessCode(res.requiresAccessCode);
+        // UX-01 : identite pre-etablie par le recruteur -> on verrouille.
+        if (res.candidateEmail) {
+          setEmail(res.candidateEmail);
+          setDisplayName(res.candidateDisplayName ?? '');
+          setIdentityLocked(true);
+        }
       })
       .catch((err) => {
         setTokenStatus('invalid');
         const msg =
           err instanceof ApiError && err.status === 410
-            ? 'Lien expire, deja utilise ou inconnu.'
+            ? 'Lien expiré, déjà utilisé ou inconnu.'
             : err instanceof Error
               ? err.message
               : 'Erreur de validation du lien.';
@@ -59,10 +69,19 @@ export function CandidateWelcomePage() {
   const handleStart = async (e: FormEvent) => {
     e.preventDefault();
     if (!token || !fraudConsent) return;
+    if (requiresAccessCode && accessCode.trim().length !== 6) {
+      setSubmitError("Le code d'accès doit contenir 6 chiffres.");
+      return;
+    }
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const passation = await api.candidateStartPassation(token, email, displayName);
+      const passation = await api.candidateStartPassation(
+        token,
+        email,
+        displayName,
+        requiresAccessCode ? accessCode.trim() : null,
+      );
       sessionStorage.setItem(
         `skillforge.passation.${token}`,
         JSON.stringify({
@@ -158,30 +177,83 @@ export function CandidateWelcomePage() {
               </CardHeader>
               <CardBody>
                 <form onSubmit={handleStart} className="space-y-5">
-                  <div>
-                    <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
-                      Email
-                    </label>
-                    <Input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="vous@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
-                      Nom complet
-                    </label>
-                    <Input
-                      type="text"
-                      required
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Jean Dupont"
-                    />
-                  </div>
+                  {identityLocked ? (
+                    <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950/40">
+                      <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                        <Lock className="h-3.5 w-3.5" />
+                        Identité vérifiée par le recruteur
+                      </div>
+                      <div className="space-y-1 text-sm text-foreground">
+                        {displayName && (
+                          <div>
+                            <span className="text-xs uppercase tracking-wider text-muted">Nom : </span>
+                            <span className="font-semibold">{displayName}</span>
+                          </div>
+                        )}
+                        <div>
+                          <span className="text-xs uppercase tracking-wider text-muted">Email : </span>
+                          <span className="font-mono text-xs">{email}</span>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-xs text-muted">
+                        Ces informations proviennent de votre invitation. Contactez le
+                        recruteur si elles sont incorrectes.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                          Email
+                        </label>
+                        <Input
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="vous@example.com"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                          Nom complet
+                        </label>
+                        <Input
+                          type="text"
+                          required
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          placeholder="Jean Dupont"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {requiresAccessCode && (
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                        Code d'accès (reçu par email)
+                      </label>
+                      <Input
+                        type="text"
+                        required
+                        inputMode="numeric"
+                        pattern="[0-9]{6}"
+                        maxLength={6}
+                        value={accessCode}
+                        onChange={(e) =>
+                          setAccessCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+                        }
+                        placeholder="123456"
+                        autoComplete="one-time-code"
+                        className="text-center font-mono text-2xl tracking-[0.35em]"
+                      />
+                      <p className="mt-2 text-xs text-muted">
+                        Ce code à 6 chiffres vous a été envoyé dans l'email d'invitation.
+                        Vérifiez votre boîte de réception (et les spams).
+                      </p>
+                    </div>
+                  )}
 
                   <div className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-4">
                     <div className="mb-3 flex items-start gap-2.5">

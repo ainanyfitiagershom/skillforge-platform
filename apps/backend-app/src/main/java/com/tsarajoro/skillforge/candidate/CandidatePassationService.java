@@ -8,6 +8,7 @@ import com.tsarajoro.skillforge.domain.Invitation;
 import com.tsarajoro.skillforge.domain.Passation;
 import com.tsarajoro.skillforge.domain.Question;
 import com.tsarajoro.skillforge.domain.QuestionType;
+import com.tsarajoro.skillforge.exception.InvitationInvalidException;
 import com.tsarajoro.skillforge.llm.CasGradingResult;
 import com.tsarajoro.skillforge.llm.LlmClient;
 import com.tsarajoro.skillforge.report.ReportService;
@@ -17,6 +18,7 @@ import com.tsarajoro.skillforge.repository.InvitationRepository;
 import com.tsarajoro.skillforge.repository.PassationRepository;
 import com.tsarajoro.skillforge.repository.QuestionRepository;
 import com.tsarajoro.skillforge.repository.TestCompositionRepository;
+import com.tsarajoro.skillforge.repository.TestRepository;
 import com.tsarajoro.skillforge.sandbox.SandboxApiClient;
 import com.tsarajoro.skillforge.sandbox.SandboxApiClient.SandboxExecuteRequest;
 import org.slf4j.Logger;
@@ -50,9 +52,11 @@ public class CandidatePassationService {
     private final CandidateRepository candidateRepo;
     private final QuestionRepository questionRepo;
     private final TestCompositionRepository compositionRepo;
+    private final TestRepository testRepo;
     private final SandboxApiClient sandboxClient;
     private final LlmClient llmClient;
     private final ReportService reportService;
+    private final AccessCodeAttemptTracker attemptTracker;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public CandidatePassationService(
@@ -62,30 +66,102 @@ public class CandidatePassationService {
             CandidateRepository candidateRepo,
             QuestionRepository questionRepo,
             TestCompositionRepository compositionRepo,
+            TestRepository testRepo,
             SandboxApiClient sandboxClient,
             LlmClient llmClient,
-            ReportService reportService) {
+            ReportService reportService,
+            AccessCodeAttemptTracker attemptTracker) {
         this.invitationRepo = invitationRepo;
         this.passationRepo = passationRepo;
         this.answerRepo = answerRepo;
         this.candidateRepo = candidateRepo;
         this.questionRepo = questionRepo;
         this.compositionRepo = compositionRepo;
+        this.testRepo = testRepo;
         this.sandboxClient = sandboxClient;
         this.llmClient = llmClient;
         this.reportService = reportService;
+        this.attemptTracker = attemptTracker;
     }
 
+    /**
+     * UX-01 : l identite du candidat est verrouillee au moment de l invitation.
+     * Le recruteur envoie l invitation a une personne precise (test.candidate_id).
+     * Au start :
+     *   - Verification du code d acces a 6 chiffres (recu par email) contre celui
+     *     stocke sur l invitation. 403 si different. Cette verification n a lieu
+     *     que si l invitation a bien un accessCode (invitations pre-existantes
+     *     sans code restent utilisables sans code, retrocompatibilite V5).
+     *   - Si le test a un candidat pre-etabli, on force son identite (l email saisi
+     *     par le formulaire doit correspondre, sinon 403). Cela empeche qu un tiers
+     *     recuperant le lien puisse se declarer sous un autre nom.
+     *   - Si le test n a pas de candidat pre-etabli (ancien flux ou generation directe),
+     *     on retombe sur le comportement historique (creation ou fetch par email).
+     *
+     *   La reprise (findByInvitationId) ne re-verifie pas le code : une passation
+     *   deja demarree suffit a prouver que le code a ete valide une fois.
+     */
     @Transactional
-    public Passation startOrResume(String token, String candidateEmail, String candidateDisplayName) {
+    public Passation startOrResume(String token, String candidateEmail,
+                                    String candidateDisplayName, String accessCode) {
         Invitation inv = validInvitation(token);
         return passationRepo.findByInvitationId(inv.getId())
                 .orElseGet(() -> {
-                    Candidate candidate = candidateRepo.findByEmail(candidateEmail)
-                            .orElseGet(() -> candidateRepo.save(
-                                    Candidate.newCandidate(candidateEmail, candidateDisplayName)));
-                    return passationRepo.save(Passation.newPassation(inv.getId(), candidate.getId()));
+                    verifyAccessCode(inv, accessCode);
+                    UUID candidateId = resolveCandidateForInvitation(inv, candidateEmail, candidateDisplayName);
+                    return passationRepo.save(Passation.newPassation(inv.getId(), candidateId));
                 });
+    }
+
+    /**
+     * Verifie le code d acces avec :
+     * <ul>
+     *   <li>Rate limiting : 5 echecs consecutifs -> lock 15 min (fix C4).</li>
+     *   <li>Comparaison constant-time avec {@link MessageDigest#isEqual} (fix C6).</li>
+     * </ul>
+     */
+    private void verifyAccessCode(Invitation inv, String submittedCode) {
+        String expected = inv.getAccessCode();
+        if (expected == null || expected.isBlank()) {
+            // Invitation legacy pre-V6 sans code d acces : on n exige rien.
+            return;
+        }
+        if (attemptTracker.isLocked(inv.getId())) {
+            throw new SecurityException(
+                    "Trop de tentatives. Reessayez dans 15 minutes.");
+        }
+        if (submittedCode == null || submittedCode.trim().isEmpty()) {
+            attemptTracker.recordFailure(inv.getId());
+            throw new SecurityException("Code d acces manquant.");
+        }
+        byte[] exp = expected.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] got = submittedCode.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        if (!java.security.MessageDigest.isEqual(exp, got)) {
+            attemptTracker.recordFailure(inv.getId());
+            throw new SecurityException("Code d acces invalide.");
+        }
+        attemptTracker.recordSuccess(inv.getId());
+    }
+
+    private UUID resolveCandidateForInvitation(Invitation inv, String candidateEmail, String candidateDisplayName) {
+        UUID expectedCandidateId = testRepo.findById(inv.getTestId())
+                .map(t -> t.getCandidateId())
+                .orElse(null);
+        if (expectedCandidateId != null) {
+            Candidate expected = candidateRepo.findById(expectedCandidateId).orElse(null);
+            if (expected != null) {
+                if (candidateEmail == null || !candidateEmail.trim().equalsIgnoreCase(expected.getEmail())) {
+                    throw new SecurityException(
+                            "L email fourni ne correspond pas au candidat invite pour ce test.");
+                }
+                return expected.getId();
+            }
+        }
+        // Fallback (test sans candidate_id pre-etabli)
+        Candidate candidate = candidateRepo.findByEmail(candidateEmail)
+                .orElseGet(() -> candidateRepo.save(
+                        Candidate.newCandidate(candidateEmail, candidateDisplayName)));
+        return candidate.getId();
     }
 
     /** Reconstitue l etat d une passation en cours (pour restaurer l UI apres un F5 candidat). */
@@ -370,13 +446,21 @@ public class CandidatePassationService {
         } catch (Exception e) { return List.of(); }
     }
 
+    /**
+     * Verifie qu une invitation existe, n est pas utilisee et n est pas expiree.
+     * <p>
+     * Les 3 cas d echec (inconnue / expiree / deja utilisee) sont uniformement
+     * mappes en HTTP 410 Gone via {@link InvitationInvalidException} pour eviter
+     * qu un attaquant puisse enumerer les tokens valides par difference de code
+     * HTTP (fix C1 du POC 3 review).
+     */
     private Invitation validInvitation(String token) {
         Optional<Invitation> opt = invitationRepo.findByToken(token);
-        if (opt.isEmpty()) throw new IllegalArgumentException("invitation introuvable");
+        if (opt.isEmpty()) throw new InvitationInvalidException("invitation invalide");
         Invitation inv = opt.get();
-        if (inv.isUsed()) throw new IllegalStateException("invitation deja utilisee");
+        if (inv.isUsed()) throw new InvitationInvalidException("invitation invalide");
         if (inv.getExpiresAt().isBefore(OffsetDateTime.now()))
-            throw new IllegalStateException("invitation expiree");
+            throw new InvitationInvalidException("invitation invalide");
         return inv;
     }
 

@@ -38,7 +38,8 @@ public class CandidateController {
 
     @PostMapping("/passations/start")
     public PassationView startOrResume(@Valid @RequestBody StartRequest body) {
-        Passation p = service.startOrResume(body.token(), body.candidateEmail(), body.candidateDisplayName());
+        Passation p = service.startOrResume(
+                body.token(), body.candidateEmail(), body.candidateDisplayName(), body.accessCode());
         return PassationView.of(p, null);
     }
 
@@ -83,7 +84,10 @@ public class CandidateController {
     public record StartRequest(
             @NotBlank String token,
             @Email @NotBlank String candidateEmail,
-            @NotBlank String candidateDisplayName
+            @NotBlank String candidateDisplayName,
+            // Code d acces a 6 chiffres recu par email (obligatoire quand
+            // requiresAccessCode=true dans le payload de /invitations/{token}).
+            String accessCode
     ) {}
 
     public record TextAnswerRequest(

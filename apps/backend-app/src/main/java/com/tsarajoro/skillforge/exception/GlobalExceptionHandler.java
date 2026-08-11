@@ -6,6 +6,7 @@ import com.tsarajoro.skillforge.llm.LlmCallException;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -41,6 +42,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationFailedException.class)
     public ResponseEntity<Map<String, Object>> handleAuth(AuthenticationFailedException e) {
         return error(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    // SecurityException levee explicitement dans le code metier (ex: UX-01
+    // startOrResume quand l email fourni ne correspond pas a l invitation).
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(SecurityException e) {
+        return error(HttpStatus.FORBIDDEN, e.getMessage());
+    }
+
+    // Invitation inconnue, expiree ou deja utilisee -> 410 Gone uniforme
+    // (evite l enumeration de tokens valides par difference de status HTTP).
+    @ExceptionHandler(InvitationInvalidException.class)
+    public ResponseEntity<Map<String, Object>> handleInvitationInvalid(InvitationInvalidException e) {
+        return error(HttpStatus.GONE, e.getMessage());
+    }
+
+    // Contrainte unique violee (ex: double POST /candidate/passations/start en
+    // parallele qui tente de creer 2 passations pour la meme invitation) -> 409
+    // Conflict idempotent, PAS de 500 avec stacktrace (fix C3 code review).
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException e) {
+        return error(HttpStatus.CONFLICT, "Ressource deja existante ou en conflit.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

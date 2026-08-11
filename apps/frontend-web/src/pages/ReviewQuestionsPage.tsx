@@ -42,7 +42,13 @@ export function ReviewQuestionsPage() {
   const [validating, setValidating] = useState<string | null>(null);
 
   const [invitingTestId, setInvitingTestId] = useState<string | null>(null);
-  const [invitation, setInvitation] = useState<{ token: string; expiresAt: string } | null>(null);
+  const [invitation, setInvitation] = useState<{
+    token: string;
+    expiresAt: string;
+    accessCode: string | null;
+    emailSent: boolean;
+    candidateEmail: string | null;
+  } | null>(null);
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
 
@@ -65,7 +71,13 @@ export function ReviewQuestionsPage() {
     setInviteError(null);
     try {
       const res = await api.inviteCandidate(invitingTestId);
-      setInvitation({ token: res.token, expiresAt: res.expiresAt });
+      setInvitation({
+        token: res.token,
+        expiresAt: res.expiresAt,
+        accessCode: res.accessCode,
+        emailSent: res.emailSent,
+        candidateEmail: res.candidateEmail,
+      });
     } catch (err) {
       setInviteError(err instanceof ApiError ? err.message : "Erreur lors de la création de l'invitation");
     } finally {
@@ -960,7 +972,13 @@ function InvitationModal({
 }: {
   candidateEmail: string;
   candidateName: string | null;
-  invitation: { token: string; expiresAt: string } | null;
+  invitation: {
+    token: string;
+    expiresAt: string;
+    accessCode: string | null;
+    emailSent: boolean;
+    candidateEmail: string | null;
+  } | null;
   inviting: boolean;
   error: string | null;
   onGenerate: () => void;
@@ -1004,8 +1022,10 @@ function InvitationModal({
             </CardTitle>
             <CardDescription>
               {invitation
-                ? 'Lien généré — copiez-le et transmettez-le au candidat par email.'
-                : 'Un lien unique sera créé pour ce test, valable 24 heures.'}
+                ? invitation.emailSent
+                  ? "L'email d'invitation a été envoyé au candidat. Vous pouvez aussi copier le lien ci-dessous pour un envoi manuel."
+                  : "Lien généré. L'envoi automatique par email a échoué (SMTP indisponible) — copiez-le et transmettez-le au candidat manuellement."
+                : "Un lien unique va être créé pour ce test et envoyé par email au candidat, valable 24 heures."}
             </CardDescription>
           </div>
         </CardHeader>
@@ -1022,6 +1042,66 @@ function InvitationModal({
               <div className="text-xs text-muted">{candidateEmail}</div>
             )}
           </div>
+
+          {invitation && invitation.emailSent && (
+            <div className="flex items-start gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <Mail className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <div className="font-semibold">Email envoyé à {invitation.candidateEmail}</div>
+                <div className="text-xs opacity-80">
+                  Le candidat va recevoir un email avec le lien de démarrage.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {invitation && !invitation.emailSent && (
+            <div className="flex items-start gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+              <Mail className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <div className="font-semibold">Envoi automatique indisponible</div>
+                <div className="text-xs opacity-80">
+                  Copiez le lien et le code d'accès ci-dessous et transmettez-les manuellement au candidat.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {invitation?.accessCode && (
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
+                Code d'accès candidat
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={invitation.accessCode}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="block flex-1 rounded-xl border border-border bg-sky-50 px-4 py-3 text-center font-mono text-2xl font-bold tracking-[0.35em] text-sky-900 focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15 dark:bg-sky-950/40 dark:text-sky-200"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  onClick={async () => {
+                    if (!invitation?.accessCode) return;
+                    try {
+                      await navigator.clipboard.writeText(invitation.accessCode);
+                    } catch {
+                      /* clipboard refusé en HTTP */
+                    }
+                  }}
+                >
+                  <Link2 className="h-3.5 w-3.5" />
+                  Copier
+                </Button>
+              </div>
+              <p className="mt-2 text-xs text-muted">
+                Ce code a été envoyé dans l'email d'invitation. Le candidat doit
+                le saisir pour démarrer sa passation.
+              </p>
+            </div>
+          )}
 
           {error && (
             <div className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">
