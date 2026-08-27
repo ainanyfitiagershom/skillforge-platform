@@ -55,7 +55,7 @@ skillforge:
     access-ttl-minutes: 30
     refresh-ttl-days: 7
   llm:
-    provider: ${LLM_PROVIDER:mock}  # mock | openai | github | claude | groq
+    provider: ${LLM_PROVIDER:mock}  # mock | openai | github | claude | groq | ollama
     openai:
       api-key: ${OPENAI_API_KEY:}
       model: ${OPENAI_MODEL:gpt-4o-mini}
@@ -67,11 +67,22 @@ skillforge:
       api-key: ${ANTHROPIC_API_KEY:}
       model: ${CLAUDE_MODEL:claude-sonnet-4-5}
     # Groq : API compatible OpenAI, free tier tres genereux (30 req/min).
-    # Modeles conseilles : llama-3.3-70b-versatile (qualite max), llama-3.1-8b-instant (vitesse).
+    # Note (2026-11) : Llama 3.x a ete retire du free tier Groq.
+    # Modele conseille : qwen/qwen3.8-27b (support natif json_object, ctx 131k).
+    # Autres options : openai/gpt-oss-120b (plus gros mais json_validate parfois KO),
+    # groq/compound (raisonnement, moins bon pour extraction JSON).
     # Cle a creer sur https://console.groq.com/keys
     groq:
       api-key: ${GROQ_API_KEY:}
-      model: ${GROQ_MODEL:llama-3.3-70b-versatile}
+      model: ${GROQ_MODEL:qwen/qwen3.8-27b}
+    # Ollama : LLM 100% local, aucun cout, aucun quota, aucune dependance
+    # reseau apres pull du modele. Conteneur skillforge-ollama demarre par
+    # docker-compose. Model conseille : qwen2.5:7b (bon compromis qualite /
+    # RAM 8 Go). Autres : llama3.2:3b (rapide), qwen2.5-coder:7b (code).
+    # Pull : docker exec skillforge-ollama ollama pull qwen2.5:7b
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434/v1}
+      model: ${OLLAMA_MODEL:qwen2.5:7b}
   rgpd:
     cv-retention-months: 12
   mail:

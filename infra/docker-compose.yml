@@ -45,6 +45,30 @@ services:
       timeout: 3s
       retries: 3
 
+  # LLM local pour la generation de tests, l analyse CV, la notation CAS et
+  # les rapports IA. Alternative souveraine aux APIs externes (GitHub Models
+  # retire fin 2026, Groq/OpenAI/Claude payants ou avec rate limits stricts).
+  # Le modele est stocke dans un volume persistant : telecharge une seule
+  # fois par machine (~4.5 Go pour qwen2.5:7b), reutilise a chaque restart.
+  #
+  # Pour telecharger le modele apres le premier `docker compose up -d` :
+  #   docker exec -it skillforge-ollama ollama pull qwen2.5:7b
+  ollama:
+    image: ollama/ollama:latest
+    container_name: skillforge-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"   # API HTTP (compatible OpenAI sur /v1/chat/completions)
+    volumes:
+      - skillforge_ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
 volumes:
   skillforge_pgdata:
     name: skillforge_pgdata
+  skillforge_ollama_models:
+    name: skillforge_ollama_models
