@@ -101,6 +101,7 @@ public class GroqLlmClient implements LlmClient {
         Map<String, Object> body = Map.of(
                 "model", model,
                 "response_format", Map.of("type", "json_object"),
+                "max_tokens", 4000,
                 "messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
                         Map.of("role", "user", "content",
@@ -150,42 +151,20 @@ public class GroqLlmClient implements LlmClient {
                 .collect(Collectors.joining(", "));
 
         String systemPrompt = """
-                Tu es un expert RH technique et createur de tests d'evaluation pour le recrutement.
-                Tu generes des questions techniques de qualite industrielle, adaptees au profil
-                metier cible et aux competences declarees du candidat.
+                Tu generes des questions techniques d'evaluation en JSON.
+                Reponds UNIQUEMENT ce JSON :
+                {"questions":[{"type":"QCM","statement":"...","difficulty":3,"targetSkillCodes":["LANG_PHP"],"jsonPayload":"..."}]}
 
-                Reponds UNIQUEMENT en JSON, sans aucun texte avant ou apres, au format suivant :
-                {
-                  "questions": [
-                    {
-                      "type": "QCM",
-                      "statement": "Enonce clair et precis",
-                      "difficulty": 3,
-                      "targetSkillCodes": ["LANG_PHP"],
-                      "jsonPayload": "{\\"options\\":[\\"A\\",\\"B\\",\\"C\\",\\"D\\"],\\"correctIndex\\":1,\\"explanation\\":\\"...\\"}"
-                    }
-                  ]
-                }
+                type: QCM | CODE | CAS_PRATIQUE.
+                difficulty: 1-5.
+                statement: enonce concis 2-3 phrases.
+                jsonPayload: CHAINE JSON echappee (jamais objet), forme selon type :
+                - QCM: {"options":["A","B","C","D"],"correctIndex":1,"explanation":"..."}
+                - CODE: {"language":"PHP"|"JS","starterCode":"...","hiddenTests":"...","explanation":"..."}
+                - CAS_PRATIQUE: {"scenario":"...","expectedAnswerPoints":["..."],"explanation":"..."}
 
-                Regles :
-                - 'type' est l'un de : QCM, CODE, CAS_PRATIQUE
-                - 'difficulty' est un entier entre 1 et 5
-                - 'statement' est OBLIGATOIRE et non vide (2-4 phrases qui contextualisent)
-                - 'targetSkillCodes' contient au moins 1 code competence parmi ceux fournis
-                - 'jsonPayload' est une CHAINE JSON echappee, jamais un objet. Selon le type :
-                    * QCM : {"options":["A","B","C","D"], "correctIndex":1, "explanation":"..."}
-                    * CODE : {"language":"PHP|JS", "starterCode":"...", "hiddenTests":"...", "explanation":"..."}
-                    * CAS_PRATIQUE : {"scenario":"...", "expectedAnswerPoints":["..."], "explanation":"..."}
-
-                Pour les questions CODE specifiquement :
-                - 'starterCode' est un VRAI squelette a completer : signature de la fonction,
-                  docbloc decrivant params/retour, commentaire "// TODO: implementer ici" a
-                  l interieur du corps, et un return par defaut. JAMAIS vide, jamais juste un
-                  commentaire seul. Le candidat doit pouvoir lire la signature et completer.
-                - 'hiddenTests' contient 2-3 assertions executables qui appellent la fonction
-                  du candidat (ex : assert(solve(2) === 4); echo 'OK';).
-                - Les distracteurs des QCM doivent etre plausibles.
-                - Les cas pratiques doivent etre lies au metier quand le profil le justifie.
+                CODE: starterCode = vraie signature + docbloc + "// TODO: implementer" + return par defaut (jamais vide). hiddenTests = 2 assertions courtes.
+                Sois concis pour tenir dans la limite de tokens.
                 """;
 
         String userPrompt = String.format("""
@@ -201,6 +180,7 @@ public class GroqLlmClient implements LlmClient {
         Map<String, Object> body = Map.of(
                 "model", model,
                 "response_format", Map.of("type", "json_object"),
+                "max_tokens", 4000,
                 "messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
                         Map.of("role", "user", "content", userPrompt)));
@@ -276,6 +256,7 @@ public class GroqLlmClient implements LlmClient {
         Map<String, Object> body = Map.of(
                 "model", model,
                 "response_format", Map.of("type", "json_object"),
+                "max_tokens", 4000,
                 "messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
                         Map.of("role", "user", "content", userPrompt)));
@@ -367,6 +348,7 @@ public class GroqLlmClient implements LlmClient {
         Map<String, Object> body = Map.of(
                 "model", model,
                 "response_format", Map.of("type", "json_object"),
+                "max_tokens", 4000,
                 "messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
                         Map.of("role", "user", "content", userPrompt)));

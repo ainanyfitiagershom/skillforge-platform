@@ -86,20 +86,98 @@ public class TestGenerationService {
         if (raw == null || raw.isBlank()) {
             return "{}";
         }
+        // 1er essai : parse direct
         try {
             JsonNode node = mapper.readTree(raw);
             return mapper.writeValueAsString(node);
-        } catch (Exception e) {
-            log.warn("LLM a renvoye un JSON invalide ({}), stockage en payload d'erreur", e.getMessage());
+        } catch (Exception firstError) {
+            // 2e essai : auto-repair d un JSON tronque par le LLM (Groq/OpenAI coupent
+            // la reponse au max_tokens et laissent parfois un objet mal ferme). On
+            // ferme les accolades / crochets manquants et on retente.
+            String repaired = attemptJsonRepair(raw);
+            if (repaired != null) {
+                try {
+                    JsonNode node = mapper.readTree(repaired);
+                    log.info("JSON reconstruit avec succes apres troncature LLM (+{} caracteres)",
+                            repaired.length() - raw.length());
+                    return mapper.writeValueAsString(node);
+                } catch (Exception ignored) {
+                    // repair a echoue aussi, on tombe dans le fallback
+                }
+            }
+            log.warn("LLM a renvoye un JSON invalide ({}), stockage en payload d'erreur",
+                    firstError.getMessage());
             try {
                 return mapper.writeValueAsString(Map.of(
                         "_error", "invalid_json_from_llm",
                         "_rawText", raw,
-                        "_parseError", e.getMessage()));
+                        "_parseError", firstError.getMessage()));
             } catch (Exception ee) {
                 return "{}";
             }
         }
+    }
+
+    /**
+     * Auto-repair d un JSON coupe par le max_tokens du LLM. Strategie :
+     * 1) Retirer une string litterale non terminee en fin (ex: "explanation":"...")
+     * 2) Retirer une virgule trainante
+     * 3) Fermer les [ et { manquants dans le bon ordre (stack simulee)
+     *
+     * <p>Ne repare que les cas simples ou le JSON est coupe dans/apres une valeur.
+     * Retourne null si la reparation est impossible (chaine trop cassee).
+     */
+    private String attemptJsonRepair(String raw) {
+        if (raw == null || raw.length() < 2) return null;
+        String s = raw.trim();
+        // Etat courant : dans/hors d une string, backslash actif, stack de containers.
+        java.util.Deque<Character> stack = new java.util.ArrayDeque<>();
+        boolean inString = false;
+        boolean escape = false;
+        int lastValidEnd = -1;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (inString) {
+                if (escape) { escape = false; continue; }
+                if (c == '\\') { escape = true; continue; }
+                if (c == '"') inString = false;
+                continue;
+            }
+            switch (c) {
+                case '"' -> inString = true;
+                case '{' -> stack.push('}');
+                case '[' -> stack.push(']');
+                case '}', ']' -> { if (!stack.isEmpty()) stack.pop(); }
+                default -> {}
+            }
+            // Position sure : hors string, apres un caractere qui peut cloturer une valeur.
+            if (!inString && (c == '"' || c == '}' || c == ']'
+                    || Character.isDigit(c) || c == 'e' || c == 'l')) {
+                lastValidEnd = i;
+            }
+        }
+        if (stack.isEmpty()) return null; // pas de troncature detectable
+        StringBuilder repaired = new StringBuilder();
+        if (inString) {
+            // On coupe la string incomplete a la derniere position sure et on referme.
+            if (lastValidEnd < 0) return null;
+            repaired.append(s, 0, lastValidEnd + 1);
+        } else {
+            repaired.append(s);
+        }
+        // Enlever une virgule trainante avant de fermer.
+        while (repaired.length() > 0) {
+            char last = repaired.charAt(repaired.length() - 1);
+            if (last == ',' || Character.isWhitespace(last)) {
+                repaired.setLength(repaired.length() - 1);
+            } else {
+                break;
+            }
+        }
+        while (!stack.isEmpty()) {
+            repaired.append(stack.pop());
+        }
+        return repaired.toString();
     }
 
     public record GenerationOutput(
