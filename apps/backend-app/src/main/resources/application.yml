@@ -55,7 +55,7 @@ skillforge:
     access-ttl-minutes: 30
     refresh-ttl-days: 7
   llm:
-    provider: ${LLM_PROVIDER:mock}  # mock | openai | github | claude | groq | ollama
+    provider: ${LLM_PROVIDER:mock}  # mock | openai | github | claude | groq | ollama | gemini
     openai:
       api-key: ${OPENAI_API_KEY:}
       model: ${OPENAI_MODEL:gpt-4o-mini}
@@ -83,6 +83,18 @@ skillforge:
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434/v1}
       model: ${OLLAMA_MODEL:qwen2.5:7b}
+    # Google Gemini via endpoint OpenAI-compatible.
+    # Free tier stable 2026 : Flash-Lite 15 req/min et 1000 req/jour, Flash 10 rpm / 250 rpd.
+    # Cle a creer sur https://aistudio.google.com/apikey (compte Google requis, aucun paiement).
+    # Base URL officielle Google : https://generativelanguage.googleapis.com/v1beta/openai
+    # Modele conseille pour SkillForge : gemini-3.5-flash-lite (rapide, quota le plus haut,
+    # remplacement du gemini-2.5-flash-lite retire aux nouveaux comptes en aout 2026).
+    # Autres options : gemini-3.5-flash (meilleure qualite, quota plus bas),
+    # gemini-3.5-pro (le plus capable mais 5 rpm / 100 rpd seulement).
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai}
+      model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
   rgpd:
     cv-retention-months: 12
   mail:
