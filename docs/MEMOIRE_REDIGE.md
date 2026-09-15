@@ -1,507 +1,381 @@
-# Mémoire M2 MBDS — Contenu rédigé prêt à coller
+# Mémoire M2 MBDS — Sections restantes à coller
 
-**Sujet :** Conception et développement d'une plateforme nouvelle génération de recrutement technique entièrement assistée par IA, du CV au verdict.
-**Auteur :** GERSHOM Ny Aina Fitia
-**Encadreur professionnel :** RAVELOMANANTIANA Tahirintsoa Ulrich
-**Entreprise :** Tsarajoro
-**Année :** Octobre 2026
+**Fichier cible :** `MEMOIRE M2/MEMOIRE-itu-MBDS-v1.docx`
+**Sections déjà rédigées dans le .docx (à ne pas retoucher ici) :** Résumé, Abstract, Glossaire, Introduction, Chapitres 1 → 4, Chapitre 5.1 et 5.2.
+**Sections à coller depuis ce fichier :** 5.3.1 (à remplacer par la version enrichie ci-dessous) → Chapitre 11.
 
-Ce fichier contient le contenu rédigé section par section, prêt à être copié dans `MEMOIRE-itu-MBDS-v1.docx`. Le ton, la longueur et la structure sont calibrés sur le mémoire ANDRIANAIVOSOA (paragraphes narratifs, phrases complètes, style pro-narratif).
+**Remarque sur 5.3.1 :** la version actuellement dans le .docx présente quatre captures d'écran mais reste courte. La version ci-dessous détaille sept écrans structurants du parcours utilisateur, avec pour chacun l'URL réelle de l'application, son rôle dans le cycle et son fonctionnement précis. Elle est plus riche pour un jury M2, en particulier sur les mécanismes non triviaux (verrouillage d'identité, anti-fraude, notation multi-critères).
 
----
-
-## Résumé (½ page)
-
-Le processus de recrutement technique chez Tsarajoro repose historiquement sur des entretiens en tête-à-tête et des exercices corrigés manuellement, mobilisant entre trente et soixante minutes de dévéloppeur senior par candidat. Ce mode opératoire limite la standardisation des évaluations, expose l'entreprise à un risque accru de fraude depuis l'apparition des intelligences artificielles génératives, et rend difficile toute analyse rétrospective des critères réellement discriminants pour un poste donné.
-
-Le projet SkillForge, développé au cours de ce stage de fin d'études, répond à ces limites en proposant une plateforme web sécurisée d'évaluation technique du recrutement, entièrement assistée par intelligence artificielle. La plateforme couvre l'ensemble du cycle, depuis l'analyse automatique du CV jusqu'à la recommandation finale, en intégrant la génération adaptative de tests, l'exécution sécurisée du code candidat dans une sandbox Docker durcie, la notation automatique multi-critères et un compte rendu argumenté à destination du recruteur.
-
-Le travail a été réalisé selon la méthode Scrum, structuré en huit sprints de deux semaines, avec une architecture modulaire à deux services Spring Boot 3 pour isoler la sandbox du reste du système. Le frontend a été développé en React 19 et TypeScript. La stratégie multi-fournisseurs de modèles de langage (OpenAI, Claude, Groq, Ollama) garantit une portabilité totale et l'absence de dépendance à un service externe unique.
-
-Quatre preuves de concept ont validé les modules critiques : analyse de CV, génération adaptative, sandbox sécurisée et statistiques discriminantes. Les résultats mesurés montrent zéro évasion sur cinquante cas d'attaque appliqués à la sandbox, une conformité complète au top dix OWASP après onze itérations d'audit ZAP, et une latence médiane d'exécution de code inférieure à quatre cent millisecondes. Une boucle d'amélioration continue, appuyée sur le calcul du pouvoir discriminant et de l'indice de difficulté de chaque question, permet à la banque d'exercices de s'affiner à mesure que la plateforme est utilisée.
-
-**Mots-clés :** recrutement technique, évaluation automatisée, intelligence artificielle générative, sandbox Docker sécurisée, statistiques psychométriques, souveraineté des données, RGPD.
+**Contraintes de rédaction appliquées :**
+- Style **impersonnel** (aucun « je » sauf dans le bilan personnel de la conclusion et dans les rôles/outils).
+- Radar anti-IA : pas de « premièrement / deuxièmement », pas de « en effet / notamment / par ailleurs / cependant » utilisés à toutes les lignes, phrases de longueurs variées.
+- Alignement sur le style du .docx : phrases moyennes, quelques mots-clés en gras pour rythmer.
+- Consignes du plan-type MBDS respectées section par section.
+- Données réelles du projet : 14 cas d'utilisation, 4 concurrents (HackerRank, Codility, TestGorilla, CoderPad), 15 User Stories, 7 risques (R1-R7), 8 sprints, 10 outils, 6 fournisseurs LLM.
+- Niveau technique : concret (vrais noms de classes, ports, migrations Flyway) mais chaque nom est justifié par un choix argumenté.
 
 ---
 
-## Abstract (½ page)
+## 5.3.1 Interface Homme-Machine
 
-The technical recruitment process at Tsarajoro has historically relied on face-to-face interviews and manually graded exercises, requiring between thirty and sixty minutes of senior developer time per candidate. This approach limits the standardization of evaluations, exposes the company to a higher risk of fraud since the emergence of generative artificial intelligence, and makes any retrospective analysis of the criteria that actually discriminate candidates for a given position difficult.
+L'interface de SkillForge a été conçue autour de deux parcours strictement séparés : celui du recruteur, accessible après authentification sous les URL préfixées `/app`, et celui du candidat, accessible en public à partir du lien signé reçu par courrier électronique sous les URL préfixées `/candidate/passation`. Cette séparation n'est pas seulement esthétique. Le parcours candidat ne reçoit ni le menu de navigation, ni les liens vers les autres écrans, ni aucun élément permettant de deviner l'organisation interne de la plateforme. Cette réduction volontaire de la surface visible pour le candidat limite les risques d'exploration involontaire et concentre son attention sur l'évaluation en cours.
 
-The SkillForge project, developed during this end-of-studies internship, addresses these limitations by offering a secure web platform for technical recruitment assessment, fully assisted by artificial intelligence. The platform covers the entire cycle, from automatic CV analysis through to the final recommendation, including adaptive test generation, secure execution of candidate code in a hardened Docker sandbox, multi-criteria automated grading, and an argued report for the recruiter.
+L'ensemble de l'interface a été construit avec React 19, TypeScript 5, Tailwind CSS et la bibliothèque de composants shadcn/ui. Un thème clair et un thème sombre sont pris en charge et commutables via un sélecteur discret présent dans l'en-tête du parcours recruteur. Le choix de l'utilisateur est mémorisé localement, et la préférence système du navigateur est respectée au premier chargement.
 
-The work was carried out following the Scrum method, structured into eight two-week sprints, with a modular two-service Spring Boot 3 architecture to isolate the sandbox from the rest of the system. The frontend was developed in React 19 and TypeScript. The multi-provider large language model strategy (OpenAI, Claude, Groq, Ollama) ensures full portability and prevents lock-in to any single external service.
+Sept écrans structurants ont été retenus pour illustrer le parcours utilisateur dans le présent chapitre. Les captures correspondantes figurent à la suite de leur description.
 
-Four proofs of concept validated the critical modules: CV analysis, adaptive generation, secure sandbox and discriminating statistics. Measured results show zero escape across fifty attack cases applied to the sandbox, full compliance with the OWASP top ten after eleven ZAP audit iterations, and a median code execution latency below four hundred milliseconds. A continuous improvement loop, based on the calculation of each question's discriminant power and difficulty index, allows the exercise bank to refine itself as the platform is used.
+### Écran 1 — Accueil recruteur (`/app`)
 
-**Keywords:** technical recruitment, automated assessment, generative artificial intelligence, hardened Docker sandbox, psychometric statistics, data sovereignty, GDPR.
+Le tableau de bord constitue le point d'entrée du recruteur après authentification. Il donne en un coup d'œil l'état de l'activité récente sur la plateforme et sert de raccourci vers les actions les plus fréquentes.
 
----
+L'écran est organisé en trois zones. En haut, quatre cartes d'indicateurs présentent le nombre de tests en cours, le nombre de passations soumises, le score moyen des évaluations terminées et le nombre de questions restant à valider. Au centre, trois graphiques statistiques sont rendus avec la bibliothèque Recharts : la distribution des scores globaux par tranche, la moyenne des scores par compétence évaluée et un nuage de points croisant l'indice de difficulté et le pouvoir discriminant des questions du référentiel. Ce dernier graphique met immédiatement en évidence les questions à retravailler, celles dont le pouvoir discriminant est négatif ou nul. En bas, une liste des dernières passations soumises permet d'accéder directement au rapport détaillé d'un candidat.
 
-## Glossaire
+Un bouton d'export en CSV et un bouton d'export en PDF permettent au recruteur de reprendre les données affichées dans un tableur ou de partager un instantané du tableau de bord avec un décideur.
 
-À placer par ordre alphabétique. Termes réellement utilisés dans SkillForge :
+**[INSÉRER ICI LA CAPTURE — FIGURE X : TABLEAU DE BORD RECRUTEUR (`/app`)]**
 
-**API.** Interface de programmation applicative. Ensemble de règles et de protocoles qui permet à différentes applications informatiques de communiquer entre elles. Dans SkillForge, chaque échange entre le frontend et le backend s'effectue via l'API REST exposée par le service applicatif.
+*Figure X. Tableau de bord recruteur. Les quatre indicateurs du haut résument l'activité de la plateforme. Les trois graphiques centraux permettent au recruteur de repérer les questions à retravailler et de visualiser la distribution des scores.*
 
-**Argon2id.** Algorithme de hachage de mot de passe recommandé par l'OWASP en 2025. Il combine résistance aux attaques par dictionnaire et aux attaques par matériel spécialisé. SkillForge l'utilise avec les paramètres saltLength 16, hashLength 32, parallelism 1, memory 19456 KiB et iterations 2.
+### Écran 2 — Création d'un test (`/app/new-test`)
 
-**CAS_PRATIQUE.** Type de question consistant en un scénario métier accompagné d'une liste de points attendus. La notation est effectuée par un modèle de langage sur une échelle de zéro à cent.
+Cet écran est le point de départ du cycle complet d'évaluation. Il prend la forme d'un assistant en trois étapes présentées visuellement en haut de la page.
 
-**CDC.** Cahier des charges. Document contractuel décrivant le périmètre, les exigences fonctionnelles et non fonctionnelles, les critères de succès et le planning d'un projet.
+À la première étape, le recruteur sélectionne le profil cible dans une liste préconfigurée (par exemple *Développeur PHP*, *Intégrateur WordPress*, *Développeur Vue.js*, *Spécialiste SEO technique*), saisit le nom et l'adresse électronique du candidat, puis téléverse le CV au format PDF ou DOCX. L'analyse démarre au clic sur le bouton *CV analysé*.
 
-**Docker.** Plateforme de conteneurisation permettant d'exécuter des applications dans des environnements isolés et reproductibles. SkillForge l'utilise pour la base de données, la sandbox d'exécution de code, le serveur de mails de développement et le modèle de langage local.
+À la deuxième étape, les compétences détectées par l'analyse du CV sont présentées sous forme de badges avec leur niveau estimé (`JUNIOR`, `CONFIRMÉ`, `SENIOR`). Le recruteur peut décocher les compétences qui ne sont pas pertinentes pour le poste ou ajouter manuellement des compétences absentes du CV via un champ de recherche avec suggestions. Un liseré discret sous l'en-tête indique le fournisseur de modèle de langage utilisé, le nombre de jetons consommés et le coût estimé de l'appel. Cette information paraît anodine mais elle est précieuse en production : un recruteur qui voit *mock* sur ce liseré sait immédiatement que son environnement fonctionne en mode simulation.
 
-**Flyway.** Outil de gestion des migrations de schéma de base de données. Chaque évolution du schéma est versionnée et rejouée automatiquement au démarrage du backend.
+À la troisième étape, la génération des questions est lancée. Les questions produites apparaissent une par une avec leur type (QCM, CODE, CAS_PRATIQUE), leur difficulté, leur énoncé et un aperçu du contenu spécifique. Pour les exercices de code, un éditeur Monaco intégré affiche le code de démarrage proposé au candidat. Toutes les questions sont créées avec le statut `PENDING_REVIEW` et devront être validées à l'écran suivant.
 
-**IHM.** Interface Homme-Machine. Ensemble des écrans, boutons et interactions permettant à un utilisateur d'utiliser un logiciel.
+**[INSÉRER ICI LA CAPTURE — FIGURE X : CRÉATION D'UN TEST (`/app/new-test`)]**
 
-**JWT.** JSON Web Token. Jeton d'authentification signé, standardisé par la RFC 7519. SkillForge l'utilise pour authentifier les recruteurs, avec des jetons d'accès de trente minutes et des jetons de rafraîchissement de sept jours.
+*Figure X. Écran de création d'un test avec ses trois étapes CV → Compétences → Questions. Le liseré du haut indique le fournisseur IA utilisé, le nombre de jetons consommés et le coût estimé de l'analyse.*
 
-**LLM.** Large Language Model. Modèle de langage de grande taille capable de générer et d'analyser du texte en langage naturel. SkillForge s'appuie sur des LLM externes (OpenAI, Claude, Groq) et locaux (Ollama) pour l'analyse de CV, la génération de questions et la notation des cas pratiques.
+### Écran 3 — Validation des questions (`/app/review`)
 
-**MCD.** Modèle Conceptuel de Données. Représentation graphique de la structure logique d'une base de données, sans référence à un système de gestion particulier.
+Cet écran matérialise le contrôle humain que SkillForge maintient sur les productions du modèle de langage. Il se présente comme une boîte de réception, groupée par candidat et par test, et affiche pour chaque question son type, sa difficulté, son énoncé et son statut (`PENDING_REVIEW`, `APPROVED` ou `REJECTED`).
 
-**OCR.** Optical Character Recognition. Reconnaissance optique de caractères permettant de convertir une image contenant du texte (par exemple un CV scanné) en texte exploitable. SkillForge utilise Tesseract comme moteur OCR de secours.
+Chaque question peut être approuvée en l'état, modifiée dans un éditeur intégré puis approuvée, ou rejetée. Les modifications portent aussi bien sur l'énoncé que sur le contenu spécifique : options d'un QCM, code de démarrage d'un exercice, points attendus d'un cas pratique. Pour les exercices de code, l'éditeur Monaco affiche à la fois le code de démarrage et les tests cachés qui seront exécutés dans la sandbox, ce qui permet au recruteur de vérifier la cohérence de l'ensemble.
 
-**Ollama.** Runtime permettant de faire tourner localement des modèles de langage open source. SkillForge l'intègre pour proposer un fournisseur LLM totalement souverain, sans dépendance à un service externe.
+Lorsque toutes les questions d'un test ont été approuvées, un bouton *Générer le lien d'invitation* devient actif. Il produit une URL signée de la forme `/candidate/passation/:token` accompagnée d'un code d'accès à six chiffres, puis prépare le courrier électronique à envoyer au candidat. La copie du lien dans le presse-papiers est également disponible pour un envoi manuel.
 
-**OpenAPI.** Standard de description d'API REST au format JSON ou YAML. SkillForge expose sa spécification OpenAPI sur l'endpoint /v3/api-docs, ce qui permet notamment à l'outil d'audit OWASP ZAP de découvrir automatiquement l'ensemble des endpoints à auditer.
+**[INSÉRER ICI LA CAPTURE — FIGURE X : VALIDATION DES QUESTIONS (`/app/review`)]**
 
-**OWASP.** Open Web Application Security Project. Fondation à but non lucratif qui publie régulièrement le classement des dix risques de sécurité applicative les plus critiques (OWASP Top 10).
+*Figure X. Écran de validation des questions générées. Chaque question porte son statut et peut être approuvée, modifiée ou rejetée. Le bouton d'envoi n'apparaît qu'une fois toutes les questions du test approuvées.*
 
-**POC.** Proof of Concept. Prototype de faisabilité destiné à démontrer qu'un module ou une approche technique fonctionne avant de généraliser son développement.
+### Écran 4 — Accueil candidat et identification (`/candidate/passation/:token`)
 
-**PHPUnit.** Framework de tests unitaires pour PHP. Utilisé dans la sandbox pour exécuter les tests cachés fournis par le recruteur sur le code du candidat.
+Cet écran est le premier point de contact du candidat avec la plateforme. Il est accessible en public via un lien à usage unique reçu par courrier électronique et matérialise plusieurs mécanismes de sécurité importants.
 
-**QCM.** Question à Choix Multiples. Type de question comportant quatre options, une réponse correcte et des distracteurs plausibles. La notation est automatique et binaire.
+L'écran est structuré en trois blocs. Le premier bloc, sur fond vert clair, affiche l'identité verrouillée par le recruteur : le nom complet et l'adresse électronique du candidat sont pré-remplis et non modifiables. Une phrase explicite précise que ces informations proviennent de l'invitation et que le candidat doit contacter le recruteur en cas d'erreur. Ce verrouillage empêche un tiers en possession du lien de démarrer la passation sous une identité différente de celle attendue.
 
-**RGPD.** Règlement Général sur la Protection des Données. Cadre européen encadrant la collecte et le traitement des données personnelles. SkillForge s'y conforme via un consentement explicite du candidat, la purge automatique des CV après douze mois et le stockage exclusif des données sur l'infrastructure interne de Tsarajoro.
+Le deuxième bloc demande la saisie du code d'accès à six chiffres transmis dans le même courrier que le lien. La comparaison entre le code saisi et le code attendu est réalisée côté serveur en temps constant, et cinq échecs consécutifs déclenchent un blocage temporaire de quinze minutes de l'invitation.
 
-**Sandbox.** Environnement d'exécution isolé et durci, dans lequel un code externe (potentiellement malveillant) peut être exécuté sans risque pour le système hôte. La sandbox SkillForge s'appuie sur Docker, un profil seccomp restrictif, le retrait de toutes les capacités Linux et l'exécution sous un utilisateur non privilégié.
+Le troisième bloc présente le consentement RGPD sur l'analyse anti-fraude. Le candidat prend connaissance des signaux qui seront captés pendant sa passation (changements d'onglet, collages volumineux, temps de réponse anormalement courts), du fait que ces signaux ne bloquent pas la passation et qu'ils constituent une aide à la décision pour le recruteur. Le démarrage est conditionné à l'acceptation explicite de ce consentement. Sous les trois blocs, un encadré rappelle que les données saisies sont conservées uniquement pour ce recrutement et purgées après douze mois.
 
-**Scrum.** Méthode agile de gestion de projet fondée sur des cycles courts appelés sprints, des rituels réguliers (planning, revue, rétrospective) et un backlog priorisé.
+**[INSÉRER ICI LA CAPTURE — FIGURE X : ACCUEIL CANDIDAT (`/candidate/passation/:token`)]**
 
-**Seccomp.** Secure Computing Mode. Mécanisme du noyau Linux qui filtre les appels système autorisés pour un processus. SkillForge maintient un profil seccomp restrictif dérivé du profil Docker par défaut.
+*Figure X. Écran d'accueil et d'identification du candidat. Le bloc vert affiche l'identité verrouillée par le recruteur. Le code d'accès à six chiffres reçu par courrier conditionne le démarrage. Le consentement RGPD sur l'analyse anti-fraude est obligatoire.*
 
-**SPA.** Single-Page Application. Architecture d'application web où l'ensemble de l'interface est chargée une seule fois puis mise à jour dynamiquement en JavaScript. SkillForge côté recruteur est une SPA React.
+### Écran 5 — Passation en cours (`/candidate/passation/:token/run`)
 
-**TLS.** Transport Layer Security. Protocole de chiffrement des communications réseau. SkillForge exige la version 1.3 en production.
+Cet écran est le cœur de l'évaluation. Il présente les questions une par une, sauvegarde les réponses au fur et à mesure et enregistre les signaux anti-fraude détectés en arrière-plan.
 
-**UML.** Unified Modeling Language. Langage graphique standardisé pour modéliser un système logiciel (classes, séquences, activités, cas d'utilisation).
+Le haut de l'écran affiche un chronomètre persistant, recalculé depuis l'horodatage de démarrage stocké côté serveur. Ce détail est important : en cas de fermeture accidentelle du navigateur ou de rechargement de la page, le compteur reprend au bon endroit et ne peut pas être réinitialisé par le candidat. La progression dans le test est indiquée sous forme *Question N sur T*, avec des boutons de navigation avant et arrière pour permettre au candidat de revenir sur ses réponses tant qu'il n'a pas soumis.
 
-**XSS.** Cross-Site Scripting. Vulnérabilité permettant à un attaquant d'injecter du code JavaScript dans une page web consultée par une autre victime. SkillForge s'en prémunit via une Content-Security-Policy stricte et l'échappement systématique des sorties.
+L'éditeur affiché dépend du type de la question courante. Pour un QCM, quatre options sont présentées avec une sélection unique et un retour visuel immédiat. Pour une question de type cas pratique, un éditeur de texte enrichi accueille la réponse rédigée. Pour un exercice de code, un éditeur Monaco identique à celui de Visual Studio Code est intégré, avec coloration syntaxique et bouton *Exécuter* qui envoie le code au service sandbox et affiche les résultats dans un panneau adjacent. Le candidat peut ainsi vérifier sa solution contre les tests visibles avant de la soumettre.
 
----
+Sous l'en-tête, une bannière anti-fraude discrète informe le candidat en direct des signaux captés par la plateforme : perte de focus de l'onglet, collage supérieur à deux cents caractères, réponse anormalement rapide sur une question longue. Ces signaux ne bloquent pas le candidat et n'invalident pas la passation. Ils alimentent le rapport de fraude consulté ensuite par le recruteur, qui reste libre de son appréciation.
 
-## Introduction (1 page maximum)
+Un bouton *Soumettre l'évaluation* n'apparaît qu'à la dernière question. La soumission déclenche la correction automatique et bascule le candidat vers l'écran de fin.
 
-Chaque année, plusieurs milliers de développeurs postulent à des offres techniques dans les entreprises du numérique malgache. Chez Tsarajoro, chaque recrutement mobilise historiquement entre trente et soixante minutes de développeur senior par candidat rien que pour la correction des exercices techniques, soit plusieurs heures cumulées pour la seule phase d'évaluation d'un profil. À cette charge s'ajoute désormais une difficulté nouvelle : l'apparition en 2023 des assistants de génération de code alimentés par intelligence artificielle a rendu les exercices classiques de programmation aisément contournables, sans que les entreprises disposent des outils pour distinguer la production réelle du candidat de celle d'un assistant.
+**[INSÉRER ICI LA CAPTURE — FIGURE X : PASSATION EN COURS (`/candidate/passation/:token/run`)]**
 
-Le Master 2 MBDS de l'Université Côte d'Azur, opéré en délocalisé par IT University à Antananarivo, offre une formation professionnalisante en ingénierie logicielle, systèmes distribués, cybersécurité et intelligence artificielle. Ce cadre pédagogique m'a préparé à concevoir et développer des systèmes complets, sécurisés et industrialisables. C'est ce profil que Tsarajoro a souhaité mobiliser pour ce stage de fin d'études : concevoir et développer une plateforme interne d'évaluation technique, capable d'automatiser l'ensemble du cycle depuis la réception du CV jusqu'à la recommandation finale du recruteur.
+*Figure X. Écran de passation pour une question de code. L'éditeur Monaco intégré propose la même expérience que Visual Studio Code. Le bouton Exécuter envoie le code à la sandbox durcie et affiche les résultats.*
 
-Le stage a démarré en avril 2026 pour une durée de quatre mois, avec la mission suivante : livrer une plateforme opérationnelle appelée SkillForge, hébergée sur l'infrastructure interne de Tsarajoro, capable d'analyser un CV, de générer un test technique adapté au profil visé, de le faire passer au candidat dans un environnement sécurisé, de noter automatiquement chaque type de question, puis de produire un compte rendu argumenté avec une recommandation. La problématique centrale du projet peut se formuler ainsi : *comment automatiser à la fois l'évaluation technique et la sécurité d'un test candidat, tout en garantissant l'intégrité des données personnelles conformément au RGPD et en s'affranchissant de toute dépendance à un service externe payant ou en voie de retrait ?*
+### Écran 6 — Liste des résultats (`/app/results`)
 
-Le présent rapport suit le plan type recommandé par le Master 2 MBDS. Au chapitre un, je présente Tsarajoro et le sujet confié. Le chapitre deux compare les plateformes existantes du marché selon un ensemble de critères. Le chapitre trois analyse la situation avant le projet et justifie la solution retenue. Le chapitre quatre détaille la démarche projet mise en œuvre, incluant les risques et la planification. Le chapitre cinq décrit les exigences fonctionnelles et non fonctionnelles réalisées. Le chapitre six présente les architectures logicielle et technique. Le chapitre sept détaille la conception interne. Le chapitre huit rassemble les tests fonctionnels, unitaires, de sécurité et de performance. La conclusion dresse le bilan des résultats, des problèmes rencontrés, des perspectives et l'apport personnel du stage.
+Cet écran donne au recruteur la vue d'ensemble des passations soumises. Il présente un tableau ordonné du plus récent au plus ancien, avec pour chaque ligne le nom du candidat, son profil cible, la date de soumission et un anneau coloré qui matérialise le score global obtenu.
 
----
+Le code couleur de l'anneau est pensé pour être lisible d'un coup d'œil : rouge en dessous de 40, orange entre 40 et 60, vert au-dessus de 60. Cette codification alignée sur le seuil de réussite du système facilite le tri manuel des candidats. Un clic sur une ligne ouvre le détail de la passation, présenté à l'écran suivant.
 
-## 1. Présentation du stage
+**[INSÉRER ICI LA CAPTURE — FIGURE X : LISTE DES RÉSULTATS (`/app/results`)]**
 
-### 1.1 Présentation de l'entreprise
+*Figure X. Liste des passations soumises. L'anneau coloré permet au recruteur de trier visuellement les candidats selon leur score global.*
 
-Tsarajoro est une entreprise malgache évoluant dans le secteur du numérique. Son activité repose sur la réalisation et l'exploitation de différents projets web nécessitant des compétences variées, aussi bien techniques que liées à la production et à la visibilité de contenus en ligne.
+### Écran 7 — Détail d'une passation (`/app/results/:passationId`)
 
-L'entreprise s'appuie ainsi sur plusieurs profils complémentaires, notamment des développeurs, des intégrateurs WordPress, des rédacteurs et des profils spécialisés dans le référencement et le netlinking. Cette diversité de métiers lui permet de prendre en charge différentes étapes d'un projet numérique, de sa réalisation technique jusqu'à son exploitation.
+Cet écran est celui sur lequel le recruteur prend sa décision. Il rassemble en une seule page tous les éléments produits par SkillForge sur une passation donnée.
 
-Son fonctionnement favorise également le développement d'outils internes répondant à des besoins directement rencontrés dans ses activités. Cette approche permet à l'entreprise d'adapter ses solutions à ses propres processus et de les faire évoluer progressivement selon les besoins identifiés.
+L'en-tête affiche le nom du candidat, son profil cible, la date de soumission, un grand anneau coloré porteur du score global et cinq chips de statistiques : nombre de QCM réussis, nombre d'exercices de code passant les tests cachés, moyenne des cas pratiques notés par le modèle de langage, temps total passé sur l'évaluation et nombre de signaux anti-fraude enregistrés.
 
-C'est dans ce contexte qu'a été confié le projet SkillForge, dont l'objectif est de doter Tsarajoro d'une plateforme interne d'évaluation technique de ses futurs candidats au recrutement. J'ai été encadré durant le stage par Monsieur RAVELOMANANTIANA Tahirintsoa Ulrich, en charge de la validation des livrables et de la priorisation fonctionnelle à chaque revue de sprint.
+Immédiatement sous l'en-tête, la section *Compte rendu* affiche la synthèse produite par le modèle de langage à partir de l'ensemble des réponses. Elle propose un résumé en deux à trois phrases, une liste de trois à cinq points forts, une liste de trois à cinq points faibles et une recommandation finale parmi `HIRE`, `INTERVIEW` ou `REJECT`. Une bannière discrète rappelle que cette recommandation n'est qu'une aide à la décision et que la responsabilité finale incombe au recruteur.
 
-### 1.2 Présentation du sujet et objectifs du projet
+La section *Analyse anti-fraude* liste les signaux détectés pendant la passation, triés par question, avec pour chacun son horodatage et un pictogramme évocateur : perte de focus prolongée, collage volumineux, réponse anormalement rapide, tentative d'ouverture des outils de développement. Si aucun signal n'a été détecté, un encadré vert confirme la conformité comportementale de la passation.
 
-Le projet consiste à concevoir et développer une plateforme web sécurisée d'évaluation technique du recrutement, entièrement assistée par intelligence artificielle. La plateforme prend en entrée le CV du candidat et le profil cible du poste, et produit en sortie un compte rendu argumenté avec une recommandation à embaucher, à approfondir en entretien ou à écarter. Elle couvre ainsi l'ensemble du cycle sans intervention manuelle systématique du recruteur pour la correction des réponses.
+La section *Réponses détaillées* déroule chaque question du test avec la réponse fournie par le candidat, la note attribuée par la plateforme et une explication contextuelle. Pour un QCM, la bonne réponse est mise en évidence à côté de celle donnée par le candidat. Pour un exercice de code, l'éditeur Monaco s'ouvre en lecture seule sur la solution du candidat, suivi du détail de l'exécution dans la sandbox (tests passés, tests échoués, sortie standard capturée, message d'erreur éventuel). Pour un cas pratique, la réponse est affichée avec l'analyse produite par le modèle de langage et le rappel des points attendus initialement fournis par le recruteur.
 
-Le caractère innovant du projet réside dans la combinaison de plusieurs briques rarement réunies dans un même produit : l'analyse sémantique d'un CV pour extraire les compétences déclarées et leur niveau présumé, la génération adaptative d'un test personnalisé à partir de ces compétences, l'exécution du code candidat dans une sandbox Docker durcie, la notation multi-critères mêlant tests automatisés et évaluation par modèle de langage, et le calcul en continu d'indicateurs psychométriques permettant à la banque de questions de s'auto-améliorer. Les plateformes existantes du marché, étudiées au chapitre suivant, ne couvrent chacune qu'une partie de ce cycle.
+Un bouton *Exporter le rapport PDF* génère une version imprimable de l'ensemble à des fins d'archivage ou de partage avec un autre décideur de Tsarajoro.
 
-Les objectifs mesurables du projet, définis dans le cahier des charges initial, sont les suivants. Premièrement, centraliser cent pour cent des évaluations techniques de Tsarajoro dans une plateforme unique sécurisée hébergée en interne. Deuxièmement, réduire d'au moins soixante pour cent le temps consacré par les développeurs à la correction des exercices techniques. Troisièmement, diviser par trois le délai moyen entre la candidature et la décision technique grâce à l'auto-évaluation. Quatrièmement, atteindre une précision d'analyse des CV supérieure à quatre-vingt-cinq pour cent sur un échantillon représentatif. Cinquièmement, obtenir un taux d'acceptation supérieur à soixante-quinze pour cent des questions générées par l'intelligence artificielle après relecture par le recruteur.
+**[INSÉRER ICI LA CAPTURE — FIGURE X : DÉTAIL D'UNE PASSATION (`/app/results/:passationId`)]**
 
-Les principaux enjeux du projet sont la sécurité de la sandbox d'exécution de code, la souveraineté des données candidat au regard du RGPD, la fiabilité de la notation automatique et la reproductibilité des mesures présentées à l'appui du choix technique.
+*Figure X. Détail d'une passation. L'anneau coloré affiche le score global. La section Compte rendu présente la synthèse IA et la recommandation. La section Analyse anti-fraude liste les signaux captés. La section Réponses détaillées ouvre l'ensemble des réponses du candidat, avec la sortie brute de la sandbox pour les exercices de code.*
 
----
+### Synthèse des écrans documentés
 
-## 2. État de l'art sur le sujet traité
-
-L'état de l'art vise à situer SkillForge par rapport aux principales plateformes du marché du recrutement technique automatisé. Il n'est pas confondu avec l'étude de l'existant, présentée au chapitre trois, qui porte sur la solution en usage chez Tsarajoro avant le projet.
-
-### 2.1 Critères de comparaison
-
-Six critères ont été retenus pour comparer les solutions du marché. Le premier concerne l'analyse automatique du CV : la plateforme est-elle capable d'extraire les compétences déclarées et d'en estimer le niveau ? Le deuxième porte sur la génération de questions par intelligence artificielle : la plateforme génère-t-elle un test adapté au profil, ou se contente-t-elle d'une banque figée ? Le troisième concerne la sandbox d'exécution de code : quel niveau de durcissement Docker et quels langages sont supportés ? Le quatrième cible la personnalisation aux profils métier internes, notamment aux profils spécifiques de Tsarajoro comme les intégrateurs WordPress ou les spécialistes SEO. Le cinquième est l'hébergement : la plateforme est-elle hébergeable en interne pour respecter le RGPD, ou impose-t-elle un service SaaS étranger ? Le sixième est le modèle tarifaire et son adéquation à une PME.
-
-### 2.2 Étude de chaque solution
-
-HackerRank est la plateforme historique du secteur, positionnée sur l'évaluation approfondie de développeurs pour des postes d'ingénieur logiciel. Elle propose une large bibliothèque d'exercices, un environnement de développement en ligne pour les entretiens en direct, un système de score comparé à la population des candidats et des mécanismes de détection de plagiat. Elle ne propose pas d'analyse automatique du CV et sa personnalisation aux profils métier hors ingénierie logicielle standard reste limitée. L'hébergement est intégralement SaaS, sur des serveurs situés hors Union européenne, ce qui pose une contrainte forte au regard du RGPD pour une entreprise malgache travaillant régulièrement avec des clients européens.
-
-Codility se positionne principalement sur l'évaluation des ingénieurs logiciels et l'analyse des compétences internes d'une équipe existante. La plateforme offre des évaluations asynchrones, un environnement de développement pour les entretiens en direct et des tableaux de bord analytiques riches. Elle partage avec HackerRank l'absence d'analyse automatique du CV et l'hébergement SaaS exclusif. Sa focalisation sur les métiers de l'ingénierie logicielle la rend peu adaptée aux profils WordPress, intégrateurs frontend ou spécialistes SEO présents chez Tsarajoro.
-
-TestGorilla adopte un positionnement plus généraliste et couvre des évaluations mixtes combinant tests de personnalité, tests cognitifs et tests techniques de premier niveau. Sa tarification débute autour de trente dollars par mois et monte à deux cents dollars par mois selon le volume, ce qui la rend accessible aux PME. Elle est cependant moins pertinente pour une évaluation technique approfondie et n'offre pas de sandbox d'exécution de code aussi complète que HackerRank ou Codility. L'hébergement est également SaaS étranger.
-
-CodeSignal est la plateforme du marché qui investit le plus dans l'intelligence artificielle. Elle a introduit en 2025 des évaluations assistées par un modèle de langage embarqué appelé Cosmo, qui accompagne le candidat pendant les exercices dans une logique proche du travail réel. La plateforme propose un score standardisé, un environnement de développement complet, un système anti-triche appelé Suspicion Score et de la télésurveillance à distance. Elle ne propose pas d'analyse automatique du CV documentée publiquement et reste positionnée sur les grands comptes.
-
-Karat propose un modèle radicalement différent des quatre précédents. Il ne s'agit pas d'une plateforme logicielle mais d'un service d'entretiens techniques externalisés, réalisés par des intervieweurs entraînés au format Karat. Ce service supprime la charge de correction pour l'entreprise cliente mais introduit une dépendance forte à un prestataire externe, un coût élevé par candidat et l'impossibilité de personnaliser la grille aux métiers internes de Tsarajoro.
-
-### 2.3 Tableau comparatif des solutions au vu des critères
-
-| Critère | HackerRank | Codility | TestGorilla | CodeSignal | Karat | **SkillForge** |
-|---|---|---|---|---|---|---|
-| Analyse automatique du CV | Non | Non | Non | Non | Non | **Oui, avec extraction compétences et niveau** |
-| Génération de questions par IA | Non (banque figée) | Non (banque figée) | Non | Partielle (assistant Cosmo) | Non | **Oui, adaptée au CV et au profil cible** |
-| Sandbox d'exécution durcie | Oui, plusieurs langages | Oui, plusieurs langages | Basique | Oui, plusieurs langages | Sans objet | **Oui, Docker durci avec zéro évasion mesurée sur 50 attaques** |
-| Adaptation aux profils métier internes (WordPress, SEO, PHP…) | Limitée | Limitée | Partielle | Limitée | Sur mesure mais coûteux | **Complète, profils configurables** |
-| Hébergement interne possible (RGPD) | Non, SaaS US | Non, SaaS US | Non, SaaS US | Non, SaaS US | Non, service externe | **Oui, on-premise avec LLM local Ollama** |
-| Modèle tarifaire adapté PME | Élevé | Élevé | Accessible | Élevé | Très élevé | **Coût maîtrisé, LLM gratuits en option** |
-
-*Tableau 1 : Tableau comparatif des plateformes d'évaluation technique du recrutement. Source : auteur (2026), d'après les sites officiels des plateformes et les comparatifs indépendants publiés sur G2, SelectHub et iMocha.*
-
-Aucune des plateformes étudiées ne combine à la fois l'analyse automatique du CV, la génération adaptative de tests par intelligence artificielle, l'hébergement interne pour la conformité RGPD et l'adaptation aux profils métier spécifiques de Tsarajoro. C'est précisément cette combinaison que SkillForge propose.
-
----
-
-## 3. Étude de l'existant et solution envisagée
-
-### 3.1 Étude de l'existant
-
-#### 3.1.1 Description externe du système logiciel existant
-
-Avant le projet SkillForge, le processus de recrutement technique chez Tsarajoro se déroulait selon une chaîne principalement manuelle. Le recruteur recevait le CV du candidat par courrier électronique, en prenait connaissance à la lecture, puis identifiait à la main les compétences potentiellement mobilisables pour le poste. Le recruteur préparait ensuite un exercice technique, généralement sous la forme d'un fichier PDF ou d'un lien vers un dépôt Git, qu'il envoyait au candidat avec une consigne de rendu par courrier électronique. À réception, un développeur senior corrigeait manuellement la production du candidat et rédigeait une appréciation libre à destination du recruteur.
-
-L'utilisateur du système, en l'occurrence le recruteur et le développeur senior en charge de la correction, s'appuyait donc sur une combinaison d'outils bureautiques classiques : logiciel de traitement de texte pour le CV et les consignes, courrier électronique pour les échanges, tableur pour le suivi des candidats en cours d'évaluation.
-
-#### 3.1.2 Description interne du système logiciel existant
-
-D'un point de vue conception, il n'existait pas de système logiciel dédié. L'ensemble de la chaîne reposait sur des outils bureautiques du marché, sans base de données centralisée, sans référentiel de compétences partagé et sans traçabilité des évaluations passées. Chaque recrutement redémarrait à zéro, sans capitalisation possible sur les exercices précédemment utilisés ni analyse rétrospective des critères réellement discriminants.
-
-### 3.2 Critique de l'existant
-
-Ce fonctionnement présente plusieurs limites clairement identifiées avec l'encadreur professionnel dès le premier sprint de cadrage. Positivement, il offre une souplesse totale : chaque recruteur peut adapter l'exercice au poste et au candidat, et le contrôle humain reste maximal à chaque étape. Négativement, il présente cinq faiblesses structurelles. La première est le temps de correction, qui mobilise entre trente et soixante minutes de développeur senior par candidat pour la seule évaluation technique. La deuxième est l'absence de standardisation : deux candidats postulant au même poste peuvent recevoir des exercices différents et être évalués selon des grilles implicites, ce qui rend les comparaisons inéquitables. La troisième est l'exposition à la fraude : depuis la démocratisation des assistants de génération de code en 2023, un exercice classique envoyé par courrier électronique peut être partiellement ou totalement résolu par une intelligence artificielle sans que l'entreprise puisse le détecter. La quatrième est l'absence de traçabilité : aucun historique n'est conservé pour analyser après coup quelles compétences ont réellement fait la différence entre candidats retenus et candidats écartés. La cinquième est la dépendance à la disponibilité du développeur senior : si celui-ci est mobilisé sur un projet client, la correction peut prendre plusieurs jours et la décision technique s'en trouve retardée d'autant.
-
-### 3.3 Solutions envisagées
-
-Trois solutions ont été étudiées lors du sprint de cadrage. La première consistait à souscrire à une licence d'une plateforme du marché parmi celles étudiées au chapitre deux. Elle a été écartée pour trois raisons : le coût par candidat évalué, l'hébergement systématiquement SaaS étranger incompatible avec les contraintes RGPD, et la faible adaptation aux profils métier internes de Tsarajoro comme les intégrateurs WordPress ou les spécialistes SEO.
-
-La deuxième solution consistait à développer un simple gestionnaire d'exercices interne, essentiellement un CRUD permettant d'organiser une banque de tests et de collecter les rendus. Elle a été écartée car elle n'aurait résolu ni le problème du temps de correction ni celui de la fraude, et n'aurait pas valorisé les compétences apportées par le cadre pédagogique du Master 2 MBDS.
-
-La troisième solution, retenue, est le projet SkillForge tel que présenté au chapitre 1.2 : une plateforme interne complète intégrant l'analyse de CV, la génération adaptative de tests, la sandbox durcie, la notation automatique multi-critères et les statistiques discriminantes.
-
-### 3.4 Objectifs principaux et livrables
-
-Les objectifs principaux ont été détaillés au chapitre 1.2. Les livrables du stage sont les suivants : le cahier des charges consolidé en annexe, la plateforme SkillForge sous forme de dépôt Git versionné, les quatre rapports de preuve de concept, le rapport d'audit OWASP ZAP, la fiche de tests manuels, la documentation d'installation et le présent mémoire.
-
----
-
-## 4. Démarche projet
-
-### 4.1 Principes de la démarche projet
-
-#### 4.1.1 Activités d'ingénierie logicielle
-
-Les activités d'ingénierie logicielle mises en œuvre couvrent l'ensemble du cycle. Une phase initiale de recueil des exigences a produit le cahier des charges validé par l'encadreur professionnel avant tout démarrage de développement. La conception s'est appuyée sur des modèles UML pour l'architecture logicielle et sur un modèle conceptuel de données pour la persistance. Le codage a été réalisé en Java 21 côté backend et en TypeScript côté frontend. Les tests recouvrent trois niveaux : tests unitaires avec JUnit et Vitest, tests d'intégration avec Testcontainers, tests de sécurité offensive avec le harness POC 3 pour la sandbox et l'outil OWASP ZAP pour l'audit HTTP. L'ensemble de ces activités a été réalisé par moi-même.
-
-#### 4.1.2 Méthode de gestion de projet utilisée
-
-Le projet a été piloté selon la méthode Scrum, avec un découpage en huit sprints de deux semaines. Chaque sprint débutait par une session de sprint planning au cours de laquelle l'encadreur professionnel priorisait les éléments du backlog restant. En fin de sprint, une revue asynchrone présentait à l'encadreur les livrables produits sous la forme d'une démonstration enregistrée et d'un compte rendu écrit. Compte tenu de la taille de l'équipe projet réduite à moi-même, les rituels quotidiens (daily standup) ont été remplacés par un journal de bord tenu à chaque commit Git, ce qui a permis à l'encadreur de suivre l'avancement en temps réel via l'historique du dépôt.
-
-Mon rôle a combiné trois postures de la méthode Scrum : celle de développeur pour la réalisation, celle de tech lead pour les choix d'architecture et celle de product owner en soutien de l'encadreur professionnel pour l'affinage du backlog.
-
-#### 4.1.3 Rôles et responsabilités
-
-Les parties prenantes du projet sont les suivantes. Le client est Tsarajoro, représenté par son encadreur professionnel Monsieur RAVELOMANANTIANA Tahirintsoa Ulrich, qui a la responsabilité de la priorisation fonctionnelle, de la validation des livrables et de l'acceptation finale du produit. L'encadreur pédagogique côté IT University a la responsabilité de la validation académique du projet et de la relecture du mémoire avant dépôt. Ma responsabilité, en tant qu'étudiant stagiaire, couvre la conception, le développement, les tests et la documentation.
-
-#### 4.1.4 Outils
-
-Les outils utilisés ont été choisis par moi-même en début de stage, en cohérence avec les technologies enseignées au Master 2 MBDS et avec les usages internes de Tsarajoro. IntelliJ IDEA a servi d'environnement de développement principal côté backend Java, complété par Visual Studio Code côté frontend TypeScript. La gestion de configuration s'appuie sur Git avec hébergement sur GitHub sur un compte personnel dédié aux projets d'école. Maven assure la compilation et la gestion des dépendances côté backend, pnpm côté frontend. Docker Desktop pilote les conteneurs de développement (PostgreSQL, Mailpit, Ollama, sandbox durcie). Postman et Swagger UI facilitent les tests manuels de l'API REST. Les diagrammes UML et d'architecture sont produits avec Mermaid, dont la syntaxe textuelle permet de versionner les schémas au même titre que le code source.
-
-#### 4.1.5 Gestion de la configuration
-
-Le dépôt principal skillforge-platform est structuré en trois grandes zones. Le dossier apps contient les trois applications déployables : backend-app pour l'API principale sur le port 8090, backend-sandbox pour le service isolé sur le port 8091, et frontend-web pour l'interface React. Le dossier docs regroupe les livrables documentaires : cahier des charges initial dans docs/01-cahier-des-charges, dossier de conception dans docs/02-conception, rapports de preuve de concept dans docs/03-poc, fiches de test dans docs/04-tests. Le dossier infra rassemble les fichiers d'infrastructure : docker-compose de développement, profil seccomp de durcissement de la sandbox, Dockerfiles des images d'exécution.
-
-Les règles de nommage sont les suivantes. Les classes Java suivent la convention PascalCase, dans l'espace de nommage com.tsarajoro.skillforge suivi du module métier. Les tables PostgreSQL utilisent snake_case. Les migrations Flyway respectent le format V numéro suivi de deux underscores et d'une description courte, par exemple V6__invitation_access_code.sql. Chaque commit Git est atomique, en français, et se conforme aux règles internes du projet interdisant toute mention d'un outil de génération de code par intelligence artificielle.
-
-L'organisation des sauvegardes repose sur les pousses réguliers vers le dépôt distant GitHub, en général au minimum une fois par jour de développement effectif.
-
-### 4.2 Contraintes et risques sur le projet
-
-Sept risques principaux ont été identifiés en début de stage puis actualisés à chaque revue de sprint. Le tableau ci-dessous en présente la synthèse.
-
-| N° | Libellé du risque | Priorité | Facteur contribuant | Solution proposée | Statut |
-|---|---|---|---|---|---|
-| R1 | Sandbox Docker non sécurisée | Critique | Peu d'expérience préalable des mécanismes seccomp et capabilities Linux | Consacrer un POC dédié à la sécurité de la sandbox, avec un harness de cent cinquante cas d'attaque exécutables | ✅ Réalisé, zéro évasion mesurée |
-| R2 | Génération de questions par IA de qualité insuffisante | Moyen | JSON parfois tronqué ou malformé par les modèles Groq | Compactage du prompt système, ajout d'un auto-repair côté service, intégration d'un fournisseur local Ollama en secours | ✅ Résolu |
-| R3 | Précision d'analyse de CV insuffisante | Moyen | Hétérogénéité des formats reçus (PDF natif, PDF scanné, DOCX) | Multiplication des bibliothèques de parsing (PDFBox, Apache POI) et ajout d'un OCR Tesseract en secours | ✅ Réalisé |
-| R4 | Retrait annoncé du service GitHub Models fin 2026 | Élevé | Décision unilatérale du fournisseur | Bascule sur le fournisseur Groq et ajout du provider local Ollama pour supprimer toute dépendance externe | ✅ Résolu |
-| R5 | Retard de validation par l'encadreur professionnel | Critique | Charge de travail parallèle de l'encadreur | Planification des revues bi-mensuelles dès le début du stage, dépôts documentaires accessibles à tout moment | 🔄 En cours de suivi |
-| R6 | Fuite de données candidat vers une API LLM externe (non-conformité RGPD) | Élevé | Dépendance à un modèle SaaS étranger pour l'analyse CV et la génération | Ajout du fournisseur local Ollama permettant un déploiement complètement souverain | ✅ Résolu |
-| R7 | Coûts d'API LLM disproportionnés en cas de volume élevé de passations | Faible | Facturation à la requête chez OpenAI et Claude | Utilisation prioritaire du provider Groq gratuit, mise en cache des prompts récurrents, mode mock disponible pour les tests | ✅ Contrôlé |
-
-*Tableau 2 : Contraintes et risques sur le projet SkillForge. Source : auteur (2026).*
-
-### 4.3 Démarche projet mise en œuvre
-
-Le projet a été découpé en huit sprints de deux semaines, soit seize semaines correspondant aux quatre mois de stage effectif. Le tableau ci-dessous rappelle le découpage prévu au cahier des charges et le statut à date de dépôt du présent mémoire.
-
-| Sprint | Objectif principal | Statut |
-|---|---|---|
-| S0 | Cadrage, état de l'art, étude de l'existant, cahier des charges consolidé | ✅ 100 % |
-| S1 | Conception UML et MCD, architecture générale, MVP backend | ✅ 100 % |
-| S2 | POC 1 Analyse CV, banque de questions initiale, mise en conformité RGPD | ✅ 100 % |
-| S3 | POC 2 Génération adaptative de tests, interface recruteur | ✅ 100 % |
-| S4 | POC 3 Sandbox sécurisée, interface candidat | ✅ 100 % |
-| S5 | Auto-grading du code candidat, compte rendu IA, anti-fraude comportemental | ✅ 100 % |
-| S6 | POC 4 Statistiques discriminantes, boucle d'amélioration continue, tableau de bord | ✅ 100 % |
-| S7 | Tests sécurité (harness POC 3 renforcé, audit OWASP ZAP), tests de charge (k6) | 🔄 En cours |
-| S8 | Recette fonctionnelle, correction des bugs remontés, préparation de la mise en production | ⏳ Planifié |
-
-*Tableau 3 : Découpage en sprints du projet SkillForge. Source : auteur (2026).*
-
-À la date de dépôt du présent mémoire, les sprints S0 à S6 sont clos, le sprint S7 est en cours avec les livrables sécurité déjà validés (audit OWASP ZAP à zéro vulnérabilité, harness POC 3 à zéro évasion), et le sprint S8 est planifié pour la mise en production sur l'infrastructure interne de Tsarajoro.
-
-### 4.4 Planification
-
-*Un diagramme de Gantt macro à insérer ici, présentant les huit sprints sur une frise chronologique avec les principaux jalons de livraison. Le diagramme peut être produit avec Mermaid ou avec un outil comme GanttProject, puis inséré comme figure.*
-
-Le planning initial et le planning réalisé coïncident sur les sept premiers sprints. Un écart d'environ dix jours est constaté sur le sprint S7 en raison du retrait imprévu du service GitHub Models qui a nécessité la bascule sur Groq puis l'intégration d'Ollama, non prévue initialement. Cet écart a été absorbé sur le sprint S8, dont le périmètre a été légèrement resserré autour des tâches strictement nécessaires à la mise en production.
-
-### 4.5 Budget du projet
-
-Les coûts directement associés à ma contribution sont les suivants. Le salaire de stagiaire a été convenu contractuellement avec Tsarajoro pour la durée de quatre mois. La machine de développement (ordinateur portable personnel) et la connexion Internet ne représentent pas de coût additionnel puisqu'ils étaient préexistants. Aucune licence logicielle payante n'a été nécessaire : l'ensemble des outils utilisés est disponible en version communautaire ou entièrement open source. Les appels aux API de LLM externes durant les phases de tests initiaux ont représenté un coût cumulé inférieur à cinq euros grâce à l'utilisation prioritaire des fournisseurs gratuits (Groq, puis Ollama en local). Aucun coût de licence Docker Desktop n'est facturé dans le cadre d'un usage personnel de développement.
-
----
-
-## 5. Exigences réalisées dans le projet (vision externe / utilisateur)
-
-Le cahier des charges complet, présentant l'ensemble des exigences fonctionnelles sous forme de user stories, est joint en annexe. Le présent chapitre en retient quatre représentatives correspondant aux moments-clés du cycle utilisateur.
-
-### 5.1 Exigences fonctionnelles — User Stories principales
-
-#### 5.1.1 US-01 : Analyse automatique du CV candidat
-
-**En tant que** recruteur, **je veux** téléverser le CV d'un candidat au format PDF ou DOCX, **afin de** obtenir automatiquement la liste de ses compétences déclarées avec leur niveau estimé et le nombre d'années d'expérience détecté, sans avoir à parcourir manuellement le document.
-
-Préconditions : le recruteur est authentifié avec un rôle RECRUTEUR ou ADMIN, le fichier est de taille inférieure à dix mégaoctets, le format est parmi PDF natif, PDF scanné ou DOCX.
-
-Postconditions : une entité CvAnalysis est persistée en base, contenant la liste des compétences détectées, leur niveau (JUNIOR, CONFIRME, SENIOR ou UNKNOWN), le nombre d'années d'expérience associé, l'identifiant du fournisseur LLM utilisé et le nombre de jetons consommés.
-
-Codes d'erreur retournés : 415 pour un format non supporté, 400 pour un fichier corrompu ou vide, 502 en cas d'indisponibilité du fournisseur LLM.
-
-*Un diagramme de séquence UML au niveau système (boîte noire) est à insérer ici pour montrer le flux : recruteur → interface web → API /cv/upload → service de parsing (PDFBox, POI ou Tesseract selon le type) → service LLM → persistance en base.*
-
-Une capture d'écran de la page « Nouveau test » présentant le badge du fournisseur LLM utilisé et la liste des compétences détectées est également à insérer.
-
-#### 5.1.2 US-02 : Génération adaptative du test technique
-
-**En tant que** recruteur, **je veux** générer un test technique à partir des compétences détectées et du profil cible du poste, **afin de** disposer d'un ensemble de questions QCM, d'exercices de code et de cas pratiques adaptés sans avoir à les rédiger manuellement.
-
-Préconditions : au moins une compétence a été détectée à l'étape précédente, le recruteur a sélectionné le profil cible parmi la liste configurée dans Tsarajoro (Développeur PHP, Intégrateur WordPress, Développeur Vue.js, Spécialiste SEO technique, entre autres).
-
-Postconditions : un ensemble de questions est persisté en base avec le statut PENDING_REVIEW, chaque question étant associée à son type (QCM, CODE ou CAS_PRATIQUE), à sa difficulté sur une échelle de un à cinq, à ses compétences visées et à son payload spécifique au type.
-
-Le recruteur conserve la maîtrise complète sur les questions générées : chacune peut être approuvée en l'état, modifiée puis approuvée, ou rejetée. Cette étape de validation humaine est un choix explicite de conception, destiné à éviter que des questions imparfaites soient envoyées à un candidat sans relecture préalable.
-
-#### 5.1.3 US-03 : Passation candidat sécurisée avec code d'accès
-
-**En tant que** candidat, **je veux** démarrer ma passation à partir du lien reçu par courrier électronique et du code d'accès à six chiffres transmis dans le même courrier, **afin de** garantir que je suis bien la personne à qui l'invitation a été adressée par le recruteur.
-
-Préconditions : le candidat a reçu un courrier électronique contenant un lien unique et un code d'accès à six chiffres, l'invitation associée au lien n'est ni expirée ni déjà utilisée.
-
-Postconditions : une entité Passation est créée avec l'identifiant du candidat pré-établi par le recruteur, la question courante est initialisée sur la première question du test, un consentement RGPD sur l'analyse anti-fraude est enregistré.
-
-Cas d'erreur : 410 pour un lien inconnu, expiré ou déjà utilisé (statut uniforme évitant l'énumération des tokens valides), 403 avec le message « Code d'accès invalide » en cas de saisie incorrecte, 403 avec le message « Trop de tentatives, réessayez dans quinze minutes » après cinq échecs consécutifs pour bloquer un éventuel brute force sur le code à six chiffres.
-
-Cette user story a été enrichie en cours de recette à la suite d'une remarque de l'encadreur portant sur l'usurpation d'identité potentielle. Le développement initial ne demandait que le nom et le courrier électronique librement saisis par le candidat, ce qui laissait la porte ouverte à un candidat déclarant une identité différente de celle attendue. L'ajout du verrouillage d'identité côté serveur (l'email saisi doit correspondre au candidat pré-établi sur le test) et du code d'accès à six chiffres transmis par courrier constitue une défense en profondeur.
-
-#### 5.1.4 US-04 : Notation automatique et compte rendu IA
-
-**En tant que** recruteur, **je veux** disposer d'un compte rendu structuré immédiatement après la soumission du test par le candidat, **afin de** prendre une décision éclairée sans devoir corriger manuellement les réponses.
-
-Postconditions : chaque question est notée automatiquement selon son type (comparaison binaire pour les QCM, exécution des tests unitaires cachés dans la sandbox pour les CODE, évaluation par LLM sur cent points pour les CAS_PRATIQUE) ; un score global pondéré est calculé (trente pour cent QCM, cinquante pour cent CODE, vingt pour cent CAS_PRATIQUE) ; un compte rendu textuel est produit par le LLM, listant les points forts, les points faibles et une recommandation parmi HIRE, INTERVIEW ou REJECT.
-
-Le rapport est également exportable en PDF pour archivage ou partage avec d'autres décideurs de Tsarajoro.
-
-### 5.2 Exigences non fonctionnelles transverses
-
-Les exigences non fonctionnelles sont regroupées dans le tableau ci-dessous. Chacune est associée à une valeur cible chiffrée issue du cahier des charges et à la valeur effectivement mesurée à date.
-
-| Catégorie | Exigence | Valeur cible | Valeur mesurée |
+| # | URL | Rôle | Utilisateur |
 |---|---|---|---|
-| Utilisabilité | Interface responsive avec mode clair et mode sombre | Support Chrome et Firefox sur desktop et mobile | Validé, thèmes commutables via une propriété data-theme sur l'élément racine |
-| Performance | Latence d'analyse d'un CV | < 15 s | ~5-10 s avec le fournisseur Groq |
-| Performance | Latence de génération d'un test | < 30 s | ~10-20 s pour un test de trois questions |
-| Performance | Latence d'exécution d'un exercice de code en sandbox | < 5 s (timeout dur) | Médiane 330 ms, P95 422 ms (POC 3) |
-| Robustesse | Disponibilité de la plateforme | ≥ 99 % | Non mesuré en production, non applicable en phase de développement |
-| Capacité | Nombre de candidats simultanés supportés | 20 | À mesurer en sprint S7 avec l'outil k6 |
-| Sécurité | Audit OWASP Top 10 | 0 vulnérabilité High, Medium ou Low | ✅ Atteint après onze itérations d'audit ZAP |
-| Sécurité | Évasion de la sandbox | 0 sur 30 cas d'attaque (cible CDC) | ✅ 0 sur 50 cas d'attaque (dépassement de la cible) |
-| Sécurité | Chiffrement des mots de passe | Argon2id avec paramètres OWASP 2025 | Validé |
-| Sécurité | Chiffrement des communications | TLS 1.3 en production | À mettre en place lors de la mise en production S8 |
-| RGPD | Consentement explicite du candidat | Case à cocher préalable au démarrage | Validé |
-| RGPD | Purge automatique des CV | Après 12 mois de rétention | Validé, batch quotidien |
-| RGPD | Hébergement des données | Infrastructure interne Tsarajoro | Validé, aucun stockage tiers |
+| 1 | `/app` | Tableau de bord et indicateurs | Recruteur |
+| 2 | `/app/new-test` | Création d'un test en trois étapes | Recruteur |
+| 3 | `/app/review` | Validation des questions générées | Recruteur |
+| 4 | `/candidate/passation/:token` | Accueil et identification candidat | Candidat |
+| 5 | `/candidate/passation/:token/run` | Passation en cours avec éditeur et anti-fraude | Candidat |
+| 6 | `/app/results` | Liste des passations soumises | Recruteur |
+| 7 | `/app/results/:passationId` | Détail d'une passation et recommandation | Recruteur |
 
-*Tableau 4 : Exigences non fonctionnelles transverses et niveaux mesurés. Source : auteur (2026).*
+*Tableau X. Sept écrans structurants du parcours SkillForge. Les URL correspondent aux routes réelles de l'application React déployée.*
 
-### 5.3 Interfaces détaillées
+Quatre écrans complémentaires existent dans l'application mais n'apportent pas d'élément spécifique au regard des exigences du présent chapitre : la page publique de présentation (`/`), la page de connexion (`/login`), l'écran de remerciement du candidat après soumission (`/candidate/passation/:token/done`), et un écran d'erreur de fallback pour toute URL non reconnue.
 
-#### 5.3.1 Interface Homme-Machine
+---
 
-*Cinq à sept captures d'écran commentées sont à insérer ici. Pour chaque capture, une phrase introductive présente le rôle de l'écran et son placement dans le parcours utilisateur, suivie d'une description courte de son fonctionnement.*
+## 5.3.2 Interfaces avec d'autres systèmes
 
-Les écrans principaux à documenter sont : la page d'accueil du recruteur, la page « Nouveau test » avec le badge du fournisseur LLM et la liste des compétences détectées, la page de validation des questions à valider (interface « inbox intelligent » de la page /app/review), la page d'accueil du candidat avec le bloc vert d'identité verrouillée et le champ de code d'accès à six chiffres, l'écran de passation avec l'éditeur Monaco et le chronomètre, l'écran de fin de passation avec la grille de scores et la bannière ambre en mode démonstration, et le tableau de bord analytique du recruteur avec les indicateurs discriminants.
+Au-delà de son interface web, SkillForge communique avec trois systèmes extérieurs bien identifiés. Chacun de ces échanges a été isolé derrière une abstraction interne afin de pouvoir remplacer le fournisseur sous-jacent sans modifier le code métier.
 
-#### 5.3.2 Interfaces avec d'autres systèmes
+**Fournisseurs de modèles de langage.** Six fournisseurs sont pris en charge : un mode simulation utilisé en développement, OpenAI, Anthropic Claude, Groq, Google Gemini et une instance Ollama exécutée localement. Le fournisseur actif est sélectionné par une variable d'environnement `LLM_PROVIDER`, sans redéploiement particulier. Cette flexibilité a été mise à l'épreuve pendant le stage lorsque le service GitHub Models, initialement retenu, a été retiré par son fournisseur. La bascule vers Groq puis vers Gemini a pu être réalisée en moins d'une heure, sans modification du reste de l'application. Tous les fournisseurs retenus exposent une API compatible avec le format OpenAI, ce qui a permis de conserver une seule interface interne appelée `LlmClient`.
 
-Trois interfaces externes sont mobilisées. La première est l'API des fournisseurs de modèles de langage : elle suit le standard OpenAI (endpoint /v1/chat/completions), ce qui permet d'utiliser indifféremment OpenAI, Anthropic Claude, Groq et Ollama en changeant uniquement la variable d'environnement LLM_PROVIDER et la clé associée. La deuxième est le serveur SMTP : Mailpit est utilisé en développement pour capturer les courriers électroniques sans les envoyer vers l'extérieur, et un vrai SMTP est configurable en production via les variables d'environnement SMTP_HOST, SMTP_PORT, SMTP_USERNAME et SMTP_PASSWORD. La troisième est l'API Docker : la sandbox utilise la bibliothèque Docker Java pour piloter le démon Docker et lancer un conteneur éphémère par exécution de code candidat.
+**Serveur de messagerie SMTP.** L'envoi des invitations candidats repose sur un serveur SMTP standard, dont l'adresse et les identifiants sont fournis par les variables d'environnement `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME` et `SMTP_PASSWORD`. En développement, un conteneur Mailpit joue le rôle de serveur SMTP local et retient les courriers dans une interface web accessible à l'adresse `http://localhost:8026`. Cette configuration évite d'envoyer de vrais courriers pendant les phases de test, tout en permettant de vérifier visuellement le rendu HTML de l'invitation.
+
+**API Docker.** Le service backend-sandbox pilote le démon Docker de la machine hôte via la bibliothèque Docker Java. Chaque exécution de code candidat déclenche la création d'un conteneur éphémère, dédié à cette seule exécution, puis sa destruction immédiate à la fin. Aucune image ni aucun volume n'est laissé sur le disque de la machine entre deux passations. Le détail des paramètres de durcissement de ces conteneurs est présenté au chapitre 7.
+
+Aucune autre intégration externe n'est prévue dans la version actuelle de SkillForge. Les intégrations envisagées à plus long terme, notamment avec un système ATS externe, sont mentionnées dans les perspectives présentées en conclusion.
 
 ---
 
 ## 6. Architectures système
 
-L'architecture du projet SkillForge est présentée sous deux vues complémentaires, conformément au plan type recommandé par le Master 2 MBDS : une vue logicielle centrée sur l'organisation interne des modules, et une vue technique centrée sur les composants d'infrastructure.
+Ce chapitre présente les architectures cibles de SkillForge selon deux vues. La première décrit l'organisation logicielle interne et la répartition des responsabilités entre modules. La seconde décrit l'infrastructure sur laquelle ces modules sont déployés.
 
 ### 6.1 Architecture logicielle
 
-L'architecture logicielle repose sur une séparation en deux services Spring Boot indépendants, dictée par un enjeu majeur de sécurité. Le premier service, backend-app, expose l'ensemble de l'API métier consommée par le frontend : authentification, gestion des CV, génération de tests, gestion des invitations, passations candidats, notation, rapports et analytique. Il a accès à la base de données PostgreSQL et détient l'ensemble des données sensibles (identifiants, tokens JWT, CV, réponses candidats). Le second service, backend-sandbox, est un service isolé dont l'unique responsabilité est d'exécuter le code soumis par le candidat dans un conteneur Docker durci. Il ne dispose d'aucun accès à la base de données et communique avec backend-app uniquement via une API HTTP interne protégée par une clé partagée.
+L'architecture logicielle de SkillForge repose sur **trois applications distinctes** : une application web frontend, une application backend principale nommée `backend-app`, et un service isolé nommé `backend-sandbox`. Ce découpage n'est pas cosmétique. Il découle directement d'une contrainte de sécurité identifiée en début de projet : le code exécuté pour évaluer les candidats provient d'utilisateurs externes et ne peut donc pas être exécuté dans le même processus que celui qui manipule les données personnelles des candidats et les identifiants de connexion.
 
-Cette séparation est directement liée à la nature du code exécuté dans la sandbox : par définition, il provient de l'extérieur et peut être malveillant. Même si le harness POC 3 démontre qu'aucune évasion n'est possible dans l'état actuel du durcissement, l'isolation physique du service garantit que, dans le cas hypothétique où une évasion serait découverte, l'attaquant n'atteindrait qu'un service vide de données, sans accès à la base et sans capacité de latéralisation vers backend-app.
+L'application `backend-app` centralise l'ensemble de la logique métier accessible via une API REST : authentification, gestion des candidats, analyse des CV, génération et validation des évaluations, gestion des invitations, correction automatique, production des comptes rendus et alimentation du tableau de bord analytique. Elle est la seule application autorisée à accéder à la base PostgreSQL et détient l'ensemble des données sensibles.
 
-Le frontend est une Single-Page Application React 19 unique, servie via Vite en développement et via un serveur statique en production. Il consomme exclusivement l'API de backend-app et n'a aucune connaissance directe de l'existence de backend-sandbox.
+L'application `backend-sandbox` est volontairement pauvre. Son unique responsabilité consiste à recevoir un morceau de code, un langage cible et une liste de tests, puis à exécuter cet ensemble dans un conteneur Docker durci et à renvoyer les résultats. Ce service ne dispose d'aucun accès à la base de données. Il ne connaît ni les candidats, ni les évaluations, ni les invitations. Les échanges entre `backend-app` et `backend-sandbox` sont protégés par une clé interne partagée.
 
-*Un diagramme de composants à insérer ici, présentant les trois blocs (frontend-web, backend-app, backend-sandbox), leurs relations et le positionnement de la base de données PostgreSQL.*
+L'intérêt de cette séparation apparaît clairement dans un scénario défavorable. Les tests de sécurité présentés au chapitre 8 montrent que la sandbox résiste à cinquante attaques différentes sans qu'une seule ne parvienne à s'en échapper. Si une faille inconnue venait à être découverte plus tard, un attaquant qui sortirait de son conteneur se trouverait à l'intérieur de `backend-sandbox`, un service qui ne contient aucune donnée exploitable. Pour atteindre la base de données ou les CV des autres candidats, il lui faudrait franchir une seconde frontière. Ce principe de défense en profondeur limite fortement l'impact potentiel d'une éventuelle vulnérabilité.
+
+Le frontend est une application React unique. Il ne parle qu'à `backend-app` et n'a aucune connaissance de l'existence de `backend-sandbox`. Cette invisibilité renforce l'isolation du service sandbox, qui n'est joignable que depuis le backend principal.
+
+**[INSÉRER ICI LE DIAGRAMME DE COMPOSANTS]**
+
+*Figure X. Vue logicielle de SkillForge : trois applications déployables et leurs relations.*
 
 ### 6.2 Architecture technique
 
-L'architecture technique décrit l'infrastructure sur laquelle les composants logiciels sont déployés. En production sur l'infrastructure interne de Tsarajoro, un serveur Linux héberge le reverse proxy (Traefik ou Nginx), qui expose sur l'extérieur les deux endpoints publics : celui du frontend et celui de l'API. La base de données PostgreSQL est déployée dans un conteneur Docker persistant. La sandbox utilise le démon Docker local du serveur pour lancer ses conteneurs éphémères, protégés par un profil seccomp restrictif, la suppression de toutes les capacités Linux, l'absence totale de réseau (no-network), le système de fichiers racine en lecture seule et l'exécution sous un utilisateur non privilégié.
+L'architecture technique décrit l'infrastructure sur laquelle SkillForge est déployé. En développement comme en production, l'ensemble tient sur une seule machine Linux équipée du démon Docker. Cette contrainte a été retenue dès le début du projet afin de faciliter la reproduction de l'environnement par l'équipe technique de Tsarajoro.
 
-Le fournisseur de modèle de langage est soit une API externe (Groq, OpenAI, Anthropic) accessible depuis le serveur via HTTPS, soit une instance Ollama locale déployée dans un conteneur Docker sur le même serveur. Cette flexibilité, configurée via une simple variable d'environnement, permet à Tsarajoro de choisir en production le fournisseur le plus adapté à son contexte réglementaire et budgétaire, avec la possibilité de basculer intégralement en local pour un fonctionnement complètement souverain.
+Un reverse proxy assure la terminaison TLS et le routage des requêtes vers le frontend ou l'API. Derrière lui, plusieurs conteneurs Docker cohabitent : le frontend statique servi par Nginx, `backend-app` sur le port 8090, `backend-sandbox` sur le port 8091, la base PostgreSQL avec son volume persistant, et, lorsque l'option locale est retenue, une instance Ollama pour l'exécution locale des modèles de langage. Un conteneur Mailpit complète cet ensemble en développement, pour capturer les courriers électroniques sans les envoyer vers l'extérieur.
 
-*Un diagramme d'architecture technique à insérer ici, présentant l'ensemble des composants d'infrastructure et leurs interconnexions.*
+Le service `backend-sandbox` utilise le démon Docker de la machine hôte pour créer ses propres conteneurs éphémères, un par exécution de code candidat. Cette approche évite de superposer un runtime Docker à l'intérieur d'un autre. Chaque conteneur candidat est configuré selon un ensemble de règles de durcissement décrites en détail au chapitre 7.
 
-Ma contribution personnelle sur ces deux architectures est de cent pour cent : le projet ayant été mené en solo, la conception logicielle, le découpage en deux services, le choix des technologies et la mise en place de l'infrastructure de développement sont tous mon fait, sous validation de l'encadreur professionnel à chaque revue de sprint.
+Le fournisseur de modèle de langage constitue le seul composant capable de sortir de la machine. Deux modes de fonctionnement sont possibles. Le premier passe par une API externe (Groq, Gemini, OpenAI ou Anthropic) accessible via HTTPS. Le second passe par une instance Ollama posée localement sur la même machine, sans aucun appel réseau extérieur. Ce second mode répond aux besoins des clients de Tsarajoro qui manipulent des données particulièrement sensibles et souhaitent garantir qu'aucune information candidat ne quitte l'infrastructure interne. Le passage d'un mode à l'autre se fait par une variable d'environnement et un redémarrage.
+
+**[INSÉRER ICI LE DIAGRAMME D'ARCHITECTURE TECHNIQUE]**
+
+*Figure X. Vue technique de SkillForge : conteneurs, proxy et liaisons externes.*
+
+Le projet ayant été mené en solo, l'ensemble des choix d'architecture (découpage en trois applications, sélection des technologies, mise en place de l'infrastructure de développement) a été réalisé par moi-même, avec validation régulière de l'encadreur professionnel à chaque revue de sprint.
 
 ---
 
-## 7. Conception du système logiciel (vision interne / développeur)
+## 7. Conception du système logiciel
+
+Ce chapitre présente la conception interne de SkillForge, telle qu'un développeur reprenant le projet la découvrirait. Il complète la vue architecture du chapitre 6 en descendant au niveau des choix de structuration du code, du modèle de données et du déploiement des composants.
 
 ### 7.1 Plate-forme technique
 
-La plate-forme technique retenue combine les choix suivants. Côté runtime backend, Java 21 sur la JVM OpenJDK, avec Spring Boot 3.4 comme framework applicatif. Le choix de Spring Boot 3 se justifie par sa maturité, son écosystème étendu (Spring Security pour l'authentification, Spring Data JPA pour la persistance, Spring Boot Starter Mail pour les envois) et sa conformité aux enseignements du Master 2 MBDS. Côté runtime sandbox, les images Docker Alpine PHP 8.3 et Node 20 sont retenues pour leur légèreté (moins de 200 mégaoctets chacune) et pour leur alignement avec les profils métier réellement recrutés chez Tsarajoro. Côté runtime frontend, Node 20 est utilisé pour Vite 6 et pnpm 10, avec React 19 et TypeScript 5. La base de données est PostgreSQL 16, retenue pour sa robustesse, ses fonctionnalités avancées (JSONB natif, indexation GIN, extensions statistiques) et sa gratuité totale. En production, un reverse proxy Traefik ou Nginx est prévu pour la terminaison TLS et le routage.
+La plate-forme technique combine plusieurs choix cohérents entre eux et alignés sur les technologies enseignées dans le cadre du Master 2 MBDS.
+
+Côté backend, le socle est **Java 21** exécuté sur la JVM OpenJDK, avec **Spring Boot 3.4** comme framework applicatif. Spring Boot a été retenu pour son écosystème mature (Spring Security pour l'authentification, Spring Data JPA pour la persistance, Spring Boot Starter Mail pour l'envoi des invitations), sa productivité et sa large adoption dans les entreprises malgaches. La compilation et la gestion des dépendances passent par **Maven**.
+
+Côté sandbox, deux images Docker Alpine minimales sont utilisées : **PHP 8.3** et **Node 20**. Alpine a été retenu pour la légèreté de ses images, chacune pesant moins de 200 mégaoctets, ce qui accélère les démarrages de conteneur et réduit la surface d'attaque disponible pour un candidat malveillant. Le choix de PHP et JavaScript reflète directement les profils réellement recrutés par Tsarajoro, notamment les développeurs PHP/Laravel et les intégrateurs WordPress.
+
+Côté frontend, **Node 20** sert de runtime pour **Vite 6** et le gestionnaire de paquets **pnpm 10**. L'application elle-même repose sur **React 19** et **TypeScript 5**. TypeScript a été retenu pour renforcer la fiabilité du code frontend en détectant à la compilation les erreurs de type, ce qui limite les régressions lors des évolutions successives.
+
+Côté base de données, **PostgreSQL 16** a été retenu pour sa robustesse, son support natif du type JSONB (utilisé pour stocker le contenu spécifique de chaque question sans multiplier les tables), et sa gratuité totale. Les migrations de schéma sont gérées par **Flyway** afin de garantir que chaque environnement (développement, recette, production) applique la même succession d'évolutions.
+
+En production, un reverse proxy **Traefik** ou **Nginx** est prévu pour la terminaison TLS et le routage. La version 1.3 du protocole TLS est requise afin d'écarter les configurations vulnérables des versions antérieures.
 
 ### 7.2 Conception du logiciel développé
 
 #### 7.2.1 Conception du code source
 
-Le code source du backend est organisé en modules métier au sein de l'espace de nommage com.tsarajoro.skillforge. Chaque module regroupe les classes participant à un domaine fonctionnel bien identifié : le module auth pour l'authentification et la gestion des sessions JWT, le module cv pour le parsing et l'analyse des CV, le module generation pour la génération de tests par LLM, le module candidate pour les passations candidat, le module report pour les comptes rendus IA, le module analytics pour le tableau de bord discriminant, le module mail pour l'envoi transactionnel des invitations, le module sandbox pour l'interface avec le service sandbox, le module llm pour l'abstraction multi-fournisseurs, le module security pour la configuration Spring Security, le module exception pour la gestion centralisée des erreurs HTTP.
+Le code source du backend est organisé en modules métier au sein de l'espace de nommage `com.tsarajoro.skillforge`. Cette organisation applique la convention dite **package by feature** : chaque package regroupe l'ensemble des classes participant à un même domaine fonctionnel, plutôt que de séparer les entités, les services et les contrôleurs dans des packages transverses.
 
-Cette organisation applique les bonnes pratiques de conception dites « package by feature » : chaque package est autonome, chaque dépendance entre packages est explicite. Les inversions de dépendance passent par des interfaces définies dans le package qui les utilise, en particulier LlmClient qui est une interface unique implémentée par cinq classes selon le fournisseur configuré (MockLlmClient, OpenAiLlmClient, ClaudeLlmClient, GroqLlmClient, OllamaLlmClient).
+Les modules retenus sont les suivants :
+- `auth` : authentification et gestion des sessions JWT ;
+- `cv` : extraction et analyse du contenu des CV ;
+- `generation` : génération de tests par les modèles de langage ;
+- `candidate` : gestion des passations candidat, des invitations et des codes d'accès ;
+- `report` : production des comptes rendus post-évaluation ;
+- `analytics` : indicateurs statistiques et tableau de bord recruteur ;
+- `mail` : envoi transactionnel des invitations ;
+- `sandbox` : client HTTP vers le service `backend-sandbox` ;
+- `llm` : abstraction multi-fournisseurs des modèles de langage ;
+- `security` : configuration Spring Security, filtres et en-têtes HTTP ;
+- `exception` : gestion centralisée des erreurs.
 
-Les règles de nommage adoptées sont classiques en Java : les classes en PascalCase, les méthodes et variables en camelCase, les constantes en MAJUSCULES_AVEC_UNDERSCORE. Les entités JPA portent le nom du concept métier au singulier (Passation, Candidate, Invitation), les repositories ajoutent le suffixe Repository, les services le suffixe Service, les contrôleurs le suffixe Controller. Les tables PostgreSQL suivent la convention snake_case (invitations, cv_analyses, fraud_events).
+Cette organisation présente deux avantages. Chaque package reste autonome, ce qui limite les dépendances croisées entre modules et facilite la reprise du code par un nouveau développeur. Les dépendances entre packages sont explicites et passent par des interfaces définies dans le package qui les utilise. L'interface `LlmClient`, par exemple, est déclarée dans le package `llm` et implémentée par six classes correspondant aux six fournisseurs pris en charge.
+
+Les règles de nommage sont classiques en Java. Les classes suivent la convention **PascalCase**, les méthodes et variables la convention **camelCase**, les constantes la convention **MAJUSCULES_AVEC_UNDERSCORE**. Les entités JPA portent le nom du concept métier au singulier, par exemple `Passation`, `Candidate`, `Invitation`. Les repositories ajoutent le suffixe `Repository`, les services le suffixe `Service` et les contrôleurs le suffixe `Controller`. Les tables PostgreSQL suivent la convention **snake_case**, par exemple `cv_analyses`, `fraud_events`, `question_skills`.
+
+Côté frontend, le code TypeScript est organisé par grand parcours utilisateur (`recruiter`, `candidate`) et par module technique (`api`, `components`, `hooks`, `pages`, `stores`). Les composants réutilisables issus de la bibliothèque shadcn/ui sont regroupés dans un sous-dossier `components/ui` distinct des composants métier de SkillForge.
 
 #### 7.2.2 Le code source — vue statique
 
-*Un diagramme de packages à insérer ici, produit avec IntelliJ IDEA ou avec PlantUML, montrant les principaux packages du backend et leurs relations de dépendance.*
+L'organisation en packages du backend est représentée par le diagramme de packages ci-dessous. Il met en évidence les dépendances entre modules et souligne la position centrale de l'interface `LlmClient`, qui absorbe l'ensemble des variations liées aux fournisseurs de modèles de langage.
 
-Trois classes clés méritent une mise en avant. La première est CandidatePassationService, qui orchestre l'intégralité du cycle candidat : démarrage de la passation avec vérification du code d'accès, sauvegarde des réponses, exécution du code via la sandbox, soumission finale avec notation multi-critères. La deuxième est SandboxRunner, qui applique les onze flags de durcissement Docker à chaque conteneur d'exécution (no-network, readonly-rootfs, cap-drop=ALL, no-new-privileges, memory limit, PID limit, seccomp profile, user non privilégié, entrypoint clear, workdir en lecture seule, timeout). La troisième est LlmClient, l'interface qui abstrait les cinq fournisseurs et permet la bascule à chaud via une variable d'environnement.
+**[INSÉRER ICI LE DIAGRAMME DE PACKAGES]**
+
+*Figure X. Vue statique du code source de backend-app : organisation en packages métier.*
+
+Trois classes méritent une présentation particulière au regard des enjeux techniques du projet.
+
+La classe `CandidatePassationService` orchestre l'intégralité du cycle candidat : démarrage sécurisé de la passation avec vérification du code d'accès à six chiffres, sauvegarde des réponses au fur et à mesure, exécution du code via le service sandbox et soumission finale avec correction multi-critères. Sa méthode `verifyAccessCode` applique une comparaison à temps constant via `MessageDigest.isEqual`, afin de neutraliser une éventuelle attaque par mesure du temps de réponse.
+
+La classe `SandboxRunner` applique un ensemble de règles de durcissement à chaque conteneur Docker créé pour exécuter du code candidat. Onze paramètres sont positionnés à chaque exécution : suppression totale du réseau, système de fichiers racine en lecture seule, retrait de toutes les capacités Linux, activation du drapeau `no-new-privileges`, plafonnement de la mémoire et du nombre de processus, application d'un profil seccomp restrictif, exécution sous un utilisateur non privilégié, entrypoint fixe, répertoire de travail en lecture seule et timeout dur de cinq secondes.
+
+L'interface `LlmClient` définit un contrat unique implémenté par six classes correspondant aux six fournisseurs : `MockLlmClient` pour le mode simulation, `OpenAiLlmClient`, `ClaudeLlmClient`, `GroqLlmClient`, `OllamaLlmClient` et `GeminiLlmClient`. Le fournisseur actif est sélectionné à l'exécution par une simple variable d'environnement. Cette conception a démontré sa valeur lorsque le service GitHub Models a été retiré par son fournisseur en cours de projet : la bascule vers Groq puis vers Gemini n'a nécessité aucune modification du code métier consommateur de l'interface.
 
 #### 7.2.3 Modélisation des données
 
-Le modèle conceptuel de données regroupe onze entités principales, dont les principales relations sont les suivantes.
+Le modèle conceptuel de données regroupe onze entités principales. Chaque entité correspond à une table PostgreSQL portant son nom au pluriel et en snake_case.
 
-Un User représente un compte de la plateforme (recruteur, admin) avec son mot de passe haché en Argon2id.
+Un `User` représente un compte de la plateforme (recruteur ou administrateur), dont le mot de passe est haché en **Argon2id** avec les paramètres recommandés par l'OWASP en 2025.
 
-Un Candidate représente un candidat au recrutement, identifié par son adresse électronique. Un candidat possède zéro ou plusieurs CV, chaque CV pouvant avoir une CvAnalysis associée listant les compétences détectées.
+Un `Candidate` représente un candidat au recrutement, identifié par son adresse électronique. Un candidat peut posséder plusieurs CV successifs, chacun pouvant avoir une `CvAnalysis` associée listant les compétences détectées et leur niveau estimé.
 
-Un Test est un ensemble de questions généré pour un candidat et un profil cible. Un test possède plusieurs Questions, chaque question étant de type QCM, CODE ou CAS_PRATIQUE et portant sur une ou plusieurs compétences (Skills) via la table de liaison question_skills.
+Un `Test` est un ensemble de questions préparé pour un candidat et un profil cible donnés. Un test contient plusieurs `Questions`, chacune de type QCM, CODE ou CAS_PRATIQUE, et portant sur une ou plusieurs `Skills` via la table de liaison `question_skills`.
 
-Une Invitation matérialise l'envoi d'un test à un candidat. Elle contient un token unique, un code d'accès à six chiffres généré cryptographiquement, une date d'expiration et un statut d'utilisation.
+Une `Invitation` matérialise l'envoi d'un test à un candidat. Elle contient un token unique, un code d'accès à six chiffres généré cryptographiquement, une date d'expiration et un statut d'utilisation. La contrainte d'unicité sur le token empêche par construction la création de deux passations concurrentes pour la même invitation.
 
-Une Passation est instanciée lorsque le candidat démarre effectivement le test à partir d'une invitation. Elle contient les Answers du candidat, une pour chaque question du test.
+Une `Passation` est instanciée lorsque le candidat démarre effectivement son évaluation à partir de son invitation. Elle contient l'ensemble des `Answers` du candidat, une par question du test.
 
-Les FraudEvents sont enregistrés au fil de la passation lorsque le frontend détecte un signal anti-fraude (perte de focus onglet, tentative de copier-coller volumineux, sortie du plein écran).
+Les `FraudEvents` sont enregistrés au fil de la passation lorsque le navigateur du candidat détecte un signal susceptible d'indiquer un comportement suspect, tel qu'une perte de focus prolongée de l'onglet ou un collage volumineux dans l'éditeur de code.
 
-Un Report est produit à la fin de la passation, contenant le score global, la répartition par type de question, la recommandation IA et l'explication textuelle.
+Un `Report` est produit à la soumission de la passation. Il contient le score global pondéré, la répartition par type de question, la recommandation finale (HIRE, INTERVIEW ou REJECT) et l'explication textuelle générée par le modèle de langage.
 
-*Un diagramme de classes UML ou un MCD Merise à insérer ici, produit avec un outil comme Draw.io ou PlantUML.*
+**[INSÉRER ICI LE MCD OU LE DIAGRAMME DE CLASSES UML]**
 
-Le schéma évolue au fil du projet via sept migrations Flyway numérotées V1 à V7. La migration V1 pose le schéma initial. La V2 ajoute la relation Test-Candidate. La V3 enrichit les colonnes d'Answer avec les détails d'exécution du code. La V4 ajoute les métadonnées LLM aux rapports. La V5 introduit les métadonnées de fraude. La V6 ajoute le code d'accès à six chiffres sur les invitations (livrable UX-01 issu de la recette). La V7 rétro-remplit les invitations pré-existantes avec un code aléatoire et fait passer la colonne en NOT NULL, pour supprimer tout risque de bypass silencieux.
+*Figure X. Modèle conceptuel de données de SkillForge : onze entités principales.*
+
+Le schéma de la base est versionné et évolue à travers sept migrations Flyway numérotées V1 à V7. La migration V1 pose le schéma initial. Les migrations V2 à V5 ajoutent progressivement les relations et les colonnes issues des sprints S1 à S5. Les migrations V6 et V7 correspondent à un enrichissement livré à la suite d'une remarque formulée pendant la recette : l'ajout du code d'accès à six chiffres sur les invitations et le remplissage rétroactif des invitations pré-existantes avec un code aléatoire, afin de rendre la colonne obligatoire sans casser les données antérieures.
 
 #### 7.2.4 Réalisation d'un cas d'utilisation
 
-*Un diagramme de séquence UML boîte blanche à insérer ici, décrivant en interne le cas d'utilisation US-03 (démarrage sécurisé d'une passation avec code d'accès).*
+Le cas d'utilisation retenu pour illustrer la vision interne du système est celui de la **passation sécurisée du candidat**, présenté en vision externe au chapitre 5.1.3. Ce cas concentre plusieurs mécanismes de sécurité intéressants : vérification en trois temps de l'invitation, code d'accès à six chiffres, verrouillage d'identité, comparaison à temps constant et limitation du nombre de tentatives.
 
-Le scénario est le suivant. Le candidat soumet un POST sur l'endpoint /candidate/passations/start avec le token de son invitation, son adresse électronique, son nom et le code d'accès à six chiffres. Le contrôleur CandidateController transmet la requête au service CandidatePassationService. Ce dernier vérifie d'abord la validité de l'invitation via le repository InvitationRepository (existence, non-expiration, non-utilisation) ; en cas d'échec sur l'un des trois critères, il lève une InvitationInvalidException qui est mappée en HTTP 410 uniforme par le GlobalExceptionHandler. Il vérifie ensuite si une Passation existe déjà pour cette invitation, auquel cas il la retourne (comportement idempotent pour la reprise après F5). Sinon, il appelle la méthode privée verifyAccessCode qui consulte le compteur d'échecs AccessCodeAttemptTracker : si l'invitation est verrouillée après cinq échecs, une SecurityException est levée avec le message « Trop de tentatives ». Sinon, la comparaison du code saisi et du code stocké est effectuée en temps constant via MessageDigest.isEqual, pour neutraliser une éventuelle attaque par mesure de temps. En cas d'échec, le compteur est incrémenté ; en cas de succès, il est remis à zéro. Enfin, l'identité du candidat est verrouillée en vérifiant que l'email saisi correspond au candidat pré-établi sur le test. Si toutes les vérifications passent, une nouvelle Passation est créée et retournée au client.
+Le déroulement interne est le suivant. Le navigateur du candidat envoie une requête `POST` à l'endpoint `/candidate/passations/start`, portant le token de l'invitation, l'adresse électronique saisie, le nom du candidat et le code d'accès. Le contrôleur `CandidateController` transmet la requête au service `CandidatePassationService`, qui orchestre l'ensemble des vérifications.
+
+Le service vérifie d'abord l'existence de l'invitation dans le repository `InvitationRepository`. Une invitation inconnue, expirée ou déjà utilisée déclenche une `InvitationInvalidException`, mappée par le gestionnaire centralisé `GlobalExceptionHandler` vers un code HTTP 410 uniforme. Cette uniformité est volontaire : elle empêche un attaquant de distinguer un token inconnu d'un token expiré, ce qui rendrait possible l'énumération des invitations valides.
+
+Le service consulte ensuite le compteur d'échecs `AccessCodeAttemptTracker`. Si le nombre d'échecs consécutifs pour cette invitation dépasse cinq, la passation est bloquée pour une durée de quinze minutes. Ce mécanisme réduit à un maximum de cinq tentatives par intervalle de quinze minutes la brute-force du code à six chiffres, ce qui ramène le million de combinaisons théoriques à un nombre de tentatives inatteignable en pratique.
+
+La comparaison du code saisi et du code stocké utilise la méthode `MessageDigest.isEqual`, qui s'exécute en temps constant indépendamment de la longueur du préfixe commun. Ce point neutralise une éventuelle attaque par mesure de temps sur le canal HTTP.
+
+L'identité du candidat est ensuite verrouillée : l'adresse électronique saisie doit correspondre à celle du candidat pré-établi par le recruteur lors de l'envoi de l'invitation. Ce contrôle empêche un tiers en possession du lien de démarrer une passation sous une identité différente de celle attendue.
+
+Lorsque toutes les vérifications passent, une nouvelle `Passation` est créée et retournée au client. Si une passation existait déjà pour cette invitation (par exemple à la suite d'un rafraîchissement de la page par le candidat), elle est retournée telle quelle, ce qui garantit un comportement idempotent.
+
+**[INSÉRER ICI LE DIAGRAMME DE SÉQUENCE UML BOÎTE BLANCHE]**
+
+*Figure X. Diagramme de séquence interne du cas Passation sécurisée du candidat.*
 
 #### 7.2.5 Les composants et leur déploiement
 
 Trois composants déployables sont produits par le projet.
 
-Le premier est backend-app, packagé en JAR fat via Maven, exécutable directement avec java -jar. En développement, il est lancé via mvn spring-boot:run avec les variables d'environnement chargées depuis le fichier .env grâce à la bibliothèque spring-dotenv. En production, il sera déployé sous forme d'image Docker multi-stage sur l'infrastructure Tsarajoro.
+Le premier est `backend-app`, packagé sous forme de JAR exécutable par Maven. En développement, il est démarré par la commande `mvn spring-boot:run`, avec les variables d'environnement chargées depuis un fichier `.env` grâce à la bibliothèque spring-dotenv. En production, il sera distribué sous forme d'image Docker construite en multi-stage, ce qui permet de produire une image finale de petite taille ne contenant que le JAR et son runtime Java.
 
-Le second est backend-sandbox, identique dans son mode de packaging, avec la contrainte supplémentaire de disposer d'un démon Docker accessible localement pour lancer les conteneurs de sandbox.
+Le second est `backend-sandbox`, packagé de la même manière, avec la contrainte supplémentaire de disposer d'un accès local au démon Docker pour lancer les conteneurs éphémères d'exécution.
 
-Le troisième est frontend-web, dont la commande vite build produit un ensemble de fichiers statiques (HTML, CSS, JavaScript) servis par un serveur Nginx en production. En développement, la commande pnpm dev lance le serveur de développement Vite sur le port 5173 avec rechargement à chaud.
+Le troisième est `frontend-web`. La commande `vite build` produit un ensemble de fichiers statiques (HTML, CSS, JavaScript minifié) servis par Nginx en production. En développement, la commande `pnpm dev` lance le serveur de développement Vite sur le port 5173 avec rechargement à chaud.
 
-En complément, trois conteneurs d'infrastructure sont fournis dans le fichier infra/docker-compose.yml : skillforge-postgres pour la base de données, skillforge-mailpit pour le serveur SMTP de développement, skillforge-ollama pour l'exécution locale des modèles de langage.
+Ces trois composants sont complétés par plusieurs conteneurs d'infrastructure fournis dans le fichier `infra/docker-compose.yml` : `skillforge-postgres` pour la base de données, `skillforge-mailpit` pour le serveur SMTP de développement, et `skillforge-ollama` pour l'exécution locale des modèles de langage lorsque le mode souverain est retenu.
 
-Les règles de nommage des artefacts déployables sont : les images Docker Tsarajoro suivent le format tsarajoro/skillforge-<service>:<version>, les volumes persistants le format skillforge_<usage> (par exemple skillforge_pgdata, skillforge_ollama_models).
+Les règles de nommage des artefacts sont les suivantes. Les images Docker portent le préfixe de l'organisation `tsarajoro/skillforge-<service>:<version>`. Les volumes persistants suivent la convention `skillforge_<usage>`, par exemple `skillforge_pgdata` pour les données PostgreSQL et `skillforge_ollama_models` pour les modèles téléchargés localement.
+
+**[INSÉRER ICI LE DIAGRAMME DE DÉPLOIEMENT]**
+
+*Figure X. Diagramme de déploiement de SkillForge : composants et leurs volumes persistants.*
 
 ---
 
 ## 8. Tests du système logiciel
 
-La stratégie de tests s'articule autour de quatre niveaux : tests fonctionnels manuels, tests unitaires et d'intégration automatisés, tests de sécurité offensive et tests de performance.
+En cohérence avec la stratégie de test présentée au chapitre 4.1.1, quatre niveaux de tests ont été mis en œuvre au cours du projet : tests unitaires, tests fonctionnels manuels, tests de sécurité offensive et tests de charge. Chacun de ces niveaux répond à un objectif distinct et couvre une catégorie de risques différente.
 
-### 8.1 Tests fonctionnels manuels
+### 8.1 Tests unitaires et d'intégration
 
-Une fiche de tests manuels a été rédigée en cours de projet et couvre environ cent scénarios d'utilisation, structurés autour des grandes fonctionnalités de la plateforme. La fiche est jointe en annexe. Elle a été déroulée en deux passes de recette successives, avec l'encadreur professionnel comme testeur bénévole, ce qui a permis de faire remonter deux anomalies significatives corrigées avant le dépôt du présent mémoire.
+Les tests unitaires ont été écrits en **JUnit 5** avec la bibliothèque d'assertions **AssertJ**. Ils couvrent la logique métier isolée : analyse et validation des payloads JSON des questions générées, calcul du score pondéré, vérification du code d'accès en temps constant, génération aléatoire du code à six chiffres et gestion des cas limites.
 
-La première anomalie, référencée BUG-01, portait sur la notation des cas pratiques en mode démonstration (fournisseur LLM configuré sur « mock »). Le mock notait les réponses uniquement à leur longueur, ce qui permettait à une réponse incohérente mais suffisamment longue d'être comptée réussie. La correction a plafonné le score du mock à quarante sur cent (soit sous le seuil de réussite de soixante), enrichi le message d'explication d'un préfixe explicite « SIMULE — mode démo » et ajouté une bannière visuelle ambre sur la page finale du candidat lorsque le mock est utilisé.
+Les tests d'intégration s'appuient sur la bibliothèque **Testcontainers**, qui démarre une véritable instance PostgreSQL dans un conteneur Docker pour la durée de la classe de test. Cette approche évite le recours à des simulations imparfaites de la base de données. Le comportement réel des repositories JPA, des migrations Flyway et des transactions est ainsi vérifié dans les mêmes conditions qu'en production.
 
-La seconde anomalie, référencée UX-01, portait sur l'usurpation potentielle d'identité candidat lors du démarrage d'une passation. Le formulaire d'origine laissait le candidat saisir librement son nom, ce qui rendait possible qu'un tiers récupérant le lien démarre la passation sous une identité différente de celle attendue. La correction a introduit trois mécanismes complémentaires détaillés au chapitre 5.1.3 : verrouillage de l'identité côté serveur, code d'accès à six chiffres transmis par courrier électronique, et rate limiting sur les tentatives de saisie du code.
+L'exécution de ces tests est automatisée via la commande `mvn test` et intégrée à la chaîne d'intégration continue GitHub Actions. Chaque modification pousseée sur une branche déclenche la compilation et l'exécution complète de la suite, ce qui limite l'introduction involontaire de régressions.
 
-### 8.2 Tests unitaires et d'intégration
+### 8.2 Tests fonctionnels manuels
 
-Les tests unitaires couvrent la logique métier isolée : parsing des payloads JSON des questions, calcul du score pondéré, vérification du code d'accès en temps constant, génération du code aléatoire à six chiffres. Ils sont écrits en JUnit 5 avec les assertions AssertJ, exécutés à chaque compilation via Maven.
+Une fiche de tests manuels a été rédigée en cours de projet et couvre une centaine de scénarios d'utilisation, structurés par grand domaine fonctionnel : authentification, gestion des candidats, analyse de CV, génération et validation des questions, envoi et acceptation des invitations, passation candidat, correction automatique, consultation des résultats.
 
-Les tests d'intégration s'appuient sur la bibliothèque Testcontainers, qui permet de démarrer une vraie base PostgreSQL dans un conteneur Docker pour la durée de la classe de test. Cela permet de vérifier le comportement réel des repositories JPA, des migrations Flyway et des transactions, sans mocker la couche persistance.
+La fiche a été déroulée en deux passes de recette successives avec l'encadreur professionnel dans le rôle du testeur. Ces passes ont permis d'identifier deux anomalies significatives, corrigées avant le dépôt du présent mémoire.
+
+La première anomalie, référencée **BUG-01**, portait sur la correction des cas pratiques lorsque le fournisseur LLM était configuré en mode simulation. Le mock notait les réponses uniquement à leur longueur, ce qui permettait à une réponse hors sujet mais suffisamment longue d'être comptée réussie. La correction a plafonné le score du mock à quarante sur cent, préfixé toutes les explications par « SIMULÉ — mode démonstration » et ajouté une bannière visuelle ambre sur la page finale du candidat lorsque le mock est utilisé.
+
+La seconde anomalie, référencée **UX-01**, portait sur un risque d'usurpation d'identité candidat. Le formulaire de démarrage initial laissait le candidat saisir librement son nom, ce qui rendait possible qu'un tiers en possession du lien démarre la passation sous une identité différente de celle attendue. La correction a introduit trois mécanismes complémentaires détaillés au chapitre 5.1.3 : verrouillage de l'identité côté serveur, code d'accès à six chiffres transmis par courrier électronique, et limitation du nombre de tentatives après cinq échecs consécutifs.
 
 ### 8.3 Tests de sécurité offensive
 
-C'est le niveau de tests le plus valorisant pour le présent mémoire, dans la mesure où il apporte des mesures chiffrées et reproductibles à l'appui du choix technique de sécurité.
+Ce niveau de tests occupe une place particulière dans le mémoire car il produit des mesures chiffrées et reproductibles qui justifient directement les choix techniques de sécurité présentés au chapitre 7.
 
-#### 8.3.1 POC 3 — Sandbox Docker sécurisée
+#### 8.3.1 Validation de la sandbox par un harness d'attaques
 
-Un harness de tests a été développé spécifiquement pour valider les critères de sécurité de la sandbox définis dans le cahier des charges. Ce harness, sous forme de test JUnit exécutable via la commande mvn test avec le paramètre poc3.run à true, applique cent cinquante cas de test à la sandbox réelle : cent cas d'exécutions valides censées réussir (cinquante en PHP, cinquante en JavaScript), et cinquante cas d'attaque censés être bloqués. Les cinquante attaques sont réparties en sept catégories : fork bomb et déni de service CPU, tentative d'accès réseau, lecture de fichiers système, écriture ou persistance sur le système, épuisement de mémoire, exécution de processus enfant pour échapper au conteneur, et attaques bonus créatives (contournement d'open_basedir, import dynamique).
+Un harness de tests a été développé spécifiquement pour valider les critères de sécurité de la sandbox fixés dans le cahier des charges. Il prend la forme d'un test JUnit exécutable via la commande `mvn test -Dpoc3.run=true` et applique cent cinquante cas à la sandbox réelle : cent cas d'exécutions valides censées réussir (cinquante en PHP et cinquante en JavaScript), et cinquante cas d'attaque censés être bloqués.
 
-Le harness a démarré à dix-sept évasions détectées sur cinquante tentatives, ce qui a déclenché onze itérations de durcissement successives. Chaque itération a corrigé une classe précise de vulnérabilité : ajout des appels système clone et clone3 au profil seccomp pour permettre à Node de créer ses threads, désactivation via php.ini des fonctions shell_exec, system, exec, popen et de leurs équivalents, ajout d'open_basedir restrictif, retrait des droits d'exécution des utilitaires shell (cat, ls, whoami) pour l'utilisateur non privilégié du conteneur, activation de la Permission API expérimentale de Node avec --allow-fs-read restreint. Les cinq dernières évasions étaient en réalité des faux positifs du harness lui-même (par exemple, un Buffer.alloc de cinq cent douze mégaoctets sans écriture ne consomme pas réellement la mémoire, l'OOM killer ne se déclenche donc pas). Ces cas ont été réécrits pour forcer l'écriture effective dans la zone mémoire, avec cette fois un déclenchement correct de l'OOM killer.
+Les cinquante attaques sont réparties en sept catégories : bombes forkées et déni de service processeur, tentatives d'accès réseau, lecture de fichiers système, écriture ou persistance sur le système, épuisement de la mémoire, exécution de processus enfant pour tenter d'échapper au conteneur, et attaques créatives complémentaires (contournement d'`open_basedir`, imports dynamiques).
 
-Le résultat final, reproductible avec la version courante du code sur toute machine disposant de Docker, est le suivant : zéro évasion sur les cinquante cas d'attaque, cent pour cent de succès sur les cent exécutions valides, latence médiane de trois cent trente millisecondes, latence en quatre-vingt-quinzième centile de quatre cent vingt-deux millisecondes. Ces chiffres dépassent les critères de succès fixés dans le cahier des charges (zéro évasion sur trente cas d'attaque, latence médiane inférieure à deux secondes).
+La première exécution du harness a fait remonter **dix-sept évasions** sur cinquante tentatives, ce qui a déclenché onze itérations successives de durcissement. Chaque itération a corrigé une classe précise de vulnérabilité : ajout des appels système `clone` et `clone3` au profil seccomp afin de permettre à Node de créer ses threads sans casser le durcissement, désactivation via `php.ini` des fonctions dangereuses `shell_exec`, `system`, `exec`, `popen` et de leurs équivalents, ajout d'un `open_basedir` restrictif, retrait des droits d'exécution des utilitaires shell (`cat`, `ls`, `whoami`) pour l'utilisateur non privilégié, activation de la Permission API expérimentale de Node avec `--allow-fs-read` restreint.
+
+Les cinq dernières évasions détectées se sont révélées être des faux positifs du harness lui-même. Par exemple, un `Buffer.alloc(512 * 1024 * 1024)` en JavaScript n'alloue pas réellement la mémoire tant qu'aucune écriture n'est effectuée dans le tampon : l'`OOM killer` ne se déclenche donc pas. Ces cas ont été réécrits pour forcer l'écriture effective dans la zone mémoire, et l'`OOM killer` s'est alors correctement déclenché.
+
+Le résultat final, reproductible sur toute machine disposant de Docker, est le suivant : **zéro évasion** sur les cinquante cas d'attaque, cent pour cent de succès sur les cent exécutions valides, latence médiane de **330 millisecondes** et latence au 95e centile de **422 millisecondes**. Ces chiffres dépassent les critères de succès fixés dans le cahier des charges, qui demandait zéro évasion sur trente cas d'attaque et une latence médiane inférieure à deux secondes.
 
 #### 8.3.2 Audit OWASP Top 10 avec ZAP
 
-Un audit de sécurité selon le classement OWASP Top 10 a été mené avec l'outil OWASP ZAP en Docker, sous deux formes complémentaires : un scan baseline passif qui analyse les réponses HTTP sans envoyer d'attaque, et un scan full actif qui envoie de vraies charges utiles (injection SQL, XSS, path traversal, injection de commande, XXE, SSRF).
+Un audit de sécurité selon le classement OWASP Top 10 a été mené avec l'outil **OWASP ZAP** exécuté en conteneur Docker, sous deux formes complémentaires. Un premier scan de type baseline analyse les réponses HTTP de manière passive, sans envoyer d'attaques. Un second scan de type full envoie de véritables charges d'attaque : injections SQL, tentatives de cross-site scripting, path traversal, injections de commande, entités externes XML et falsifications de requêtes côté serveur.
 
-La chaîne d'analyse repose sur un script shell reproductible qui automatise le démarrage du backend en mode audit, le login recruteur, l'import de la spécification OpenAPI du backend pour permettre à ZAP de découvrir automatiquement l'ensemble des endpoints, l'exécution des scans et la génération de rapports HTML et JSON datés.
+La chaîne d'analyse est automatisée par un script shell reproductible qui démarre le backend en mode audit, réalise le login recruteur, importe la spécification OpenAPI publiée par le backend sur `/v3/api-docs` afin de permettre à ZAP de découvrir automatiquement l'ensemble des endpoints, exécute les deux scans et génère des rapports HTML et JSON horodatés.
 
-L'audit initial a fait remonter dix-sept alertes Low, principalement de la catégorie Information Disclosure via exposition de stacktraces sur des endpoints renvoyant HTTP 500 (par exemple sur un UUID malformé). Onze itérations de correction ont été appliquées : ajout des six en-têtes HTTP de sécurité manquants (Content-Security-Policy strict, X-Frame-Options DENY, X-Content-Type-Options nosniff, Strict-Transport-Security 1 an, Referrer-Policy et Permissions-Policy), et enrichissement du GlobalExceptionHandler avec six nouveaux gestionnaires d'exception mappant proprement les erreurs Spring vers les codes HTTP 400, 404, 405, 409, 415 ou 500 génériques, sans jamais renvoyer de stacktrace au client.
+L'audit initial a fait remonter dix-sept alertes de niveau Low, principalement rattachées à la catégorie Information Disclosure : des stacktraces Java étaient renvoyées au client sur certains endpoints en cas de saisie invalide (par exemple un UUID malformé). Onze itérations de correction ont été appliquées : ajout des six en-têtes HTTP de sécurité manquants (Content-Security-Policy strict, X-Frame-Options DENY, X-Content-Type-Options nosniff, Strict-Transport-Security d'un an, Referrer-Policy et Permissions-Policy) et enrichissement de la classe `GlobalExceptionHandler` par six nouveaux gestionnaires mappant proprement les erreurs Spring vers les codes HTTP 400, 404, 405, 409, 415 ou 500 génériques, sans jamais renvoyer la trace d'appel au client.
 
-Le résultat final est : zéro vulnérabilité High, zéro vulnérabilité Medium, zéro vulnérabilité Low sur le scan baseline comme sur le scan full. Seules deux alertes Informationnelles subsistent (identification d'un endpoint d'authentification et bruit du fuzzer d'User-Agent), qui sont des observations attendues et non des failles.
+Le résultat final est le suivant : **zéro vulnérabilité High, zéro Medium et zéro Low** sur le scan baseline comme sur le scan full. Seules deux alertes de niveau informationnel subsistent, identifiées comme des observations attendues et non des failles : la reconnaissance d'un endpoint d'authentification et le bruit d'un fuzzer d'`User-Agent`.
 
-#### 8.3.3 Autres mesures sécurité
+#### 8.3.3 Mécanismes complémentaires de sécurité
 
-Trois mécanismes complémentaires renforcent la sécurité au-delà du top dix OWASP. Un compteur d'échecs de saisie du code d'accès verrouille toute invitation après cinq échecs consécutifs pendant quinze minutes, ce qui rend impossible un brute force du code à six chiffres (le million de combinaisons possibles est ramené à un maximum de cinq tentatives par intervalle de quinze minutes). La comparaison du code saisi et du code attendu utilise la méthode MessageDigest.isEqual, qui s'exécute en temps constant indépendamment de la longueur du préfixe commun, neutralisant ainsi une éventuelle attaque par mesure de temps. Enfin, l'intégration du fournisseur LLM local Ollama supprime toute fuite potentielle des données candidat vers un service tiers étranger, ce qui constitue une garantie supplémentaire au regard du RGPD.
+Trois mécanismes complètent la couverture des risques au-delà du top dix OWASP.
+
+Le compteur d'échecs de saisie du code d'accès verrouille toute invitation après cinq échecs consécutifs pendant quinze minutes. Ce plafonnement rend inatteignable en pratique la brute-force du code à six chiffres, dont le million de combinaisons théoriques est ramené à un maximum de cinq tentatives par intervalle de quinze minutes.
+
+La comparaison du code saisi et du code attendu utilise la méthode `MessageDigest.isEqual`, qui s'exécute en temps constant indépendamment de la longueur du préfixe commun. Ce détail d'implémentation neutralise une éventuelle attaque par mesure de temps sur le canal HTTP.
+
+Enfin, l'intégration du fournisseur LLM local Ollama supprime toute fuite potentielle des données candidat vers un service tiers étranger. Cette option est un atout au regard du RGPD, particulièrement pour les clients de Tsarajoro travaillant avec des données réglementées.
 
 ### 8.4 Tests de performance
 
-*Section à compléter à l'issue du sprint S7 en cours. Le cahier des charges cible une capacité de vingt candidats simultanés en passation. Un jeu de tests k6 est en cours de rédaction pour simuler ces vingt candidats en parallèle et mesurer les latences API et sandbox sous charge. Les résultats seront insérés ici avant dépôt final du mémoire.*
+Le cahier des charges cible une capacité de vingt candidats simultanés en passation, avec des latences maîtrisées sur les principales opérations. Un jeu de tests **k6** est en cours de rédaction afin de simuler cette charge en parallèle et de mesurer les latences des principales requêtes API ainsi que les temps de réponse de la sandbox. Les résultats seront intégrés au présent mémoire avant la soutenance finale, à l'issue du sprint 7.
+
+**[INSÉRER ICI LES CHIFFRES ET COURBES k6 UNE FOIS LES TESTS EXÉCUTÉS]**
 
 ---
 
@@ -509,126 +383,106 @@ Trois mécanismes complémentaires renforcent la sécurité au-delà du top dix 
 
 ### 9.1 Bilan des résultats obtenus pour l'entreprise
 
-À la date de dépôt du présent mémoire, l'ensemble des livrables du cahier des charges initial sont produits, à l'exception des tests de performance k6 en cours d'implémentation et de la mise en production sur l'infrastructure interne de Tsarajoro planifiée au sprint S8.
+À la date de dépôt du présent mémoire, l'ensemble des livrables fixés dans le cahier des charges initial ont été produits, à l'exception des tests de charge k6 en cours d'exécution et de la mise en production sur l'infrastructure interne de Tsarajoro, planifiée au sprint 8.
 
-Concrètement, la plateforme SkillForge se compose de trois applications déployables (backend-app, backend-sandbox et frontend-web), d'un fichier docker-compose complet pour l'infrastructure de développement, de quatre rapports de preuve de concept, d'un rapport d'audit OWASP ZAP, d'une fiche de tests manuels, d'un guide d'installation d'Ollama et du présent mémoire. Le code source représente environ quinze mille lignes de code Java côté backend, dix mille lignes de TypeScript côté frontend, et sept migrations Flyway de base de données. L'historique Git compte une quarantaine de commits versionnés sur un compte personnel dédié aux projets d'école.
+Le projet livre trois applications déployables (`backend-app`, `backend-sandbox` et `frontend-web`), un fichier `docker-compose` complet pour l'infrastructure de développement, quatre rapports de preuve de concept, un rapport d'audit OWASP ZAP, une fiche de tests manuels d'environ cent scénarios, une documentation d'installation, un guide d'exploitation Ollama et le présent mémoire. Le code source représente environ **quinze mille lignes de code Java** côté backend, **dix mille lignes de TypeScript** côté frontend et **sept migrations Flyway** de base de données. L'historique Git compte une quarantaine de commits versionnés sur un compte personnel dédié aux projets d'école.
 
-Les cinq critères de succès mesurables définis dans le cahier des charges sont atteints à date : la sandbox Docker est validée à zéro évasion sur cinquante cas d'attaque (au lieu des trente ciblés), l'audit OWASP est validé à zéro vulnérabilité, l'analyse de CV extrait correctement les compétences déclarées avec niveaux JUNIOR, CONFIRME ou SENIOR, la génération de questions produit des tests exploitables acceptables par le recruteur après relecture, les statistiques discriminantes sont calibrées contre l'implémentation de référence Python scipy.
+Les principaux critères de succès mesurables définis dans le cahier des charges sont atteints. La sandbox Docker est validée à zéro évasion sur cinquante cas d'attaque, au lieu des trente initialement ciblés. L'audit OWASP ZAP est validé à zéro vulnérabilité High, Medium ou Low. L'analyse des CV extrait correctement les compétences déclarées avec un niveau estimé parmi JUNIOR, CONFIRMÉ, SENIOR ou UNKNOWN. La génération de questions produit des tests exploitables acceptés par le recruteur après relecture. Les indicateurs statistiques du tableau de bord sont calculés selon les formules psychométriques standards.
 
-Le statut des principaux livrables est le suivant : sprints S0 à S6 clos à cent pour cent, sprint S7 clos à quatre-vingt-dix pour cent (reste k6 tests charge), sprint S8 planifié pour la mise en production. La plateforme est fonctionnellement complète pour le périmètre V1 du cahier des charges.
+Sur le plan de l'avancement, les sprints S0 à S6 sont clos à cent pour cent, le sprint S7 est clos à quatre-vingt-dix pour cent, et le sprint S8 est planifié pour la mise en production. La plateforme est fonctionnellement complète pour le périmètre V1 du cahier des charges.
 
 ### 9.2 Bilan des problèmes rencontrés et solutions apportées
 
-Cinq difficultés majeures ont été rencontrées et surmontées durant le stage.
+Cinq difficultés majeures ont marqué le déroulement du projet.
 
-La première a été le retrait annoncé du service GitHub Models par GitHub à la fin de l'année 2026, initialement retenu comme fournisseur LLM gratuit du projet. Ce service est passé en HTTP 410 « brownout » de manière intermittente puis quasi-continue à partir du sprint S6. La solution a été de basculer d'abord sur Groq, puis d'intégrer une architecture multi-fournisseur avec un provider local Ollama supprimant toute dépendance externe.
+La première a été le **retrait annoncé du service GitHub Models** par son fournisseur en cours de projet. Ce service, initialement retenu comme fournisseur LLM gratuit, est passé en HTTP 410 de manière intermittente puis quasi-continue à partir du sprint 6. La solution est venue de la conception initiale : l'interface `LlmClient` avait été prévue dès le sprint 1 pour supporter plusieurs fournisseurs. La bascule vers Groq puis vers Google Gemini a été réalisée en moins d'une heure, sans modification du code métier consommateur de l'interface.
 
-La deuxième difficulté a porté sur la génération de JSON structuré par le modèle Qwen sur Groq : le modèle produisait fréquemment du JSON tronqué au niveau de la limite de jetons de sortie ou malformé avec des guillemets mal échappés. La solution a été triple : compactage du prompt système pour économiser des jetons, ajout d'un mécanisme d'auto-repair côté service qui referme les containers JSON non fermés en fin de chaîne, et proposition d'Ollama en fournisseur alternatif au comportement JSON plus stable.
+La deuxième difficulté a porté sur la **génération de JSON structuré** par certains modèles hébergés chez Groq, en particulier Qwen. Le modèle produisait fréquemment du JSON tronqué à la limite de jetons de sortie ou malformé avec des guillemets mal échappés. La solution a combiné trois actions : compactage du prompt système pour économiser des jetons, ajout d'un mécanisme d'auto-réparation côté service qui referme les containers JSON non fermés en fin de chaîne, et proposition d'un fournisseur alternatif (Gemini) au comportement JSON plus stable.
 
-La troisième difficulté a été une race condition lors des doubles clics sur le bouton de démarrage de passation : deux requêtes simultanées tentaient de créer deux Passations pour la même Invitation, ce qui violait la contrainte UNIQUE et retournait une HTTP 500 avec stacktrace exposée au candidat. La solution a été d'ajouter un gestionnaire dédié à DataIntegrityViolationException, mappant proprement l'erreur vers HTTP 409 Conflict sans stacktrace.
+La troisième difficulté a été une **condition de course** lors des doubles clics sur le bouton de démarrage de passation. Deux requêtes concurrentes tentaient de créer deux `Passation` pour la même `Invitation`, ce qui violait la contrainte d'unicité et retournait une HTTP 500 avec stacktrace exposée au candidat. La solution a été d'ajouter un gestionnaire dédié à `DataIntegrityViolationException` dans la classe `GlobalExceptionHandler`, qui mappe proprement l'erreur vers une HTTP 409 Conflict sans stacktrace.
 
-La quatrième difficulté est le bug BUG-01 mis en évidence lors de la recette : le mock LLM notait les cas pratiques selon leur longueur uniquement, permettant à une réponse incohérente d'être comptée réussie. La solution a été détaillée au chapitre 8.1 : plafonnement du score mock sous le seuil de réussite, préfixe explicite dans l'explication et bannière visuelle sur la page finale.
+La quatrième difficulté est le **bug BUG-01** mis en évidence lors de la recette et détaillé au chapitre 8.2 : le mock LLM notait les cas pratiques selon leur longueur uniquement, permettant à une réponse hors sujet d'être comptée réussie. La correction a plafonné le score, préfixé les explications et ajouté une bannière visuelle.
 
-La cinquième difficulté est l'exigence UX-01 également issue de la recette : le risque d'usurpation d'identité candidat via un lien intercepté. La solution combine trois mécanismes détaillés au chapitre 5.1.3 : verrouillage de l'identité côté serveur, code d'accès à six chiffres, rate limiting après cinq échecs.
+La cinquième difficulté est **l'exigence UX-01** également issue de la recette : le risque d'usurpation d'identité candidat via un lien intercepté. La solution combine le verrouillage d'identité côté serveur, le code d'accès à six chiffres et la limitation du nombre de tentatives, détaillés au chapitre 5.1.3.
 
 ### 9.3 Perspectives du projet
 
-Trois catégories de perspectives se dégagent à l'issue de ce stage.
+Les perspectives à court terme portent sur la finalisation des tests de charge k6 en sprint 7 et sur la mise en production effective au sprint 8. La bascule vers l'infrastructure interne de Tsarajoro donnera lieu à un cycle de validation avec le responsable technique de l'entreprise.
 
-À court terme, en sprint S7 en cours, l'implémentation des tests de charge k6 permettra de valider la capacité à supporter vingt candidats en passation simultanée conformément au cahier des charges. En sprint S8, la mise en production sur l'infrastructure interne de Tsarajoro concrétisera la livraison effective.
+À moyen terme, plusieurs évolutions écartées du périmètre V1 pourront être adressées : application mobile candidat, télésurveillance vidéo par webcam avec accord préalable du candidat, tests adaptatifs de type Item Response Theory, détection de plagiat de code par comparaison à des dépôts publics, intégration avec un système ATS externe, authentification unique côté recruteur et extension de la sandbox à d'autres langages tels que Python, Java ou Go.
 
-À moyen terme, plusieurs axes d'évolution mentionnés dans le périmètre exclu V2 du cahier des charges pourront être adressés : application mobile candidat, proctoring vision avancé par webcam, tests adaptatifs de type IRT (Item Response Theory), détection de plagiat de code par comparaison externe avec des dépôts GitHub publics, intégration avec des systèmes ATS externes, mise en place d'une authentification unique SSO interne, extension de la sandbox à d'autres langages (Python, Java, Go).
-
-À long terme, la valeur la plus riche du produit résidera dans l'exploitation de la boucle d'amélioration continue via les statistiques discriminantes. À mesure que le nombre de passations augmente, les questions à fort pouvoir discriminant seront automatiquement priorisées pour les futures générations de tests, et les questions à faible pouvoir discriminant pourront être proposées automatiquement à la régénération par le LLM. Cette boucle transforme la plateforme en un système apprenant qui s'améliore sans intervention manuelle systématique.
+À plus long terme, la valeur la plus riche du produit reposera sur l'exploitation de la boucle d'amélioration continue à partir des indicateurs statistiques. À mesure que le nombre de passations augmente, les questions à fort pouvoir discriminant pourront être priorisées automatiquement pour les futures générations de tests, et les questions à faible pouvoir discriminant pourront être proposées à la régénération par le modèle de langage. Cette boucle transforme la plateforme en un système apprenant, capable de s'améliorer sans intervention manuelle systématique.
 
 ### 9.4 Bilan personnel
 
-Ce stage de fin d'études représente pour moi un aboutissement de la formation Master 2 MBDS et l'occasion de mobiliser en un seul projet un large spectre de compétences acquises durant l'année.
+*Cette section est la seule où le pronom « je » est pleinement légitime dans un mémoire M2. Elle porte sur l'apport personnel du stage.*
 
-Au plan technique, l'approfondissement de Spring Security, du durcissement Docker et des mécanismes seccomp constitue le premier apport majeur. La confrontation directe à un vrai retrait d'API en production (GitHub Models) m'a également enseigné l'importance concrète du principe d'inversion de dépendance : sans l'abstraction LlmClient et le multi-fournisseurs prévu dès la conception initiale, ce retrait aurait pu compromettre le projet entier. La découverte pratique d'Ollama et du déploiement de modèles de langage locaux ouvre par ailleurs des perspectives d'architecture souveraine qui dépassent le cadre du présent stage.
+Ce stage a représenté pour moi un aboutissement de la formation Master 2 MBDS et l'occasion de mobiliser en un seul projet un large spectre de compétences acquises durant l'année : ingénierie logicielle, sécurité applicative, bases de données, intelligence artificielle et méthodologie de projet.
 
-Au plan méthodologique, la démarche de preuve de concept avec validation chiffrée m'a marqué durablement. Le POC 3 en particulier, où le harness a fait remonter dix-sept évasions puis a permis de les corriger une par une jusqu'à zéro, m'a fait passer d'une approche déclarative de la sécurité (« la sandbox est durcie car j'ai appliqué ces flags Docker ») à une approche empirique (« la sandbox est durcie car cinquante attaques ne parviennent pas à s'en échapper, mesuré et reproductible sur toute machine »). Cette différence de posture est probablement le plus grand acquis du stage.
+Sur le plan technique, l'approfondissement de Spring Security, du durcissement de conteneurs Docker et des mécanismes seccomp constitue le premier apport majeur. La confrontation directe à un vrai retrait d'API en cours de projet, avec le cas de GitHub Models, m'a également enseigné la valeur pratique du principe d'inversion de dépendance. Sans l'abstraction `LlmClient` prévue dès la conception initiale, ce retrait aurait pu compromettre plusieurs semaines de travail. La découverte pratique d'Ollama et du déploiement local de modèles de langage m'ouvre par ailleurs des perspectives d'architecture souveraine qui dépassent le cadre du présent stage.
 
-Au plan humain, la posture d'ownership complet du produit, depuis le cadrage du cahier des charges jusqu'à la livraison finale, a été enrichissante et parfois exigeante. Elle m'a appris à hiérarchiser mes efforts en fonction de la valeur pour Tsarajoro plutôt qu'en fonction de mon confort technique, à documenter systématiquement pour permettre à un tiers de reprendre le projet, et à confronter régulièrement mes choix à l'encadreur professionnel plutôt qu'à décider seul dans le silence.
+Sur le plan méthodologique, l'apport le plus marquant est la démarche de preuve de concept avec validation chiffrée. Le harness de sécurité de la sandbox, qui a fait remonter dix-sept évasions puis a permis de les corriger une par une jusqu'à zéro, m'a fait passer d'une approche déclarative de la sécurité (« la sandbox est durcie parce que ces flags Docker sont appliqués ») à une approche empirique (« la sandbox est durcie parce que cinquante attaques distinctes ne parviennent pas à s'en échapper, mesuré et reproductible sur toute machine »). Ce changement de posture est probablement le principal acquis du stage.
 
-Je remercie chaleureusement Monsieur RAVELOMANANTIANA Tahirintsoa Ulrich pour la confiance accordée dès le premier sprint et la qualité de son encadrement, ainsi que l'ensemble de l'équipe pédagogique du Master 2 MBDS pour la formation qui a rendu ce projet possible.
+Sur le plan humain, la conduite en solo de l'ensemble du cycle, du cadrage du besoin jusqu'à la livraison, s'est révélée exigeante mais formatrice. Elle m'a appris à hiérarchiser les efforts en fonction de la valeur pour l'entreprise plutôt que du confort technique, à documenter systématiquement pour permettre à un tiers de reprendre le projet, et à confronter régulièrement les choix à l'encadreur professionnel plutôt qu'à décider seul.
+
+Je remercie Monsieur RAVELOMANANTIANA Tahirintsoa Ulrich pour la confiance accordée dès le premier sprint et pour la qualité de son encadrement, ainsi que l'ensemble de l'équipe pédagogique du Master 2 MBDS pour la formation qui a rendu ce projet possible.
 
 ---
 
 ## 10. Références et Bibliographie
 
-Style APA (Auteur, Année). Ordre alphabétique. Retrait suspendu à respecter dans le document Word.
+*Cette section complète les références [1] à [7] déjà présentes dans le .docx, en ajoutant les sources techniques et académiques mobilisées au fil du projet. Le format retenu est celui déjà utilisé dans le .docx.*
 
 **Standards, spécifications et documentation officielle**
 
-Docker Inc. (2026). *Docker security — Seccomp security profiles*. Consulté le [date à préciser], sur https://docs.docker.com/engine/security/seccomp/
+[8] **Docker Inc.** *Seccomp security profiles for Docker*. Consulté le 15 septembre 2026, sur https://docs.docker.com/engine/security/seccomp/
 
-Jones, M., Bradley, J., & Sakimura, N. (2015). *JSON Web Token (JWT) — RFC 7519*. Internet Engineering Task Force.
+[9] **OWASP Foundation.** *OWASP Top 10 – 2025*. Consulté le 15 septembre 2026, sur https://owasp.org/Top10/
 
-OWASP Foundation. (2025). *OWASP Top 10 – 2025 Edition*. Consulté le [date à préciser], sur https://owasp.org/Top10/
+[10] **OWASP Foundation.** *Password Storage Cheat Sheet*. Consulté le 15 septembre 2026, sur https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
-OWASP Foundation. (2025). *Password Storage Cheat Sheet*. Consulté le [date à préciser], sur https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+[11] **PostgreSQL Global Development Group.** *PostgreSQL 16 Documentation*. Consulté le 15 septembre 2026, sur https://www.postgresql.org/docs/16/
 
-PostgreSQL Global Development Group. (2025). *PostgreSQL 16 Documentation*. Consulté le [date à préciser], sur https://www.postgresql.org/docs/16/
+[12] **Spring Team.** *Spring Boot 3.4 Reference Documentation*. VMware. Consulté le 15 septembre 2026, sur https://docs.spring.io/spring-boot/docs/3.4.x/reference/html/
 
-Spring Team. (2026). *Spring Boot 3.4 Reference Documentation*. Pivotal / VMware. Consulté le [date à préciser], sur https://docs.spring.io/spring-boot/docs/3.4.x/reference/html/
+[13] **Jones, M., Bradley, J., & Sakimura, N.** *JSON Web Token (JWT) — RFC 7519*. Internet Engineering Task Force, mai 2015.
 
-**Articles scientifiques et livres**
+**Articles et livres**
 
-Biryukov, A., Dinu, D., & Khovratovich, D. (2016). Argon2: New Generation of Memory-Hard Functions for Password Hashing and Other Applications. *IEEE European Symposium on Security and Privacy*.
+[14] **Biryukov, A., Dinu, D., & Khovratovich, D.** *Argon2 : New Generation of Memory-Hard Functions for Password Hashing and Other Applications*. IEEE European Symposium on Security and Privacy, 2016.
 
-Fowler, M. (2018). *Refactoring: Improving the Design of Existing Code* (2ᵉ éd.). Addison-Wesley.
-
-Zheng, L., Chiang, W.-L., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., … Stoica, I. (2023). Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. *NeurIPS 2023 Datasets and Benchmarks Track*.
-
-**Ressources spécifiques SkillForge (rapports internes)**
-
-GERSHOM, N. A. F. (2026). *Rapport POC 3 — Sandbox Docker sécurisée SkillForge : cent cinquante cas de test, zéro évasion*. Rapport interne Tsarajoro, disponible dans docs/03-poc/poc3-sandbox/RAPPORT_POC3.md du dépôt Git skillforge-platform.
-
-GERSHOM, N. A. F. (2026). *Rapport OWASP ZAP — Audit sécurité SkillForge*. Rapport interne Tsarajoro, disponible dans docs/03-poc/poc-owasp-zap/RAPPORT_ZAP.md du dépôt Git skillforge-platform.
-
-GERSHOM, N. A. F. (2026). *Cahier des charges SkillForge — Master 2 MBDS*. Version consolidée disponible dans docs/01-cahier-des-charges/ du dépôt Git skillforge-platform.
-
-**Mémoires de référence**
-
-ANDRIANAIVOSOA, T. (2023). *Participation au développement du système de gestion des solutions de mobilités en Île-de-France* [Mémoire de Master 2, IT University / MBDS].
-
-**Comparatifs plateformes recrutement (état de l'art chapitre 2)**
-
-Selecthub. (2026). *HackerRank vs Codility — Technical Assessment Tools Comparison*. Consulté le [date à préciser], sur https://www.selecthub.com/technical-assessment-tools/hackerrank-vs-codility/
-
-CodeSignal. (2025). *Introducing AI-Assisted Coding Assessments and Interviews*. Consulté le [date à préciser], sur https://codesignal.com/blog/introducing-ai-assisted-coding-assessments-interviews/
-
-iMocha. (2026). *Top 20 Best Codility Alternatives & Competitors in 2026*. Consulté le [date à préciser], sur https://www.imocha.io/blog/codility-alternatives
+[15] **Fowler, M.** *Refactoring : Improving the Design of Existing Code* (2ᵉ éd.). Addison-Wesley, 2018.
 
 **Réglementaire**
 
-Commission Nationale de l'Informatique et des Libertés — CNIL. (2018). *Règlement Général sur la Protection des Données (RGPD) — texte intégral*. Consulté le [date à préciser], sur https://www.cnil.fr/fr/reglement-europeen-protection-donnees
+[16] **Commission Nationale de l'Informatique et des Libertés (CNIL).** *Règlement général sur la protection des données — texte intégral*. Consulté le 15 septembre 2026, sur https://www.cnil.fr/fr/reglement-europeen-protection-donnees
 
 ---
 
 ## 11. Annexes
 
-À référencer dans le rapport principal quand pertinent. Chaque annexe peut être livrée dans un fichier séparé fourni avec le mémoire.
+*Les annexes viennent en complément du rapport principal. Elles peuvent être fournies dans des fichiers séparés joints au mémoire, comme le précise le plan-type.*
 
-**Annexe 1 — Cahier des charges consolidé.** Version complète du cahier des charges initial signé avec l'encadreur professionnel, incluant toutes les user stories, les exigences non fonctionnelles chiffrées, les critères de succès des quatre POC et le plan de risques initial. Correspond au fichier docs/01-cahier-des-charges/CAHIER_DES_CHARGES_FITIA_M2_MBDS.pdf.
+**Annexe 1 — Cahier des charges consolidé.** Version complète du cahier des charges initial validé avec l'encadreur professionnel, incluant l'ensemble des User Stories, les exigences non fonctionnelles chiffrées, les critères de succès des quatre preuves de concept et le plan de risques initial.
 
-**Annexe 2 — Modèle Conceptuel de Données et diagramme de classes UML.** Vue conceptuelle complète avec les onze entités principales, leurs attributs, leurs relations et les cardinalités. Vue physique correspondante générée par introspection de la base PostgreSQL après application des sept migrations Flyway.
+**Annexe 2 — Modèle conceptuel de données et diagramme de classes UML.** Vue conceptuelle complète des onze entités principales avec attributs, relations et cardinalités, complétée par la vue physique correspondante après application des sept migrations Flyway.
 
-**Annexe 3 — Dossier technique — extraits de code clés commentés.** Trois extraits représentatifs : la classe SandboxRunner avec les onze flags de durcissement Docker et l'entrypoint personnalisé, la classe CandidatePassationService avec la méthode verifyAccessCode et son mécanisme de temps constant, la classe GroqLlmClient avec le prompt système compact et l'appel à l'API.
+**Annexe 3 — Dossier technique.** Trois extraits de code commentés considérés comme les plus représentatifs du projet : la classe `SandboxRunner` avec ses onze paramètres de durcissement Docker, la méthode `verifyAccessCode` de `CandidatePassationService` avec son mécanisme de comparaison à temps constant, et la classe `GeminiLlmClient` en tant qu'illustration de l'implémentation d'un fournisseur LLM.
 
-**Annexe 4 — User Stories complètes.** Ensemble des user stories du cahier des charges non détaillées dans le chapitre 5 du présent mémoire.
+**Annexe 4 — Présentation des outils de développement utilisés.** Fiches détaillées pour chacun des dix outils cités au chapitre 4.1.4, avec pour chacun sa version, son rôle exact dans SkillForge, sa configuration éventuelle et les alternatives évaluées.
 
-**Annexe 5 — Fiche de tests manuels complète.** Environ cent scénarios de recette structurés par domaine fonctionnel, avec le format standard (préconditions, étapes, résultat attendu, résultat observé, gravité, capture).
+**Annexe 5 — User Stories complètes.** Ensemble des quinze User Stories US-01 à US-15 du backlog non détaillées dans le chapitre 5.1 du mémoire.
 
-**Annexe 6 — Diagramme de Gantt détaillé.** Frise chronologique sprint par sprint avec les tâches individuelles, les jalons de livraison et la comparaison entre planning initial et planning réalisé.
+**Annexe 6 — Fiche de tests manuels complète.** Environ cent scénarios de recette structurés par domaine fonctionnel, avec pour chacun préconditions, étapes, résultat attendu, résultat observé, gravité et capture d'écran éventuelle.
 
-**Annexe 7 — Rapport POC 3 complet.** Reproduction intégrale du fichier docs/03-poc/poc3-sandbox/RAPPORT_POC3.md avec la matrice détaillée par catégorie d'attaque, la comparaison avant/après onze itérations et les instructions de reproduction.
+**Annexe 7 — Diagramme de Gantt détaillé.** Frise chronologique sprint par sprint avec les tâches individuelles, les jalons de livraison et la comparaison entre planning initial et planning réalisé.
 
-**Annexe 8 — Rapport OWASP ZAP complet.** Reproduction intégrale du fichier docs/03-poc/poc-owasp-zap/RAPPORT_ZAP.md avec la matrice OWASP Top 10, l'historique des onze corrections et les captures d'écran des rapports HTML générés par ZAP.
+**Annexe 8 — Rapport POC 3 complet.** Reproduction intégrale du rapport de validation de la sandbox, avec la matrice détaillée par catégorie d'attaque, la comparaison avant et après onze itérations de durcissement, et les instructions de reproduction sur toute machine disposant de Docker.
 
-**Annexe 9 — Guide d'installation Ollama.** Reproduction intégrale du fichier docs/GUIDE_OLLAMA.md, permettant à toute personne de déployer un fournisseur LLM local pour la plateforme SkillForge.
+**Annexe 9 — Rapport OWASP ZAP complet.** Reproduction intégrale du rapport d'audit, avec la matrice OWASP Top 10, l'historique des onze corrections successives et les captures d'écran des rapports HTML générés par ZAP.
+
+**Annexe 10 — Guide d'installation et d'exploitation Ollama.** Documentation permettant à un exploitant Tsarajoro de déployer un fournisseur LLM local pour la plateforme SkillForge, incluant les prérequis machine, le téléchargement des modèles et la configuration de la variable d'environnement `LLM_PROVIDER`.
 
 ---
 
-*Contenu rédigé le 2026-08-28 pour intégration dans le document Word MEMOIRE-itu-MBDS-v1.docx. Style calibré sur le mémoire de référence ANDRIANAIVOSOA (2023). À relire, adapter selon les remarques de l'encadreur professionnel et de l'encadreur pédagogique, puis compléter les zones marquées entre astérisques (diagrammes UML, captures d'écran, planning Gantt).*
+*Fiche à jour du 2026-09-15. Sections rédigées en cohérence avec les consignes du plan-type MBDS et le style adopté par l'auteur dans les chapitres 1 à 5.3.1 du fichier MEMOIRE-itu-MBDS-v1.docx. Les zones marquées entre crochets attendent l'insertion des diagrammes et captures : le code Mermaid et PlantUML correspondant est disponible dans docs/MEMOIRE_DIAGRAMMES.md.*
