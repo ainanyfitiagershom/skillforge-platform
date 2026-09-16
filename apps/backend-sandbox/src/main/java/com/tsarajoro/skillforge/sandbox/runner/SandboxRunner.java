@@ -79,8 +79,8 @@ public class SandboxRunner {
         String containerId = null;
         long start = System.nanoTime();
         try {
-            // 2) Construire la configuration de durcissement
-            HostConfig hostConfig = buildHardenedHostConfig(workDir);
+            // 2) Construire la configuration de durcissement (tmpfs pour cache Jest seulement en JS)
+            HostConfig hostConfig = buildHardenedHostConfig(workDir, req.language() == Language.JS);
 
             // 3) Creer le conteneur
             //    --entrypoint vide : on court-circuite docker-entrypoint.sh qui casse
@@ -92,6 +92,10 @@ public class SandboxRunner {
                     .withHostConfig(hostConfig)
                     .withWorkingDir("/work")
                     .withEntrypoint(new String[]{})
+                    // TMPDIR=/work : redirige os.tmpdir() vers un dossier autorise
+                    // en lecture+ecriture. Sans ca, Jest crashe au chargement de
+                    // getCacheDirectory qui appelle realpathSync('/tmp').
+                    .withEnv("TMPDIR=/work")
                     .withCmd(buildCommand(req.language(), req.hiddenTests() != null && !req.hiddenTests().isBlank()))
                     .withUser("1001:1001")
                     .withName("skillforge-sb-" + UUID.randomUUID().toString().substring(0, 8))
@@ -194,7 +198,7 @@ public class SandboxRunner {
     /**
      * Construit la config Docker avec TOUS les flags de durcissement.
      */
-    private HostConfig buildHardenedHostConfig(Path workDir) {
+    private HostConfig buildHardenedHostConfig(Path workDir, boolean needsJestCache) {
         long memoryBytes = (long) props.memoryMb() * 1024 * 1024;
         long nanoCpus = (long) (props.cpus() * 1_000_000_000L);
 
@@ -214,6 +218,15 @@ public class SandboxRunner {
                         "no-new-privileges",
                         "seccomp=" + readSeccompProfile()
                 ));
+
+        // tmpfs isole pour le cache Jest, uniquement pour JS : le workdir principal
+        // reste read-only. Le point de montage /work/.jest-cache est pre-cree cote hote
+        // dans writeFiles() pour eviter le crash "read-only file system" au mount.
+        if (needsJestCache) {
+            hc.withTmpFs(java.util.Map.of(
+                    "/work/.jest-cache", "rw,noexec,nosuid,size=20m,uid=1001,gid=1001,mode=0700"
+            ));
+        }
 
         return hc;
     }
@@ -251,6 +264,19 @@ public class SandboxRunner {
                 Path tests = workDir.resolve("hidden.test.js");
                 Files.writeString(tests, req.hiddenTests());
                 setPosixPermissions(tests, "rw-r--r--");
+                // Config Jest minimale : evite la remontee /work -> / a la recherche
+                // d une config, qui echoue sous --experimental-permission.
+                Path jestConf = workDir.resolve("jest.config.js");
+                Files.writeString(jestConf,
+                        "module.exports = { rootDir: '/work', testMatch: ['**/hidden.test.js'] };\n");
+                setPosixPermissions(jestConf, "rw-r--r--");
+                // Pre-creation du dossier de cache Jest : le mode --experimental-permission
+                // interdit mkdirSync meme sur un chemin --allow-fs-write, il faut donc que
+                // le dossier existe deja au demarrage. Ownership 1001:1001 pour que Jest
+                // (utilisateur non privilegie) puisse ecrire dedans.
+                Path jestCache = workDir.resolve(".jest-cache");
+                Files.createDirectories(jestCache);
+                setPosixPermissions(jestCache, "rwxr-xr-x");
             }
         }
     }
@@ -284,11 +310,20 @@ public class SandboxRunner {
                     "--experimental-permission",
                     "--allow-fs-read=/work",
                     "--allow-fs-read=/usr/local/lib/node_modules",
+                    "--allow-fs-read=/usr/local/bin",
                     "--allow-fs-read=/usr/lib",
+                    // Necessaire a la traversee du systeme de fichiers par Jest
+                    // pour trouver sa config. Seule la lecture des noms de dossiers
+                    // est ouverte ; leur contenu reste protege par les autres flags.
+                    "--allow-fs-read=/",
+                    "--allow-fs-write=/work",
                     "--max-old-space-size=200"
             };
             String[] target = hasTests
-                    ? new String[]{"/usr/local/bin/jest", "--colors=false", "hidden.test.js"}
+                    // --runInBand : pas de worker enfant (spawn interdit par la
+                    // Permission API, on veut garder --allow-child-process desactive).
+                    // --cacheDirectory : le cache va dans /work (writable, ephemere).
+                    ? new String[]{"/usr/local/bin/jest", "--colors=false", "--runInBand", "--cacheDirectory=/work/.jest-cache", "hidden.test.js"}
                     : new String[]{"solution.js"};
             String[] full = new String[hardened.length + target.length];
             System.arraycopy(hardened, 0, full, 0, hardened.length);

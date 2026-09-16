@@ -174,14 +174,62 @@ public class OpenAiLlmClient implements LlmClient {
                     * CAS_PRATIQUE : {"scenario":"...", "expectedAnswerPoints":["..."], "explanation":"..."}
 
                 Pour les questions CODE specifiquement :
-                - 'starterCode' est un VRAI squelette a completer : signature de la fonction,
-                  docbloc decrivant params/retour, commentaire "// TODO: implementer ici" a
-                  l interieur du corps, et un return par defaut. JAMAIS vide, jamais juste un
-                  commentaire seul. Le candidat doit pouvoir lire la signature et completer.
-                - 'hiddenTests' contient 2-3 assertions executables qui appellent la fonction
-                  du candidat (ex : assert(solve(2) === 4); echo 'OK';).
-                - Les distracteurs des QCM doivent etre plausibles.
-                - Les cas pratiques doivent etre lies au metier quand le profil le justifie.
+
+                REGLE 1 - COHERENCE LANGAGE :
+                Le champ 'language' DOIT correspondre exactement au langage mentionne
+                dans 'statement'. Si l enonce dit "en PHP", language="PHP". Si l enonce
+                dit "en JavaScript", language="JS". JAMAIS d incoherence.
+
+                REGLE 2 - STARTER CODE OBLIGATOIRE (JAMAIS VIDE) :
+                'starterCode' contient TOUJOURS un squelette de fonction complet.
+                Format strict selon le langage :
+
+                Pour PHP :
+                <?php
+                /**
+                 * Retourne la somme des entiers d un tableau.
+                 * @param int[] $numbers tableau d entiers
+                 * @return int
+                 */
+                function sumArray(array $numbers): int {
+                    // TODO: implementer ici
+                    return 0;
+                }
+
+                Pour JS :
+                /**
+                 * Calcule la factorielle d un entier.
+                 * @param {number} n entier positif ou nul
+                 * @returns {number}
+                 */
+                function factorial(n) {
+                    // TODO: implementer ici
+                    return 1;
+                }
+                module.exports = { factorial };
+
+                Le starterCode DOIT contenir : signature, docbloc, TODO, return par defaut.
+                Il ne peut JAMAIS etre vide, ni contenir uniquement un commentaire.
+
+                REGLE 3 - TESTS CACHES (hiddenTests) :
+                Format strict selon le langage :
+
+                Pour PHP - classe PHPUnit complete :
+                <?php use PHPUnit\\Framework\\TestCase; require_once 'solution.php';
+                class HiddenTest extends TestCase { public function testCases(): void {
+                  $this->assertSame(6, sumArray([1,2,3]));
+                  $this->assertSame(-6, sumArray([-1,-2,-3])); } }
+
+                Pour JS - fichier Jest complet avec require :
+                const { factorial } = require('./solution');
+                test('cases', () => {
+                  expect(factorial(0)).toBe(1);
+                  expect(factorial(5)).toBe(120);
+                });
+
+                REGLE 4 - QCM ET CAS PRATIQUES :
+                Les distracteurs des QCM doivent etre plausibles.
+                Les cas pratiques doivent etre lies au metier quand le profil le justifie.
                 """;
 
         String userPrompt = String.format("""
