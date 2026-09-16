@@ -191,6 +191,7 @@ public class CandidatePassationService {
 
     @Transactional
     public Answer saveTextAnswer(UUID passationId, UUID questionId, String answerText) {
+        assertNotSubmitted(passationId);
         Answer existing = answerRepo
                 .findByPassationIdAndQuestionId(passationId, questionId)
                 .orElse(null);
@@ -209,6 +210,7 @@ public class CandidatePassationService {
     @Transactional
     public RunCodeResult runCode(UUID passationId, UUID questionId, String language,
                                   String userCode, String hiddenTests) {
+        assertNotSubmitted(passationId);
         Question question = questionRepo.findById(questionId).orElseThrow();
         String trustedHiddenTests = extractTextField(question.getJsonPayload(), "hiddenTests");
         JsonNode resp = sandboxClient.execute(new SandboxExecuteRequest(
@@ -240,6 +242,21 @@ public class CandidatePassationService {
 
         return new RunCodeResult(status, exitCode, stdout, stderr, durationMs,
                 testsPassed, testsTotal, score);
+    }
+
+    /**
+     * Refuse toute mutation d une passation deja soumise.
+     * Protege saveTextAnswer et runCode : sans ce garde, un candidat qui bypass
+     * le frontend pouvait toujours poster des reponses apres soumission.
+     * HTTP 410 Gone (mappe par GlobalExceptionHandler) : coherent avec le
+     * comportement d une invitation deja consommee.
+     */
+    private void assertNotSubmitted(UUID passationId) {
+        Passation p = passationRepo.findById(passationId).orElseThrow();
+        if (p.getSubmittedAt() != null) {
+            throw new com.tsarajoro.skillforge.exception.InvitationInvalidException(
+                    "passation already submitted");
+        }
     }
 
     private String extractTextField(String jsonPayload, String field) {
