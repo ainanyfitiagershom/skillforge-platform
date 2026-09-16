@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { CodeEditor } from '@/components/CodeEditor';
-import { ApiError, CandidateGroup, Question, ReviewQuestion, api } from '@/lib/api';
+import { ApiError, CandidateGroup, ReviewQuestion, api } from '@/lib/api';
 import {
   Check,
   Pencil,
@@ -11,8 +10,6 @@ import {
   X,
   ClipboardList,
   Inbox,
-  Code2,
-  ListChecks,
   FlaskConical,
   Mail,
   Calendar,
@@ -21,7 +18,6 @@ import {
   Link2,
   Loader2,
   ExternalLink,
-  MoreHorizontal,
   Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -51,8 +47,19 @@ export function ReviewQuestionsPage() {
   } | null>(null);
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  // Modale d avertissement quand le candidat a deja passe d autres tests.
+  // openInvite() la declenche automatiquement si previousSubmissionsCount > 0.
+  const [reinviteWarningFor, setReinviteWarningFor] = useState<string | null>(null);
+  // Modale de detail : liste des questions du test choisi (remplace l ancien expand).
+  const [detailTestId, setDetailTestId] = useState<string | null>(null);
 
-  const openInvite = (testId: string) => {
+  const openInvite = (testId: string, bypassWarning = false) => {
+    const group = groups.find((g) => g.testId === testId);
+    if (!bypassWarning && group && group.previousSubmissionsCount > 0) {
+      setReinviteWarningFor(testId);
+      return;
+    }
+    setReinviteWarningFor(null);
     setInvitingTestId(testId);
     setInvitation(null);
     setInviteError(null);
@@ -79,7 +86,7 @@ export function ReviewQuestionsPage() {
         candidateEmail: res.candidateEmail,
       });
     } catch (err) {
-      setInviteError(err instanceof ApiError ? err.message : "Erreur lors de la création de l'invitation");
+      setInviteError(err instanceof ApiError ? err.message : "Erreur lors de la création de l’invitation");
     } finally {
       setInviting(false);
     }
@@ -146,6 +153,7 @@ export function ReviewQuestionsPage() {
         );
         await load();
       }
+      // openInvite gere lui-meme le check "candidat deja evalue" -> warning avant.
       openInvite(group.testId);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erreur lors de la validation');
@@ -162,6 +170,7 @@ export function ReviewQuestionsPage() {
       await Promise.all(group.questions.map((q) => api.deleteQuestion(q.id)));
       await load();
       if (expandedTestId === group.testId) setExpandedTestId(null);
+      if (detailTestId === group.testId) setDetailTestId(null);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erreur');
     }
@@ -234,7 +243,7 @@ export function ReviewQuestionsPage() {
         <div>
           <Badge tone="accent" className="mb-3">
             <ClipboardList className="h-3 w-3" />
-            Tests générés par l'IA
+            Tests générés par l’IA
           </Badge>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
             {stats.pending > 0 ? (
@@ -260,31 +269,33 @@ export function ReviewQuestionsPage() {
         </div>
       )}
 
-      {/* Grille responsive : 1/2/3 cols selon largeur. Une card depliee prend toute la largeur */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {groups.map((g) => {
-          const isExpanded = expandedTestId === g.testId;
-          return (
-            <div key={g.testId} className={cn(isExpanded && 'md:col-span-2 xl:col-span-3')}>
-              <TestCard
-                group={g}
-                expanded={isExpanded}
-                onToggleExpand={() =>
-                  setExpandedTestId(isExpanded ? null : g.testId)
-                }
-                validating={validating === g.testId}
-                onValidateAndInvite={() => validateAndInvite(g)}
-                onInviteOnly={() => openInvite(g.testId)}
-                onDeleteTest={() => removeTest(g)}
-                onApproveQuestion={(q) => updateStatus(q, 'APPROVED')}
-                onRejectQuestion={(q) => updateStatus(q, 'REJECTED')}
-                onRemoveQuestion={remove}
-                onEditQuestion={(q) => setEditing({ q, testId: g.testId })}
-              />
-            </div>
-          );
-        })}
-      </div>
+      <TestsTable
+        groups={groups}
+        validating={validating}
+        onOpenDetail={(testId) => setDetailTestId(testId)}
+        onValidateAndInvite={validateAndInvite}
+        onInviteOnly={(testId) => openInvite(testId)}
+        onDeleteTest={removeTest}
+      />
+
+      {detailTestId && (() => {
+        const g = groups.find((x) => x.testId === detailTestId);
+        if (!g) return null;
+        return (
+          <TestDetailModal
+            group={g}
+            validating={validating === g.testId}
+            onClose={() => setDetailTestId(null)}
+            onApproveQuestion={(q) => updateStatus(q, 'APPROVED')}
+            onRejectQuestion={(q) => updateStatus(q, 'REJECTED')}
+            onRemoveQuestion={remove}
+            onEditQuestion={(q) => setEditing({ q, testId: g.testId })}
+            onValidateAndInvite={() => validateAndInvite(g)}
+            onInviteOnly={() => openInvite(g.testId)}
+            onDeleteTest={() => removeTest(g)}
+          />
+        );
+      })()}
 
       {editing && (
         <EditModal
@@ -294,6 +305,19 @@ export function ReviewQuestionsPage() {
           onSave={saveEdit}
         />
       )}
+
+      {reinviteWarningFor && (() => {
+        const g = groups.find((x) => x.testId === reinviteWarningFor);
+        if (!g) return null;
+        return (
+          <ReinviteWarningModal
+            candidateName={g.candidateName ?? g.candidateEmail}
+            previousCount={g.previousSubmissionsCount}
+            onCancel={() => setReinviteWarningFor(null)}
+            onConfirm={() => openInvite(g.testId, true)}
+          />
+        );
+      })()}
 
       {invitingTestId && invitingGroup && (
         <InvitationModal
@@ -310,275 +334,719 @@ export function ReviewQuestionsPage() {
   );
 }
 
-// Palette des types de questions : pastilles colorees dans la preview.
-const TYPE_DOT_COLORS: Record<ReviewQuestion['type'], string> = {
-  QCM: 'bg-sky-500',
-  CODE: 'bg-amber-500',
-  CAS_PRATIQUE: 'bg-violet-500',
-};
+/* -------------------------------------------------------------------------- */
+/*  Tableau principal : filtres par colonne + tri + pagination                */
+/* -------------------------------------------------------------------------- */
 
-const TYPE_LABELS: Record<ReviewQuestion['type'], string> = {
-  QCM: 'QCM',
-  CODE: 'Code',
-  CAS_PRATIQUE: 'Cas pratique',
-};
+type TestStatus = 'EMPTY' | 'PENDING' | 'READY' | 'SENT' | 'SUBMITTED';
 
-const AVATAR_GRADIENTS = [
-  'from-sky-400 to-blue-600',
-  'from-violet-400 to-purple-600',
-  'from-amber-400 to-orange-600',
-  'from-emerald-400 to-teal-600',
-  'from-pink-400 to-rose-600',
-  'from-fuchsia-400 to-pink-600',
-];
-
-function initialsOf(name: string | null, email: string): string {
-  const base = (name ?? email).trim();
-  if (!base) return '?';
-  const parts = base.split(/[\s@.]+/).filter(Boolean);
-  if (parts.length === 0) return base.slice(0, 1).toUpperCase();
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+function deriveStatus(g: CandidateGroup): TestStatus {
+  if (g.testSubmittedAt) return 'SUBMITTED';
+  if (g.invitationSentAt) return 'SENT';
+  const approved = g.questions.filter((q) => q.status === 'APPROVED').length;
+  const pending = g.questions.filter((q) => q.status === 'PENDING_REVIEW').length;
+  if (pending > 0) return 'PENDING';
+  if (approved > 0) return 'READY';
+  return 'EMPTY';
 }
 
-function gradientOf(seed: string): string {
-  let sum = 0;
-  for (let i = 0; i < seed.length; i++) sum = (sum + seed.charCodeAt(i)) >>> 0;
-  return AVATAR_GRADIENTS[sum % AVATAR_GRADIENTS.length];
-}
+const STATUS_META: Record<TestStatus, { label: string; tone: 'success' | 'warning' | 'accent' | 'info' | 'muted' }> = {
+  SUBMITTED: { label: 'Terminé', tone: 'success' },
+  SENT: { label: 'Envoyé', tone: 'accent' },
+  PENDING: { label: 'À valider', tone: 'warning' },
+  READY: { label: 'Prêt à envoyer', tone: 'info' },
+  EMPTY: { label: 'Vide', tone: 'muted' },
+};
 
-function TestCard({
-  group,
-  expanded,
+const ALL_STATUSES: TestStatus[] = ['PENDING', 'READY', 'SENT', 'SUBMITTED', 'EMPTY'];
+
+type SortKey = 'candidate' | 'profile' | 'createdAt' | 'status';
+type SortDir = 'asc' | 'desc';
+const PAGE_SIZES = [10, 25, 50, 100];
+
+function TestsTable({
+  groups,
   validating,
-  onToggleExpand,
+  onOpenDetail,
   onValidateAndInvite,
   onInviteOnly,
   onDeleteTest,
+}: {
+  groups: CandidateGroup[];
+  validating: string | null;
+  onOpenDetail: (testId: string) => void;
+  onValidateAndInvite: (g: CandidateGroup) => void;
+  onInviteOnly: (testId: string) => void;
+  onDeleteTest: (g: CandidateGroup) => void;
+}) {
+  // Filtres par colonne
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [profileFilter, setProfileFilter] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<Set<TestStatus>>(new Set());
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  // Tri
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  // Pagination
+  const [pageSize, setPageSize] = useState(25);
+  const [page, setPage] = useState(1);
+
+  const fmtDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  // Options profil disponibles (dérivées des données)
+  const availableProfiles = useMemo(() => {
+    const set = new Set<string>();
+    for (const g of groups) set.add(g.profileCode);
+    return Array.from(set).sort();
+  }, [groups]);
+
+  // Filtrage
+  const filtered = useMemo(() => {
+    const search = globalSearch.trim().toLowerCase();
+    const from = dateFrom ? new Date(dateFrom).getTime() : null;
+    const to = dateTo ? new Date(dateTo).getTime() + 24 * 3600 * 1000 : null; // fin de journée incluse
+
+    return groups.filter((g) => {
+      // Recherche globale
+      if (search) {
+        const hay =
+          (g.candidateName ?? '').toLowerCase() +
+          ' ' +
+          g.candidateEmail.toLowerCase() +
+          ' ' +
+          (PROFILE_LABELS[g.profileCode] ?? g.profileCode).toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      // Filtre profil
+      if (profileFilter.size > 0 && !profileFilter.has(g.profileCode)) return false;
+      // Filtre statut
+      if (statusFilter.size > 0 && !statusFilter.has(deriveStatus(g))) return false;
+      // Filtre date
+      const t = new Date(g.testCreatedAt).getTime();
+      if (from != null && t < from) return false;
+      if (to != null && t > to) return false;
+      return true;
+    });
+  }, [groups, globalSearch, profileFilter, statusFilter, dateFrom, dateTo]);
+
+  // Tri
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    arr.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === 'candidate') {
+        cmp = (a.candidateName ?? a.candidateEmail).localeCompare(
+          b.candidateName ?? b.candidateEmail,
+          'fr',
+        );
+      } else if (sortKey === 'profile') {
+        cmp = (PROFILE_LABELS[a.profileCode] ?? a.profileCode).localeCompare(
+          PROFILE_LABELS[b.profileCode] ?? b.profileCode,
+          'fr',
+        );
+      } else if (sortKey === 'createdAt') {
+        cmp = new Date(a.testCreatedAt).getTime() - new Date(b.testCreatedAt).getTime();
+      } else {
+        const order: Record<TestStatus, number> = { PENDING: 0, READY: 1, SENT: 2, SUBMITTED: 3, EMPTY: 4 };
+        cmp = order[deriveStatus(a)] - order[deriveStatus(b)];
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return arr;
+  }, [filtered, sortKey, sortDir]);
+
+  // Reset page si les filtres réduisent le résultat
+  useEffect(() => {
+    setPage(1);
+  }, [globalSearch, profileFilter, statusFilter, dateFrom, dateTo, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * pageSize;
+  const pageRows = sorted.slice(pageStart, pageStart + pageSize);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'createdAt' ? 'desc' : 'asc');
+    }
+  };
+
+  const toggleInSet = <T,>(set: Set<T>, value: T, setter: (s: Set<T>) => void) => {
+    const next = new Set(set);
+    if (next.has(value)) next.delete(value);
+    else next.add(value);
+    setter(next);
+  };
+
+  const clearFilters = () => {
+    setGlobalSearch('');
+    setProfileFilter(new Set());
+    setStatusFilter(new Set());
+    setDateFrom('');
+    setDateTo('');
+  };
+
+  const activeFiltersCount =
+    (globalSearch ? 1 : 0) +
+    profileFilter.size +
+    statusFilter.size +
+    (dateFrom ? 1 : 0) +
+    (dateTo ? 1 : 0);
+
+  return (
+    <Card className="overflow-hidden">
+      {/* Barre unique : recherche + tous les filtres + reset + compteur */}
+      <div className="flex flex-wrap items-end gap-3 border-b border-border p-4">
+        {/* Recherche globale */}
+        <div className="flex flex-col gap-1">
+          <FilterLabel>Recherche</FilterLabel>
+          <div className="relative w-64">
+            <input
+              type="search"
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              placeholder="Nom, email, profil…"
+              className="h-9 w-full rounded-full border border-border bg-background pl-9 pr-4 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
+            />
+            <svg
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Filtre profil */}
+        <div className="flex flex-col gap-1">
+          <FilterLabel>Profil</FilterLabel>
+          <div className="min-w-[160px]">
+            <MultiSelectFilter
+              label="Tous"
+              options={availableProfiles.map((p) => ({
+                value: p,
+                label: PROFILE_LABELS[p] ?? p,
+              }))}
+              selected={profileFilter}
+              onToggle={(v) => toggleInSet(profileFilter, v, setProfileFilter)}
+              onClear={() => setProfileFilter(new Set())}
+            />
+          </div>
+        </div>
+
+        {/* Filtre statut */}
+        <div className="flex flex-col gap-1">
+          <FilterLabel>Statut</FilterLabel>
+          <div className="min-w-[160px]">
+            <MultiSelectFilter
+              label="Tous"
+              options={ALL_STATUSES.map((s) => ({ value: s, label: STATUS_META[s].label }))}
+              selected={statusFilter}
+              onToggle={(v) => toggleInSet(statusFilter, v as TestStatus, setStatusFilter)}
+              onClear={() => setStatusFilter(new Set())}
+            />
+          </div>
+        </div>
+
+        {/* Filtre dates */}
+        <div className="flex flex-col gap-1">
+          <FilterLabel>Créé entre</FilterLabel>
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="h-9 rounded-full border border-border bg-background px-3 text-xs text-foreground focus:border-accent focus:outline-none"
+              title="Date de début"
+            />
+            <span className="text-muted">–</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="h-9 rounded-full border border-border bg-background px-3 text-xs text-foreground focus:border-accent focus:outline-none"
+              title="Date de fin"
+            />
+          </div>
+        </div>
+
+        {/* Reset + compteur alignés à droite */}
+        <div className="ml-auto flex items-center gap-3 pb-1 text-xs text-muted">
+          <span>
+            <span className="font-semibold text-foreground">{sorted.length}</span> résultat
+            {sorted.length > 1 ? 's' : ''}
+            {sorted.length !== groups.length && (
+              <span className="text-muted"> sur {groups.length}</span>
+            )}
+          </span>
+          {activeFiltersCount > 0 && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="rounded-full bg-background-soft px-3 py-1 font-medium text-foreground-soft hover:text-foreground"
+            >
+              Effacer ({activeFiltersCount})
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="border-b border-border bg-background-soft/60 text-left text-xs uppercase tracking-widest text-muted">
+            <tr>
+              <th className="px-4 py-3 font-medium">
+                <SortableHeader
+                  label="Candidat"
+                  active={sortKey === 'candidate'}
+                  dir={sortDir}
+                  onClick={() => toggleSort('candidate')}
+                />
+              </th>
+              <th className="px-4 py-3 font-medium">
+                <SortableHeader
+                  label="Profil"
+                  active={sortKey === 'profile'}
+                  dir={sortDir}
+                  onClick={() => toggleSort('profile')}
+                />
+              </th>
+              <th className="px-4 py-3 font-medium">
+                <SortableHeader
+                  label="Créé le"
+                  active={sortKey === 'createdAt'}
+                  dir={sortDir}
+                  onClick={() => toggleSort('createdAt')}
+                />
+              </th>
+              <th className="px-4 py-3 font-medium">Questions</th>
+              <th className="px-4 py-3 font-medium">
+                <SortableHeader
+                  label="Statut"
+                  active={sortKey === 'status'}
+                  dir={sortDir}
+                  onClick={() => toggleSort('status')}
+                />
+              </th>
+              <th className="px-4 py-3 text-right font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {pageRows.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-12 text-center text-sm text-muted">
+                  Aucun test ne correspond aux filtres.
+                </td>
+              </tr>
+            )}
+            {pageRows.map((g) => {
+              const total = g.questions.length;
+              const approved = g.questions.filter((q) => q.status === 'APPROVED').length;
+              const pending = g.questions.filter((q) => q.status === 'PENDING_REVIEW').length;
+              const rejected = g.questions.filter((q) => q.status === 'REJECTED').length;
+              const status = deriveStatus(g);
+              const isValidating = validating === g.testId;
+              const canInvite = status === 'READY' || status === 'SENT';
+              const canValidate = status === 'PENDING';
+              const isFinal = status === 'SUBMITTED';
+              return (
+                <tr
+                  key={g.testId}
+                  className={cn(
+                    'cursor-pointer transition-colors hover:bg-background-soft/40',
+                    isFinal && 'opacity-70',
+                  )}
+                  onClick={() => onOpenDetail(g.testId)}
+                >
+                  <td className="px-4 py-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 truncate font-medium text-foreground">
+                        {g.candidateName ?? g.candidateEmail}
+                        {g.previousSubmissionsCount > 0 && (
+                          <span
+                            className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                            title={`Déjà évalué sur ${g.previousSubmissionsCount} autre test${g.previousSubmissionsCount > 1 ? 's' : ''}`}
+                          >
+                            Déjà évalué ×{g.previousSubmissionsCount}
+                          </span>
+                        )}
+                      </div>
+                      <div className="truncate text-xs text-muted">{g.candidateEmail}</div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-muted">
+                    <span className="inline-flex items-center gap-1.5">
+                      <BriefcaseBusiness className="h-3.5 w-3.5" />
+                      {PROFILE_LABELS[g.profileCode] ?? g.profileCode}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-muted">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {fmtDate(g.testCreatedAt)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                        {approved} ✓
+                      </span>
+                      {pending > 0 && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                          {pending} ⌛
+                        </span>
+                      )}
+                      {rejected > 0 && (
+                        <span className="rounded-full bg-rose-100 px-2 py-0.5 font-semibold text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
+                          {rejected} ✗
+                        </span>
+                      )}
+                      <span className="text-muted">/ {total}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col gap-1">
+                      <Badge tone={STATUS_META[status].tone}>{STATUS_META[status].label}</Badge>
+                      {status === 'SENT' && g.invitationSentAt && (
+                        <span className="text-[10px] text-muted">
+                          envoyé le {fmtDate(g.invitationSentAt)}
+                        </span>
+                      )}
+                      {status === 'SUBMITTED' && g.testSubmittedAt && (
+                        <span className="text-[10px] text-muted">
+                          rendu le {fmtDate(g.testSubmittedAt)}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td
+                    className="px-4 py-3 text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="inline-flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onOpenDetail(g.testId)}
+                        title="Voir les questions"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {!isFinal && (
+                        <Button
+                          variant={canInvite ? 'cta' : 'secondary'}
+                          size="sm"
+                          onClick={() =>
+                            canValidate ? onValidateAndInvite(g) : onInviteOnly(g.testId)
+                          }
+                          disabled={isValidating || total === 0}
+                        >
+                          {isValidating ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : canInvite ? (
+                            <Send className="h-3.5 w-3.5" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5" />
+                          )}
+                          {status === 'SENT' ? 'Renvoyer' : canInvite ? 'Inviter' : 'Valider'}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteTest(g)}
+                        title="Supprimer le test"
+                      >
+                        <Trash2 className="h-4 w-4 text-muted" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-4 text-xs text-muted">
+        <div className="flex items-center gap-2">
+          <span>Afficher</span>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="h-8 rounded-full border border-border bg-background px-3 text-xs text-foreground focus:border-accent focus:outline-none"
+          >
+            {PAGE_SIZES.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+          <span>par page</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span>
+            {sorted.length === 0
+              ? '0 résultat'
+              : `${pageStart + 1}–${Math.min(pageStart + pageSize, sorted.length)} sur ${sorted.length}`}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setPage(1)}
+              disabled={currentPage <= 1}
+              className="rounded-full px-2 py-1 text-foreground-soft hover:bg-background-soft disabled:opacity-30"
+            >
+              ⏮
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              className="rounded-full px-2 py-1 text-foreground-soft hover:bg-background-soft disabled:opacity-30"
+            >
+              ◀
+            </button>
+            <span className="px-2 font-medium text-foreground">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              className="rounded-full px-2 py-1 text-foreground-soft hover:bg-background-soft disabled:opacity-30"
+            >
+              ▶
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage(totalPages)}
+              disabled={currentPage >= totalPages}
+              className="rounded-full px-2 py-1 text-foreground-soft hover:bg-background-soft disabled:opacity-30"
+            >
+              ⏭
+            </button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+/** Petite étiquette au-dessus d'un champ de filtre. */
+function FilterLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted">
+      {children}
+    </span>
+  );
+}
+
+/** En-tête de colonne cliquable avec indicateur de tri. */
+function SortableHeader({
+  label,
+  active,
+  dir,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  dir: SortDir;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1 font-medium uppercase tracking-widest transition-colors hover:text-foreground',
+        active ? 'text-foreground' : 'text-muted',
+      )}
+    >
+      {label}
+      <span className="text-[10px]">
+        {active ? (dir === 'asc' ? '▲' : '▼') : '↕'}
+      </span>
+    </button>
+  );
+}
+
+/** Multi-select léger sous forme de dropdown : label + compteur, cases à cocher. */
+function MultiSelectFilter<T extends string>({
+  label,
+  options,
+  selected,
+  onToggle,
+  onClear,
+}: {
+  label: string;
+  options: { value: T; label: string }[];
+  selected: Set<T>;
+  onToggle: (value: T) => void;
+  onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          'inline-flex h-8 w-full items-center justify-between gap-2 rounded-full border px-3 text-xs font-normal normal-case tracking-normal focus:outline-none',
+          selected.size > 0
+            ? 'border-accent bg-accent/10 text-accent-strong'
+            : 'border-border bg-background text-foreground-soft hover:text-foreground',
+        )}
+      >
+        <span className="truncate">
+          {selected.size === 0
+            ? label
+            : `${selected.size} sélection${selected.size > 1 ? 's' : ''}`}
+        </span>
+        <span className="text-[10px]">▾</span>
+      </button>
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-2xl border border-border bg-background p-2 shadow-lg">
+            <div className="max-h-64 overflow-y-auto">
+              {options.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-normal normal-case tracking-normal text-foreground hover:bg-background-soft"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.has(opt.value)}
+                    onChange={() => onToggle(opt.value)}
+                    className="h-3.5 w-3.5"
+                  />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
+            {selected.size > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClear();
+                  setOpen(false);
+                }}
+                className="mt-2 w-full rounded-lg bg-background-soft px-2 py-1.5 text-xs font-normal normal-case tracking-normal text-foreground-soft hover:text-foreground"
+              >
+                Effacer
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Modale de detail : liste des questions d un test, actions par question    */
+/* -------------------------------------------------------------------------- */
+
+function TestDetailModal({
+  group,
+  validating,
+  onClose,
   onApproveQuestion,
   onRejectQuestion,
   onRemoveQuestion,
   onEditQuestion,
+  onValidateAndInvite,
+  onInviteOnly,
+  onDeleteTest,
 }: {
   group: CandidateGroup;
-  expanded: boolean;
   validating: boolean;
-  onToggleExpand: () => void;
-  onValidateAndInvite: () => void;
-  onInviteOnly: () => void;
-  onDeleteTest: () => void;
+  onClose: () => void;
   onApproveQuestion: (q: ReviewQuestion) => void;
   onRejectQuestion: (q: ReviewQuestion) => void;
   onRemoveQuestion: (q: ReviewQuestion) => void;
   onEditQuestion: (q: ReviewQuestion) => void;
+  onValidateAndInvite: () => void;
+  onInviteOnly: () => void;
+  onDeleteTest: () => void;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
-  }, [menuOpen]);
-
-  const counts = useMemo(() => {
-    const c = { pending: 0, approved: 0, rejected: 0 };
-    for (const q of group.questions) {
-      if (q.status === 'PENDING_REVIEW') c.pending++;
-      else if (q.status === 'APPROVED') c.approved++;
-      else if (q.status === 'REJECTED') c.rejected++;
-    }
-    return c;
-  }, [group.questions]);
-
-  const byType = useMemo(() => {
-    const g: Record<ReviewQuestion['type'], ReviewQuestion[]> = {
-      QCM: [],
-      CODE: [],
-      CAS_PRATIQUE: [],
-    };
-    for (const q of group.questions) g[q.type].push(q);
-    return g;
-  }, [group.questions]);
-
-  const avgDifficulty = useMemo(() => {
-    if (group.questions.length === 0) return 0;
-    const sum = group.questions.reduce((a, q) => a + q.difficulty, 0);
-    return Math.round((sum / group.questions.length) * 10) / 10;
-  }, [group.questions]);
-
-  const allApproved = counts.pending === 0 && counts.approved > 0;
-  const profileLabel = PROFILE_LABELS[group.profileCode] ?? group.profileCode;
-  const createdDate = new Date(group.testCreatedAt).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
-  const initials = initialsOf(group.candidateName, group.candidateEmail);
-  const gradient = gradientOf(group.candidateEmail);
-
+  const total = group.questions.length;
+  const approved = group.questions.filter((q) => q.status === 'APPROVED').length;
+  const pending = group.questions.filter((q) => q.status === 'PENDING_REVIEW').length;
+  const allApproved = pending === 0 && approved > 0;
   return (
-    <Card variant="elevated" className="overflow-hidden">
-      {/* HEADER : identite candidat + menu */}
-      <div className="flex items-start gap-4 p-6">
-        <div
-          className={cn(
-            'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-sm font-bold text-white shadow-md',
-            gradient,
-          )}
-        >
-          {initials}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 backdrop-blur-sm p-4 sm:p-8"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-5xl rounded-3xl bg-background shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 border-b border-border p-6">
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-xl font-semibold tracking-tight text-foreground">
               {group.candidateName ?? group.candidateEmail}
-            </h3>
-            {allApproved && (
-              <Badge tone="success" variant="mono">
-                <Check className="h-3 w-3" />
-                Validé
-              </Badge>
-            )}
+            </h2>
+            <p className="truncate text-xs text-muted">
+              {group.candidateEmail} · {PROFILE_LABELS[group.profileCode] ?? group.profileCode}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                {approved} approuvée{approved > 1 ? 's' : ''}
+              </span>
+              {pending > 0 && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                  {pending} à valider
+                </span>
+              )}
+              <span className="text-muted">sur {total}</span>
+              {group.previousSubmissionsCount > 0 && (
+                <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                  ⚠️ Déjà évalué ×{group.previousSubmissionsCount}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted">
-            <span className="inline-flex items-center gap-1">
-              <Mail className="h-3 w-3" />
-              {group.candidateEmail}
-            </span>
-            <span>·</span>
-            <span className="inline-flex items-center gap-1">
-              <BriefcaseBusiness className="h-3 w-3" />
-              {profileLabel}
-            </span>
-            <span>·</span>
-            <span className="inline-flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {createdDate}
-            </span>
-          </div>
-        </div>
-
-        {/* Menu contextuel */}
-        <div ref={menuRef} className="relative">
           <button
             type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-soft hover:text-foreground"
-            title="Plus d'actions"
+            onClick={onClose}
+            className="rounded-full p-2 text-muted hover:bg-background-soft hover:text-foreground"
+            title="Fermer"
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-2xl border border-border bg-surface py-1 shadow-lg">
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onDeleteTest();
-                }}
-                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-danger transition-colors hover:bg-danger/5"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Supprimer ce test
-              </button>
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* PREVIEW : pastilles par type + stats */}
-      <div className="border-t border-border bg-background-soft/40 px-6 py-4">
-        <div className="mb-2 flex flex-wrap items-center gap-x-6 gap-y-2">
-          {(['QCM', 'CODE', 'CAS_PRATIQUE'] as const).map((type) =>
-            byType[type].length > 0 ? (
-              <TypePreview key={type} type={type} questions={byType[type]} />
-            ) : null,
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-          <span>
-            <strong className="text-foreground">{group.questions.length}</strong> question
-            {group.questions.length > 1 ? 's' : ''} au total
-          </span>
-          <span>·</span>
-          <span>
-            Difficulté moyenne{' '}
-            <strong className="text-foreground">{avgDifficulty.toFixed(1)}/5</strong>
-          </span>
-          {counts.pending > 0 && (
-            <>
-              <span>·</span>
-              <span className="text-amber-700 dark:text-amber-400">
-                {counts.pending} en attente
-              </span>
-            </>
-          )}
-          {counts.approved > 0 && (
-            <>
-              <span>·</span>
-              <span className="text-emerald-700 dark:text-emerald-400">
-                {counts.approved} approuvée{counts.approved > 1 ? 's' : ''}
-              </span>
-            </>
-          )}
-          {counts.rejected > 0 && (
-            <>
-              <span>·</span>
-              <span className="text-rose-700 dark:text-rose-400">
-                {counts.rejected} refusée{counts.rejected > 1 ? 's' : ''}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* ACTIONS PRINCIPALES */}
-      <div className="grid gap-2 border-t border-border bg-surface p-4 sm:grid-cols-[1fr_auto_auto]">
-        {allApproved ? (
-          <Button variant="cta" size="lg" onClick={onInviteOnly} disabled={validating}>
-            <Send className="h-4 w-4" />
-            Envoyer l'invitation
-          </Button>
-        ) : (
-          <Button
-            variant="cta"
-            size="lg"
-            onClick={onValidateAndInvite}
-            disabled={validating || group.questions.length === 0}
-          >
-            {validating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Validation en cours…
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4" />
-                Valider et envoyer ({counts.pending})
-              </>
-            )}
-          </Button>
-        )}
-        <Button variant="secondary" size="lg" onClick={onToggleExpand}>
-          <Eye className="h-4 w-4" />
-          {expanded ? 'Masquer' : 'Réviser'} le détail
-        </Button>
-      </div>
-
-      {/* DETAIL DEPLIABLE */}
-      {expanded && (
-        <div className="border-t border-border bg-background-soft/30 px-6 py-5">
+        {/* Body : liste des questions */}
+        <div className="max-h-[calc(100vh-260px)] overflow-y-auto p-6">
           <div className="space-y-3">
-            {group.questions.map((q) => (
+            {group.questions.map((q, idx) => (
               <QuestionRow
                 key={q.id}
+                index={idx + 1}
                 question={q}
                 onApprove={() => onApproveQuestion(q)}
                 onReject={() => onRejectQuestion(q)}
@@ -588,146 +1056,159 @@ function TestCard({
             ))}
           </div>
         </div>
-      )}
-    </Card>
-  );
-}
 
-function TypePreview({
-  type,
-  questions,
-}: {
-  type: ReviewQuestion['type'];
-  questions: ReviewQuestion[];
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1">
-        {questions.map((q) => (
-          <span
-            key={q.id}
-            title={`${TYPE_LABELS[type]} · Difficulté ${q.difficulty}/5 · ${q.status === 'PENDING_REVIEW' ? 'En attente' : q.status === 'APPROVED' ? 'Approuvée' : 'Refusée'}`}
-            className={cn(
-              'inline-block h-2.5 w-2.5 rounded-full transition-transform hover:scale-125',
-              TYPE_DOT_COLORS[type],
-              q.status === 'REJECTED' && 'opacity-30',
-              q.status === 'PENDING_REVIEW' && 'ring-2 ring-amber-300 dark:ring-amber-500',
-            )}
-          />
-        ))}
+        {/* Footer : actions globales */}
+        <div className="flex items-center justify-between gap-3 border-t border-border bg-background-soft/60 p-4">
+          <Button variant="ghost" size="sm" onClick={onDeleteTest}>
+            <Trash2 className="h-4 w-4" />
+            Supprimer le test
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              Fermer
+            </Button>
+            <Button
+              variant={allApproved ? 'cta' : 'secondary'}
+              onClick={allApproved ? onInviteOnly : onValidateAndInvite}
+              disabled={validating || total === 0}
+            >
+              {validating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : allApproved ? (
+                <Send className="h-4 w-4" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
+              {allApproved ? 'Envoyer l’invitation' : 'Tout valider et inviter'}
+            </Button>
+          </div>
+        </div>
       </div>
-      <span className="text-xs font-medium text-muted">
-        {questions.length} {TYPE_LABELS[type]}
-      </span>
     </div>
   );
 }
 
+/** Ligne compacte pour une question dans TestDetailModal. */
 function QuestionRow({
+  index,
   question,
   onApprove,
   onReject,
   onRemove,
   onEdit,
 }: {
+  index: number;
   question: ReviewQuestion;
   onApprove: () => void;
   onReject: () => void;
   onRemove: () => void;
   onEdit: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-
-  const typeTone =
-    question.type === 'QCM' ? 'info' : question.type === 'CODE' ? 'warning' : 'success';
-
-  const statusBadge = useMemo(() => {
-    if (question.status === 'APPROVED') return <Badge tone="success">Approuvée</Badge>;
-    if (question.status === 'REJECTED') return <Badge tone="danger">Refusée</Badge>;
-    return <Badge tone="warning">En attente</Badge>;
-  }, [question.status]);
-
+  const isApproved = question.status === 'APPROVED';
+  const isRejected = question.status === 'REJECTED';
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-      <div className="grid grid-cols-[auto_1fr_auto] items-start gap-3 px-4 py-3">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-background-soft font-mono text-xs font-bold text-muted hover:text-foreground"
-          title={open ? 'Replier' : 'Déplier'}
-        >
-          {String(question.position).padStart(2, '0')}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="min-w-0 text-left"
-        >
-          <div className="mb-1.5 flex flex-wrap items-center gap-2">
-            <Badge tone={typeTone} variant="mono">
-              {question.type}
-            </Badge>
-            <Badge tone="muted" variant="mono">
-              Difficulté {question.difficulty}/5
-            </Badge>
-            {statusBadge}
+    <div
+      className={cn(
+        'rounded-2xl border p-4 transition-colors',
+        isApproved && 'border-emerald-300/50 bg-emerald-50/40 dark:border-emerald-800/50 dark:bg-emerald-950/20',
+        isRejected && 'border-rose-300/50 bg-rose-50/40 dark:border-rose-800/50 dark:bg-rose-950/20',
+        !isApproved && !isRejected && 'border-border bg-surface',
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex items-center gap-2 text-xs">
+            <span className="font-mono font-semibold text-muted">Q{index}</span>
+            <span className={cn('inline-flex h-2 w-2 rounded-full', TYPE_DOT_COLORS[question.type])} />
+            <span className="text-muted">{question.type}</span>
+            <span className="text-muted">· difficulté {question.difficulty}/5</span>
+            {isApproved && <Badge tone="success">Approuvée</Badge>}
+            {isRejected && <Badge tone="danger">Rejetée</Badge>}
           </div>
-          <p className="text-sm leading-6 text-foreground">
-            {question.statement || (
-              <em className="text-muted">(énoncé dans le payload)</em>
-            )}
-          </p>
-        </button>
-
+          <p className="text-sm text-foreground">{question.statement}</p>
+        </div>
         <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            onClick={onEdit}
-            title="Éditer"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-background-soft hover:text-foreground"
-          >
+          <Button variant="ghost" size="sm" onClick={onEdit} title="Modifier">
             <Pencil className="h-3.5 w-3.5" />
-          </button>
-          {question.status !== 'APPROVED' && (
-            <button
-              type="button"
-              onClick={onApprove}
-              title="Approuver"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-emerald-50 hover:text-emerald-600"
-            >
-              <Check className="h-3.5 w-3.5" />
-            </button>
+          </Button>
+          {!isApproved && (
+            <Button variant="ghost" size="sm" onClick={onApprove} title="Approuver">
+              <Check className="h-3.5 w-3.5 text-emerald-600" />
+            </Button>
           )}
-          {question.status !== 'REJECTED' && (
-            <button
-              type="button"
-              onClick={onReject}
-              title="Refuser"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-background-soft hover:text-foreground"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+          {!isRejected && (
+            <Button variant="ghost" size="sm" onClick={onReject} title="Rejeter">
+              <X className="h-3.5 w-3.5 text-rose-600" />
+            </Button>
           )}
-          <button
-            type="button"
-            onClick={onRemove}
-            title="Supprimer"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-danger/10 hover:text-danger"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          <Button variant="ghost" size="sm" onClick={onRemove} title="Supprimer">
+            <Trash2 className="h-3.5 w-3.5 text-muted" />
+          </Button>
         </div>
       </div>
-
-      {open && (
-        <div className="border-t border-border bg-background-soft/40 px-4 py-4">
-          <QuestionPayloadPreview type={question.type} jsonPayload={question.jsonPayload} />
-        </div>
-      )}
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Modale d avertissement : candidat deja evalue sur d autres tests          */
+/* -------------------------------------------------------------------------- */
+
+function ReinviteWarningModal({
+  candidateName,
+  previousCount,
+  onCancel,
+  onConfirm,
+}: {
+  candidateName: string;
+  previousCount: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-md rounded-3xl bg-background p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+          <FlaskConical className="h-6 w-6" />
+        </div>
+        <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
+          Candidat déjà évalué
+        </h3>
+        <p className="mt-2 text-sm text-muted">
+          <span className="font-medium text-foreground">{candidateName}</span> a déjà soumis{' '}
+          <span className="font-semibold text-foreground">{previousCount} évaluation{previousCount > 1 ? 's' : ''}</span>{' '}
+          via une autre invitation. Envoyer une nouvelle invitation créera un lien indépendant
+          et ne remplacera pas les résultats précédents.
+        </p>
+        <p className="mt-2 text-xs text-muted">
+          Consultez la page « Résultats » pour comparer les scores existants avant de renvoyer un test.
+        </p>
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <Button variant="ghost" onClick={onCancel}>
+            Annuler
+          </Button>
+          <Button variant="primary" onClick={onConfirm}>
+            <Send className="h-4 w-4" />
+            Envoyer quand même
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Palette des types de questions : pastilles colorees dans la preview.
+const TYPE_DOT_COLORS: Record<ReviewQuestion['type'], string> = {
+  QCM: 'bg-sky-500',
+  CODE: 'bg-amber-500',
+  CAS_PRATIQUE: 'bg-violet-500',
+};
 
 function EditModal({
   question,
@@ -747,7 +1228,7 @@ function EditModal({
           <div>
             <CardTitle>Éditer la question</CardTitle>
             <CardDescription>
-              Modifiez l'énoncé, la difficulté ou le payload JSON.
+              Modifiez l’énoncé, la difficulté ou le payload JSON.
             </CardDescription>
           </div>
         </CardHeader>
@@ -801,165 +1282,6 @@ function EditModal({
   );
 }
 
-type ParsedPayload = {
-  options?: string[];
-  correctIndex?: number;
-  explanation?: string;
-  language?: string;
-  starterCode?: string;
-  hiddenTests?: string;
-  scenario?: string;
-  expectedAnswerPoints?: string[];
-};
-
-function QuestionPayloadPreview({
-  type,
-  jsonPayload,
-}: {
-  type: Question['type'];
-  jsonPayload: string;
-}) {
-  const parsed = useMemo<ParsedPayload | null>(() => {
-    try {
-      return JSON.parse(jsonPayload) as ParsedPayload;
-    } catch {
-      return null;
-    }
-  }, [jsonPayload]);
-
-  if (!parsed) {
-    return (
-      <pre className="overflow-x-auto rounded-xl border border-border bg-surface p-3 font-mono text-[11px] text-muted">
-        {jsonPayload}
-      </pre>
-    );
-  }
-
-  if (type === 'QCM') {
-    return (
-      <div className="space-y-2">
-        {(parsed.options ?? []).map((opt, i) => {
-          const correct = parsed.correctIndex === i;
-          return (
-            <div
-              key={i}
-              className={cn(
-                'flex items-start gap-3 rounded-xl border px-3 py-2 text-sm',
-                correct
-                  ? 'border-emerald-300 bg-emerald-50 text-foreground dark:border-emerald-900 dark:bg-emerald-950/30'
-                  : 'border-border bg-surface text-foreground',
-              )}
-            >
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                {String.fromCharCode(65 + i)}
-              </span>
-              <span className="flex-1">{opt}</span>
-              {correct && (
-                <Badge tone="success" variant="mono">
-                  Correct
-                </Badge>
-              )}
-            </div>
-          );
-        })}
-        {parsed.explanation && (
-          <p className="rounded-xl border border-dashed border-border bg-surface px-3 py-2 text-xs text-muted">
-            <span className="font-semibold text-foreground">Explication : </span>
-            {parsed.explanation}
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  if (type === 'CODE') {
-    const lang = (parsed.language?.toUpperCase() as 'PHP' | 'JS') ?? 'JS';
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Badge tone="accent">{lang}</Badge>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
-            Squelette proposé au candidat
-          </span>
-        </div>
-
-        {parsed.starterCode ? (
-          <div className="overflow-hidden rounded-xl border border-border">
-            <CodeEditor
-              language={lang}
-              value={parsed.starterCode}
-              onChange={() => {}}
-              height="220px"
-              readOnly
-            />
-          </div>
-        ) : (
-          <div className="rounded-xl border border-dashed border-warning/40 bg-warning/5 p-3 text-xs text-warning">
-            Aucun starterCode généré.
-          </div>
-        )}
-
-        {parsed.hiddenTests && (
-          <details className="rounded-xl border border-border bg-surface">
-            <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground">
-              <FlaskConical className="h-3.5 w-3.5 text-accent" />
-              Tests cachés (exécutés en sandbox)
-            </summary>
-            <div className="border-t border-border">
-              <CodeEditor
-                language={lang}
-                value={parsed.hiddenTests}
-                onChange={() => {}}
-                height="140px"
-                readOnly
-              />
-            </div>
-          </details>
-        )}
-
-        {parsed.explanation && (
-          <p className="rounded-xl border border-dashed border-border bg-surface px-3 py-2 text-xs text-muted">
-            <span className="font-semibold text-foreground">Explication : </span>
-            {parsed.explanation}
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      {parsed.scenario && (
-        <div className="rounded-xl border border-border bg-surface p-3">
-          <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-            <Code2 className="h-3 w-3" />
-            Scénario
-          </div>
-          <p className="whitespace-pre-wrap text-sm text-foreground">{parsed.scenario}</p>
-        </div>
-      )}
-      {parsed.expectedAnswerPoints && parsed.expectedAnswerPoints.length > 0 && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-950/30">
-          <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-300">
-            <ListChecks className="h-3 w-3" />
-            Points attendus
-          </div>
-          <ul className="ml-4 list-disc space-y-1 text-sm text-foreground">
-            {parsed.expectedAnswerPoints.map((p, i) => (
-              <li key={i}>{p}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {parsed.explanation && (
-        <p className="rounded-xl border border-dashed border-border bg-surface px-3 py-2 text-xs text-muted">
-          <span className="font-semibold text-foreground">Explication : </span>
-          {parsed.explanation}
-        </p>
-      )}
-    </div>
-  );
-}
 
 function InvitationModal({
   candidateEmail,
@@ -1018,12 +1340,12 @@ function InvitationModal({
           <div>
             <CardTitle className="flex items-center gap-2">
               <Send className="h-4 w-4 text-accent" />
-              Envoyer l'invitation
+              Envoyer l’invitation
             </CardTitle>
             <CardDescription>
               {invitation
                 ? invitation.emailSent
-                  ? "L'email d'invitation a été envoyé au candidat. Vous pouvez aussi copier le lien ci-dessous pour un envoi manuel."
+                  ? "L’email d’invitation a été envoyé au candidat. Vous pouvez aussi copier le lien ci-dessous pour un envoi manuel."
                   : "Lien généré. L'envoi automatique par email a échoué (SMTP indisponible) — copiez-le et transmettez-le au candidat manuellement."
                 : "Un lien unique va être créé pour ce test et envoyé par email au candidat, valable 24 heures."}
             </CardDescription>
@@ -1061,7 +1383,7 @@ function InvitationModal({
               <div>
                 <div className="font-semibold">Envoi automatique indisponible</div>
                 <div className="text-xs opacity-80">
-                  Copiez le lien et le code d'accès ci-dessous et transmettez-les manuellement au candidat.
+                  Copiez le lien et le code d’accès ci-dessous et transmettez-les manuellement au candidat.
                 </div>
               </div>
             </div>
@@ -1070,7 +1392,7 @@ function InvitationModal({
           {invitation?.accessCode && (
             <div>
               <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
-                Code d'accès candidat
+                Code d’accès candidat
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -1097,7 +1419,7 @@ function InvitationModal({
                 </Button>
               </div>
               <p className="mt-2 text-xs text-muted">
-                Ce code a été envoyé dans l'email d'invitation. Le candidat doit
+                Ce code a été envoyé dans l’email d’invitation. Le candidat doit
                 le saisir pour démarrer sa passation.
               </p>
             </div>

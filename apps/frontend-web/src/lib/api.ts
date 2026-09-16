@@ -392,6 +392,13 @@ export type CandidateGroup = {
   candidateId: string;
   candidateEmail: string;
   candidateName: string | null;
+  /** Nombre de passations DEJA SOUMISES par ce candidat sur d autres tests.
+   *  > 0 => afficher un badge + demander confirmation avant de renvoyer une invitation. */
+  previousSubmissionsCount: number;
+  /** Timestamp de la derniere invitation envoyee pour CE test (null si aucune). */
+  invitationSentAt: string | null;
+  /** Timestamp de la passation soumise pour CE test (null si non termine). */
+  testSubmittedAt: string | null;
   questions: ReviewQuestion[];
 };
 
