@@ -83,7 +83,7 @@ export function SkillCombobox({ excludeCodes, onAdd }: Props) {
         )}
       >
         <Plus className="h-3.5 w-3.5" />
-        Ajouter une competence
+        Ajouter une compétence
       </button>
 
       {open && (
@@ -104,7 +104,7 @@ export function SkillCombobox({ excludeCodes, onAdd }: Props) {
                   handleCreateCustom();
                 }
               }}
-              placeholder="Rechercher ou taper un nom..."
+              placeholder="Rechercher ou taper un nom…"
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-soft focus:outline-none"
             />
             {query && (
@@ -152,7 +152,7 @@ export function SkillCombobox({ excludeCodes, onAdd }: Props) {
                 className="flex w-full items-center gap-2 border-t border-border bg-accent-soft/30 px-3 py-2 text-left text-sm font-medium text-accent-strong transition-colors hover:bg-accent-soft/60"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Creer la competence personnalisee « {query.trim()} »
+                Créer la compétence personnalisée « {query.trim()} »
               </button>
             )}
           </div>

@@ -19,7 +19,7 @@ const INITIALS = ['FN', 'AB', 'KL', 'SM', 'TR'];
 /**
  * Pile d avatars (style Socialynx "3M+ User") — social proof.
  */
-export function AvatarStack({ count = 3, label = '3k+ candidats evalues', className }: Props) {
+export function AvatarStack({ count = 3, label = '3k+ candidats évalués', className }: Props) {
   const shown = Math.min(count, AVATAR_COLORS.length);
 
   return (
@@ -40,7 +40,7 @@ export function AvatarStack({ count = 3, label = '3k+ candidats evalues', classN
       </div>
       <div className="text-xs leading-tight">
         <div className="font-semibold text-foreground">{label}</div>
-        <div className="text-muted">deja sur SkillForge</div>
+        <div className="text-muted">déjà sur SkillForge</div>
       </div>
     </div>
   );

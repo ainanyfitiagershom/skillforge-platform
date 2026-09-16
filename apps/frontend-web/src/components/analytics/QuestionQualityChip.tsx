@@ -13,35 +13,35 @@ const CONFIG: Record<
 > = {
   GOOD: {
     label: 'Bonne question',
-    hint: 'Question discriminante et equilibree',
+    hint: 'Question discriminante et équilibrée',
     classes:
       'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
     icon: Check,
   },
   TOO_EASY: {
     label: 'Trop facile',
-    hint: 'Plus de 90% de reussite : n apporte pas d information',
+    hint: 'Plus de 90% de réussite : n’apporte pas d’information',
     classes:
       'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
     icon: AlertCircle,
   },
   TOO_HARD: {
     label: 'Trop difficile',
-    hint: 'Moins de 10% de reussite : a reformuler ou retirer',
+    hint: 'Moins de 10% de réussite : à reformuler ou retirer',
     classes:
       'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
     icon: X,
   },
   POOR_DISCRIMINANT: {
     label: 'Peu discriminante',
-    hint: 'Ne separe pas bien les niveaux, a revoir',
+    hint: 'Ne sépare pas bien les niveaux, à revoir',
     classes:
       'border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
     icon: Minus,
   },
   INSUFFICIENT_DATA: {
-    label: 'Donnees insuffisantes',
-    hint: 'Trop peu d utilisations pour statuer',
+    label: 'Données insuffisantes',
+    hint: 'Trop peu d’utilisations pour statuer',
     classes:
       'border-border bg-background-soft text-muted',
     icon: AlertCircle,

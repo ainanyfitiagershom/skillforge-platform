@@ -52,7 +52,7 @@ export function ScoresDistributionChart({ buckets }: Props) {
             Distribution des scores
           </h3>
           <p className="mt-0.5 text-xs text-muted">
-            Repartition des scores globaux par tranches de 10 points
+            Répartition des scores globaux par tranches de 10 points
           </p>
         </div>
       </div>

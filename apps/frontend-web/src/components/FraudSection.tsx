@@ -17,10 +17,10 @@ type Props = {
 };
 
 const TYPE_LABELS: Record<FraudEventType, string> = {
-  FOCUS_LOSS: 'Sortie d onglet',
+  FOCUS_LOSS: 'Sortie d’onglet',
   PASTE_SUSPICIOUS: 'Copier-coller volumineux',
-  FAST_ANSWER: 'Reponse anormalement rapide',
-  DEVTOOLS_OPEN: 'Outils developpeur ouverts',
+  FAST_ANSWER: 'Réponse anormalement rapide',
+  DEVTOOLS_OPEN: 'Outils développeur ouverts',
 };
 
 const TYPE_ICONS: Record<FraudEventType, typeof Eye> = {
@@ -53,7 +53,7 @@ const LEVEL_STYLES: Record<'low' | 'medium' | 'high', { header: string; badge: s
     header: 'border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-700 dark:bg-rose-950/40 dark:text-rose-100',
     badge: 'bg-rose-500 text-white',
     icon: 'text-rose-700 dark:text-rose-300',
-    label: 'Risque eleve — a verifier',
+    label: 'Risque élevé — à vérifier',
   },
 };
 
@@ -72,22 +72,22 @@ function describeMetadata(type: FraudEventType, raw: string | null): string {
     case 'FOCUS_LOSS': {
       const ms = typeof m.durationMs === 'number' ? m.durationMs : 0;
       const seconds = Math.round(ms / 1000);
-      return `Absent de l onglet pendant environ ${seconds}s`;
+      return `Absent de l’onglet pendant environ ${seconds}s`;
     }
     case 'PASTE_SUSPICIOUS':
       return typeof m.pastedLength === 'number'
-        ? `${m.pastedLength} caracteres colles en une fois`
-        : 'Contenu colle volumineux';
+        ? `${m.pastedLength} caractères collés en une fois`
+        : 'Contenu collé volumineux';
     case 'FAST_ANSWER': {
       const parts: string[] = [];
-      if (typeof m.answerLength === 'number') parts.push(`${m.answerLength} caracteres`);
+      if (typeof m.answerLength === 'number') parts.push(`${m.answerLength} caractères`);
       if (typeof m.elapsedMs === 'number') {
-        parts.push(`ecrits en ${(m.elapsedMs / 1000).toFixed(1)}s`);
+        parts.push(`écrits en ${(m.elapsedMs / 1000).toFixed(1)}s`);
       }
       return parts.join(' ');
     }
     case 'DEVTOOLS_OPEN':
-      return 'Ouverture detectee via l ecart taille de fenetre';
+      return 'Ouverture détectée via l’écart taille de fenêtre';
     default:
       return '';
   }
@@ -184,7 +184,7 @@ export function FraudSection({ passation }: Props) {
           className="flex w-full items-center justify-between gap-3 px-8 py-3 text-left transition-colors hover:bg-background-soft/40"
         >
           <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Timeline complete ({events.length} evenement{events.length > 1 ? 's' : ''})
+            Timeline complète ({events.length} événement{events.length > 1 ? 's' : ''})
           </span>
           <ChevronDown className={cn('h-4 w-4 text-muted transition-transform', open && 'rotate-180')} />
         </button>
@@ -199,8 +199,8 @@ export function FraudSection({ passation }: Props) {
       </div>
 
       <div className="border-t border-border bg-background-soft/40 px-8 py-3 text-xs text-muted">
-        Ces signaux sont indicatifs. Ils ne prouvent pas la fraude mais meritent une
-        verification en entretien.
+        Ces signaux sont indicatifs. Ils ne prouvent pas la fraude mais méritent une
+        vérification en entretien.
       </div>
     </Card>
   );

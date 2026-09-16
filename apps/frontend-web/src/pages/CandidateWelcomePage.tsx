@@ -70,7 +70,7 @@ export function CandidateWelcomePage() {
     e.preventDefault();
     if (!token || !fraudConsent) return;
     if (requiresAccessCode && accessCode.trim().length !== 6) {
-      setSubmitError("Le code d'accès doit contenir 6 chiffres.");
+      setSubmitError("Le code d’accès doit contenir 6 chiffres.");
       return;
     }
     setSubmitting(true);
@@ -118,7 +118,7 @@ export function CandidateWelcomePage() {
           <Card variant="elevated" className="p-10 text-center">
             <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-accent" />
             <p className="text-sm text-muted">
-              Verification du lien d'invitation en cours…
+              Vérification du lien d’invitation en cours…
             </p>
           </Card>
         )}
@@ -135,7 +135,7 @@ export function CandidateWelcomePage() {
                 </h2>
                 <p className="mt-2 text-sm text-muted">{tokenError}</p>
                 <p className="mt-4 text-xs text-muted">
-                  Verifiez aupres de votre interlocuteur RH que le lien envoye est
+                  Vérifiez auprès de votre interlocuteur RH que le lien envoyé est
                   bien celui-ci.
                 </p>
               </div>
@@ -148,7 +148,7 @@ export function CandidateWelcomePage() {
             <div className="animate-fade-in-up">
               <Badge tone="success" className="mb-3">
                 <ShieldCheck className="h-3 w-3" />
-                Lien verifie
+                Lien vérifié
               </Badge>
               <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tighter text-foreground sm:text-5xl">
                 Test technique{' '}
@@ -170,7 +170,7 @@ export function CandidateWelcomePage() {
                     Identification
                   </CardTitle>
                   <CardDescription>
-                    Vos coordonnees servent uniquement a transmettre le compte
+                    Vos coordonnées servent uniquement à transmettre le compte
                     rendu au recruteur.
                   </CardDescription>
                 </div>
@@ -232,7 +232,7 @@ export function CandidateWelcomePage() {
                   {requiresAccessCode && (
                     <div>
                       <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
-                        Code d'accès (reçu par email)
+                        Code d’accès (reçu par email)
                       </label>
                       <Input
                         type="text"
@@ -249,7 +249,7 @@ export function CandidateWelcomePage() {
                         className="text-center font-mono text-2xl tracking-[0.35em]"
                       />
                       <p className="mt-2 text-xs text-muted">
-                        Ce code à 6 chiffres vous a été envoyé dans l'email d'invitation.
+                        Ce code à 6 chiffres vous a été envoyé dans l’email d’invitation.
                         Vérifiez votre boîte de réception (et les spams).
                       </p>
                     </div>
@@ -261,10 +261,10 @@ export function CandidateWelcomePage() {
                       <div className="text-xs leading-relaxed text-foreground">
                         <p className="mb-1 font-semibold">Analyse anti-fraude pendant la passation</p>
                         <p className="text-muted">
-                          Pour preserver l equite entre candidats, votre navigation est
-                          analysee automatiquement (changements d onglet, copier-coller
+                          Pour préserver l’équité entre candidats, votre navigation est
+                          analysée automatiquement (changements d’onglet, copier-coller
                           volumineux, timings anormalement rapides). Ces signaux sont
-                          agreges en un score de risque consulte par le recruteur. Ils
+                          agrégés en un score de risque consulté par le recruteur. Ils
                           ne bloquent pas votre passation.
                         </p>
                       </div>
@@ -277,7 +277,7 @@ export function CandidateWelcomePage() {
                         className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-accent-strong focus:ring-accent"
                       />
                       <span>
-                        J accepte l analyse anti-fraude durant ma passation, conformement au RGPD.
+                        J’accepte l’analyse anti-fraude durant ma passation, conformément au RGPD.
                       </span>
                     </label>
                   </div>
@@ -296,9 +296,9 @@ export function CandidateWelcomePage() {
                     className="w-full"
                   >
                     {submitting ? (
-                      'Demarrage…'
+                      'Démarrage…'
                     ) : !fraudConsent ? (
-                      'Acceptez l analyse anti-fraude pour continuer'
+                      'Acceptez l’analyse anti-fraude pour continuer'
                     ) : (
                       <>
                         Commencer le test
@@ -317,11 +317,11 @@ export function CandidateWelcomePage() {
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-foreground">
-                    Vos donnees sont protegees
+                    Vos données sont protégées
                   </h4>
                   <p className="mt-1 text-xs text-muted">
-                    Nom, email et reponses sont stockes uniquement pour ce
-                    recrutement et purges apres 12 mois (conformite RGPD).
+                    Nom, email et réponses sont stockés uniquement pour ce
+                    recrutement et purgés après 12 mois (conformité RGPD).
                   </p>
                 </div>
               </div>

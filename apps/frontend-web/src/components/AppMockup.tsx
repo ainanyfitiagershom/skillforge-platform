@@ -4,7 +4,7 @@ import { Sparkles, FileText, Code2, BrainCircuit, CheckCircle2 } from 'lucide-re
  * Mockup visuel SkillForge utilise dans le hero de la landing / login.
  * Plusieurs cards flottantes qui montrent le produit en action :
  *  - card "CV analyse" (haut gauche)
- *  - card "Test genere par IA" (centre, principale)
+ *  - card "Test généré par IA" (centre, principale)
  *  - card "Score sandbox" (bas droite)
  * Toutes sur fond d un blob d accent flou.
  */
@@ -49,7 +49,7 @@ export function AppMockup() {
         </div>
       </div>
 
-      {/* Card 2 : Test genere par IA (centre, principale) */}
+      {/* Card 2 : Test généré par IA (centre, principale) */}
       <div
         className="relative z-10 w-[340px] animate-float-slow rounded-3xl border border-border bg-surface p-6 shadow-lg"
         style={{ animationDelay: '0.4s' }}
@@ -60,7 +60,7 @@ export function AppMockup() {
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <div className="font-display text-sm font-semibold">Test genere</div>
+              <div className="font-display text-sm font-semibold">Test généré</div>
               <div className="font-mono text-[10px] text-muted">gpt-4o-mini · 14 questions</div>
             </div>
           </div>
@@ -78,7 +78,7 @@ export function AppMockup() {
               </span>
             </div>
             <div className="text-xs font-medium">
-              Quelle annotation Symfony injecte un service dans un controleur ?
+              Quelle annotation Symfony injecte un service dans un contrôleur ?
             </div>
           </div>
 
@@ -91,7 +91,7 @@ export function AppMockup() {
               </span>
             </div>
             <div className="text-xs font-medium">
-              Implementez `slugify(string $s): string` en PHP 8.3
+              Implémentez `slugify(string $s): string` en PHP 8.3
             </div>
           </div>
         </div>
@@ -121,7 +121,7 @@ export function AppMockup() {
         </div>
         <div className="mt-2 flex items-center gap-1.5 font-mono text-[10px] text-muted">
           <BrainCircuit className="h-3 w-3" />
-          12 / 14 reussis
+          12 / 14 réussis
         </div>
       </div>
     </div>

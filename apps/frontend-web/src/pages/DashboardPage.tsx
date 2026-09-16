@@ -55,23 +55,23 @@ function formatDate(iso: string | null): string {
 }
 
 const PROFILE_LABELS: Record<string, string> = {
-  DEV_PHP: 'Developpeur PHP',
-  INT_WORDPRESS: 'Integrateur WordPress',
-  DEV_VUE: 'Developpeur Vue.js',
-  SEO_TECH: 'Specialiste SEO technique',
+  DEV_PHP: 'Développeur PHP',
+  INT_WORDPRESS: 'Intégrateur WordPress',
+  DEV_VUE: 'Développeur Vue.js',
+  SEO_TECH: 'Spécialiste SEO technique',
 };
 
 const RECO_STYLES: Record<Recommendation, { label: string; classes: string }> = {
   HIRE: {
-    label: 'A embaucher',
+    label: 'À embaucher',
     classes: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
   },
   INTERVIEW: {
-    label: 'A approfondir',
+    label: 'À approfondir',
     classes: 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
   },
   REJECT: {
-    label: 'A ecarter',
+    label: 'À écarter',
     classes: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
   },
 };
@@ -160,13 +160,13 @@ export function DashboardPage() {
             Tableau de bord analytique
           </Badge>
           <h1 className="font-display text-4xl font-semibold tracking-tighter text-foreground">
-            Vue d'ensemble{' '}
+            Vue d’ensemble{' '}
             <span className="bg-text-accent-gradient bg-clip-text text-transparent">
               du recrutement.
             </span>
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted">
-            Statistiques agrégées, pouvoir discriminant des questions, boucle d'amélioration
+            Statistiques agrégées, pouvoir discriminant des questions, boucle d’amélioration
             continue.
           </p>
         </div>
@@ -263,7 +263,7 @@ function EmptyState() {
         Pas encore de passations soumises
       </h2>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-        Le dashboard analytique s'active dès qu'un premier candidat a terminé son test. Créez un
+        Le dashboard analytique s’active dès qu’un premier candidat a terminé son test. Créez un
         test et envoyez une invitation pour commencer.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -295,7 +295,7 @@ function QuestionsToReviewSection({ questions }: { questions: QuestionStats[] })
           </h3>
         </div>
         <p className="mt-1 text-xs text-muted">
-          Boucle d'amélioration continue : ces questions gagneraient à être reformulées ou retirées.
+          Boucle d’amélioration continue : ces questions gagneraient à être reformulées ou retirées.
         </p>
       </div>
       <ul className="divide-y divide-border">

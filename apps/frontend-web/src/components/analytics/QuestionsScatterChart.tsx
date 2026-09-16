@@ -50,7 +50,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
       <div className="text-xs text-foreground">{p.statement.slice(0, 100)}{p.statement.length > 100 ? '…' : ''}</div>
       <div className="mt-1.5 grid grid-cols-2 gap-2 border-t border-border pt-1.5 text-[11px]">
         <div>
-          <div className="text-muted">Difficulte</div>
+          <div className="text-muted">Difficulté</div>
           <div className="font-mono text-foreground">{p.x.toFixed(2)}</div>
         </div>
         <div>
@@ -87,13 +87,13 @@ export function QuestionsScatterChart({ questions }: Props) {
     return (
       <Card variant="elevated" className="p-6">
         <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
-          Pouvoir discriminant × Difficulte
+          Pouvoir discriminant × Difficulté
         </h3>
         <p className="mt-0.5 text-xs text-muted">
-          Chaque point = une question, taille = nombre d utilisations
+          Chaque point = une question, taille = nombre d’utilisations
         </p>
         <div className="mt-6 rounded-2xl border border-dashed border-border bg-background-soft py-12 text-center text-xs text-muted">
-          Donnees insuffisantes : au moins 3 utilisations par question sont necessaires.
+          Données insuffisantes : au moins 3 utilisations par question sont nécessaires.
         </div>
       </Card>
     );
@@ -102,10 +102,10 @@ export function QuestionsScatterChart({ questions }: Props) {
   return (
     <Card variant="elevated" className="p-6">
       <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
-        Pouvoir discriminant × Difficulte
+        Pouvoir discriminant × Difficulté
       </h3>
       <p className="mt-0.5 text-xs text-muted">
-        Point-biseriale (Y) vs indice de difficulte (X) — taille = utilisations
+        Point-bisériale (Y) vs indice de difficulté (X) — taille = utilisations
       </p>
       <div className="mt-4 h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -114,7 +114,7 @@ export function QuestionsScatterChart({ questions }: Props) {
             <XAxis
               type="number"
               dataKey="x"
-              name="Difficulte"
+              name="Difficulté"
               domain={[0, 1]}
               ticks={[0, 0.25, 0.5, 0.75, 1]}
               tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}

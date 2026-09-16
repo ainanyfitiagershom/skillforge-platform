@@ -58,7 +58,7 @@ export function LoginPage() {
         <div className="relative z-10 max-w-md">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-1 text-xs font-medium text-muted backdrop-blur-md">
             <Sparkles className="h-3.5 w-3.5 text-accent" />
-            Recrutement technique nouvelle generation
+            Recrutement technique nouvelle génération
           </div>
           <h2 className="font-display text-4xl font-semibold leading-[1.05] tracking-tighter text-foreground sm:text-5xl">
             Du CV au verdict,
@@ -68,8 +68,8 @@ export function LoginPage() {
             </span>
           </h2>
           <p className="mt-5 text-base text-muted">
-            Sandbox Docker durcie, generation de tests par IA, compte rendu
-            humain. Sans compromis sur la securite.
+            Sandbox Docker durcie, génération de tests par IA, compte rendu
+            humain. Sans compromis sur la sécurité.
           </p>
 
           {/* Mini features */}
@@ -80,7 +80,7 @@ export function LoginPage() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-foreground">
-                  Generation propulsee par GPT-4o
+                  Génération propulsée par GPT-4o
                 </div>
                 <div className="text-xs text-muted">
                   Multi-LLM : OpenAI, Claude, GitHub Models
@@ -96,7 +96,7 @@ export function LoginPage() {
                   Sandbox seccomp + cap-drop=ALL
                 </div>
                 <div className="text-xs text-muted">
-                  Execution candidat 100% isolee, network=none
+                  Exécution candidat 100% isolée, network=none
                 </div>
               </div>
             </div>
@@ -106,10 +106,10 @@ export function LoginPage() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-foreground">
-                  Compte rendu IA pret a transmettre
+                  Compte rendu IA prêt à transmettre
                 </div>
                 <div className="text-xs text-muted">
-                  Forces, faiblesses, recommandation argumentee
+                  Forces, faiblesses, recommandation argumentée
                 </div>
               </div>
             </div>
@@ -118,7 +118,7 @@ export function LoginPage() {
 
         {/* Social proof */}
         <div className="relative z-10">
-          <AvatarStack count={4} label="3 200+ candidats evalues" />
+          <AvatarStack count={4} label="3 200+ candidats évalués" />
         </div>
       </aside>
 
@@ -140,7 +140,7 @@ export function LoginPage() {
             </span>
             <Link to="/">
               <Button variant="ghost" size="sm">
-                Decouvrir
+                Découvrir
               </Button>
             </Link>
             <ThemeToggle />
@@ -155,7 +155,7 @@ export function LoginPage() {
                 Bon retour parmi nous
               </h1>
               <p className="mt-2 text-sm text-muted">
-                Connectez-vous a votre espace recruteur SkillForge.
+                Connectez-vous à votre espace recruteur SkillForge.
               </p>
             </div>
 
@@ -189,7 +189,7 @@ export function LoginPage() {
                     href="#"
                     className="text-xs font-medium text-accent-strong hover:underline"
                   >
-                    Oublie ?
+                    Oublié ?
                   </a>
                 </div>
                 <Input
@@ -232,7 +232,7 @@ export function LoginPage() {
                 <Sparkles className="h-3.5 w-3.5" />
               </div>
               <div className="text-xs text-muted">
-                Demo connectee a{' '}
+                Démo connectée à{' '}
                 <span className="font-mono font-semibold text-foreground">
                   gpt-4o-mini
                 </span>{' '}
@@ -247,7 +247,7 @@ export function LoginPage() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted lg:justify-start">
             <span>© 2026 Tsarajoro</span>
             <span>·</span>
-            <a href="#" className="hover:text-foreground">Confidentialite</a>
+            <a href="#" className="hover:text-foreground">Confidentialité</a>
             <span>·</span>
             <a href="#" className="hover:text-foreground">Conditions</a>
           </div>

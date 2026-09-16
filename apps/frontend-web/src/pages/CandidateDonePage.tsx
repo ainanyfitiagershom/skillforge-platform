@@ -55,14 +55,14 @@ export function CandidateDonePage() {
             Passation soumise
           </Badge>
           <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tighter text-foreground sm:text-5xl">
-            Merci d'avoir
+            Merci d’avoir
             <br />
             <span className="bg-text-accent-gradient bg-clip-text text-transparent">
-              passe le test.
+              passé le test.
             </span>
           </h1>
           <p className="mt-4 text-base text-muted">
-            Vos reponses ont bien ete enregistrees. Le recruteur recevra votre
+            Vos réponses ont bien été enregistrées. Le recruteur recevra votre
             compte rendu et vous recontactera prochainement.
           </p>
         </div>
@@ -105,7 +105,7 @@ export function CandidateDonePage() {
                   <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                   <span>
                     L'évaluation des cas pratiques a été faite en <strong>mode démo</strong> (aucune analyse
-                    sémantique). Le score indicatif ci-dessus n'est pas fiable ; le recruteur ajustera
+                    sémantique). Le score indicatif ci-dessus n’est pas fiable ; le recruteur ajustera
                     manuellement.
                   </span>
                 </div>
@@ -126,12 +126,12 @@ export function CandidateDonePage() {
           <div className="mb-1 flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-accent" />
             <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-              Et apres ?
+              Et après ?
             </span>
           </div>
           <p className="text-sm text-foreground">
-            Votre evaluation est en cours de synthese par notre IA. Le recruteur
-            recevra un compte rendu detaille et vous recontactera prochainement.
+            Votre évaluation est en cours de synthèse par notre IA. Le recruteur
+            recevra un compte rendu détaillé et vous recontactera prochainement.
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export function CandidateDonePage() {
         >
           <Lock className="h-3.5 w-3.5 text-muted" />
           <p className="text-xs text-muted">
-            Vos donnees seront purgees apres 12 mois conformement au RGPD.
+            Vos données seront purgées après 12 mois conformément au RGPD.
           </p>
         </div>
       </div>

@@ -26,10 +26,10 @@ import {
 import { cn } from '@/lib/cn';
 
 const PROFILE_LABELS: Record<string, string> = {
-  DEV_PHP: 'Developpeur PHP',
-  INT_WORDPRESS: 'Integrateur WordPress',
-  DEV_VUE: 'Developpeur Vue.js',
-  SEO_TECH: 'Specialiste SEO technique',
+  DEV_PHP: 'Développeur PHP',
+  INT_WORDPRESS: 'Intégrateur WordPress',
+  DEV_VUE: 'Développeur Vue.js',
+  SEO_TECH: 'Spécialiste SEO technique',
 };
 
 const AVATAR_COLORS = [
@@ -144,11 +144,11 @@ export function ResultDetailPage() {
         <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
           Passation introuvable
         </h2>
-        <p className="mt-2 text-sm text-muted">{error ?? "Cette passation n'existe pas."}</p>
+        <p className="mt-2 text-sm text-muted">{error ?? "Cette passation n’existe pas."}</p>
         <Link to="/app/results" className="mt-5 inline-block">
           <Button variant="secondary" size="md">
             <ArrowLeft className="h-3.5 w-3.5" />
-            Retour aux resultats
+            Retour aux résultats
           </Button>
         </Link>
       </div>
@@ -169,7 +169,7 @@ export function ResultDetailPage() {
         className="inline-flex items-center gap-2 text-sm font-medium text-muted transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Retour aux resultats
+        Retour aux résultats
       </Link>
 
       {/* HEADER hero */}
@@ -290,7 +290,7 @@ function AnswerRow({ answer }: { answer: AnswerDetail }) {
     if (score == null) {
       return (
         <Badge tone="muted" variant="mono">
-          Non note
+          Non noté
         </Badge>
       );
     }
@@ -425,12 +425,12 @@ function QcmReview({ answer, parsed }: { answer: AnswerDetail; parsed: ParsedPay
             <div className="flex shrink-0 items-center gap-1">
               {isChosen && (
                 <Badge tone={isCorrect ? 'success' : 'danger'} variant="mono">
-                  Reponse candidat
+                  Réponse candidat
                 </Badge>
               )}
               {isCorrect && (
                 <Badge tone="success" variant="mono">
-                  Bonne reponse
+                  Bonne réponse
                 </Badge>
               )}
             </div>
@@ -439,7 +439,7 @@ function QcmReview({ answer, parsed }: { answer: AnswerDetail; parsed: ParsedPay
       })}
       {chosen == null && (
         <div className="rounded-xl border border-dashed border-warning/40 bg-warning/5 px-4 py-3 text-xs text-warning">
-          Le candidat n'a pas repondu a cette question.
+          Le candidat n’a pas répondu à cette question.
         </div>
       )}
       {parsed?.explanation && (
@@ -494,7 +494,7 @@ function CodeReview({ answer, parsed }: { answer: AnswerDetail; parsed: ParsedPa
         <details className="rounded-xl border border-border bg-surface">
           <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground">
             <FlaskConical className="h-3.5 w-3.5 text-accent" />
-            Sortie sandbox (derniere execution)
+            Sortie sandbox (dernière exécution)
           </summary>
           <div className="space-y-2 border-t border-border px-3 py-3">
             {answer.lastStdout && (
@@ -525,7 +525,7 @@ function CodeReview({ answer, parsed }: { answer: AnswerDetail; parsed: ParsedPa
         <details className="rounded-xl border border-border bg-surface">
           <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground">
             <FlaskConical className="h-3.5 w-3.5 text-muted" />
-            Tests caches utilises
+            Tests cachés utilisés
           </summary>
           <div className="border-t border-border">
             <CodeEditor
@@ -556,7 +556,7 @@ function CasReview({ answer, parsed }: { answer: AnswerDetail; parsed: ParsedPay
         <div className="rounded-xl border border-border bg-surface p-3">
           <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
             <Code2 className="h-3 w-3" />
-            Scenario
+            Scénario
           </div>
           <p className="whitespace-pre-wrap text-sm text-foreground">{parsed.scenario}</p>
         </div>
@@ -564,12 +564,12 @@ function CasReview({ answer, parsed }: { answer: AnswerDetail; parsed: ParsedPay
 
       <div className="rounded-xl border border-border bg-surface p-4">
         <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-          Reponse du candidat
+          Réponse du candidat
         </div>
         {answer.answerText ? (
           <p className="whitespace-pre-wrap text-sm text-foreground">{answer.answerText}</p>
         ) : (
-          <p className="text-xs italic text-muted">Aucune reponse fournie.</p>
+          <p className="text-xs italic text-muted">Aucune réponse fournie.</p>
         )}
       </div>
 

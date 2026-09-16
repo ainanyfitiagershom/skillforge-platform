@@ -80,7 +80,7 @@ export function ReportSection({ passation }: Props) {
       const r = await api.regenerateReport(passation.passationId);
       setReport(r);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Generation impossible');
+      setError(err instanceof Error ? err.message : 'Génération impossible');
     } finally {
       setRegenerating(false);
     }
@@ -116,7 +116,7 @@ export function ReportSection({ passation }: Props) {
               </h3>
               <p className="mt-1 max-w-md text-sm text-muted">
                 {error ??
-                  "Le compte rendu n'a pas pu être généré automatiquement. Vous pouvez le lancer manuellement."}
+                  "Le compte rendu n’a pas pu être généré automatiquement. Vous pouvez le lancer manuellement."}
               </p>
             </div>
           </div>

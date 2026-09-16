@@ -29,10 +29,10 @@ import {
 import { cn } from '@/lib/cn';
 
 const PROFILES = [
-  { code: 'DEV_PHP', label: 'Developpeur PHP', hint: 'Backend, API, Laravel' },
-  { code: 'INT_WORDPRESS', label: 'Integrateur WordPress', hint: 'Theme, CMS, SEO' },
-  { code: 'DEV_VUE', label: 'Developpeur Vue.js', hint: 'Frontend, SPA, TypeScript' },
-  { code: 'SEO_TECH', label: 'Specialiste SEO technique', hint: 'Audit, performance, crawl' },
+  { code: 'DEV_PHP', label: 'Développeur PHP', hint: 'Backend, API, Laravel' },
+  { code: 'INT_WORDPRESS', label: 'Intégrateur WordPress', hint: 'Theme, CMS, SEO' },
+  { code: 'DEV_VUE', label: 'Développeur Vue.js', hint: 'Frontend, SPA, TypeScript' },
+  { code: 'SEO_TECH', label: 'Spécialiste SEO technique', hint: 'Audit, performance, crawl' },
 ];
 
 const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
@@ -43,7 +43,7 @@ const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
 
 const QUESTION_TYPE_HELPERS: Record<Question['type'], string> = {
   QCM: 'Validation rapide des bases et concepts',
-  CODE: 'Exercices pratiques a executer',
+  CODE: 'Exercices pratiques à exécuter',
   CAS_PRATIQUE: 'Mise en situation projet',
 };
 
@@ -99,7 +99,7 @@ export function NewTestPage() {
       setSelectedSkills(new Set(entries.map((e) => e.code)));
       setLlmInfo({ provider: res.llmProvider, tokens: res.tokensUsed, cost: res.costEur });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Erreur lors de l'upload");
+      setError(err instanceof ApiError ? err.message : "Erreur lors de l’upload");
     } finally {
       setAnalyzing(false);
     }
@@ -172,7 +172,7 @@ export function NewTestPage() {
       });
       setGenerated(res);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur lors de la generation');
+      setError(err instanceof ApiError ? err.message : 'Erreur lors de la génération');
     } finally {
       setGenerating(false);
     }
@@ -189,14 +189,14 @@ export function NewTestPage() {
           Nouveau test
         </Badge>
         <h1 className="font-display text-display-sm leading-[1.05] tracking-tighter text-foreground">
-          Demarrer un{' '}
+          Démarrer un{' '}
           <span className="bg-text-accent-gradient bg-clip-text text-transparent">
             recrutement.
           </span>
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-base text-muted">
-          3 etapes : upload du CV, validation des competences, generation du
-          test par l'IA.
+          3 étapes : upload du CV, validation des compétences, génération du
+          test par l’IA.
         </p>
       </div>
 
@@ -214,7 +214,7 @@ export function NewTestPage() {
               CV et profil cible
             </CardTitle>
             <CardDescription>
-              Choisissez le poste vise, ajoutez l'identite du candidat et televersez son CV.
+              Choisissez le poste visé, ajoutez l’identité du candidat et téléversez son CV.
             </CardDescription>
           </div>
         </CardHeader>
@@ -290,7 +290,7 @@ export function NewTestPage() {
                 <FileUp className="h-4 w-4" />
               )}
               {uploadLocked
-                ? 'CV analyse'
+                ? 'CV analysé'
                 : analyzing
                   ? 'Analyse du CV en cours…'
                   : 'Analyser le CV'}
@@ -309,7 +309,7 @@ export function NewTestPage() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft font-mono text-xs font-bold text-accent-strong">
                   02
                 </span>
-                Competences a evaluer
+                Compétences à évaluer
               </CardTitle>
               <CardDescription>
                 Complétez avec les compétences attendues par votre entreprise.
@@ -374,10 +374,10 @@ export function NewTestPage() {
                 <Sparkles className="h-4 w-4" />
               )}
               {generationLocked
-                ? 'Test genere'
+                ? 'Test généré'
                 : generating
-                  ? 'Generation des questions…'
-                  : 'Generer le test'}
+                  ? 'Génération des questions…'
+                  : 'Générer le test'}
               {!generating && !generationLocked && <ArrowRight className="h-4 w-4" />}
             </Button>
           </CardBody>
@@ -393,11 +393,11 @@ export function NewTestPage() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft font-mono text-xs font-bold text-accent-strong">
                   03
                 </span>
-                Questions generees
+                Questions générées
               </CardTitle>
               <CardDescription>
-                Les questions sont pretes pour la revue. Verifiez les enonces,
-                ajustez les payloads et publiez le test depuis l'ecran de revue.
+                Les questions sont prêtes pour la revue. Vérifiez les énoncés,
+                ajustez les payloads et publiez le test depuis l’écran de revue.
               </CardDescription>
             </div>
           </CardHeader>
@@ -438,7 +438,7 @@ export function NewTestPage() {
             <QuestionList questions={generated.questions} />
 
             <Button onClick={handleGoReview} variant="cta" size="lg" className="mt-6 w-full sm:w-auto">
-              Aller a la revue des questions
+              Aller à la revue des questions
               <ArrowRight className="h-4 w-4" />
             </Button>
           </CardBody>
@@ -629,12 +629,12 @@ function QuestionPreview({ q, index }: { q: Question; index: number }) {
               {QUESTION_TYPE_LABELS[q.type]}
             </Badge>
             <span className="rounded-full border border-border bg-background-soft px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-muted">
-              difficulte {difficultyLabel}
+              difficulté {difficultyLabel}
             </span>
           </div>
           <p className="text-[15px] font-medium leading-6 text-foreground">
             {q.statement || (
-              <em className="font-normal text-muted">Enonce disponible dans le payload.</em>
+              <em className="font-normal text-muted">Énoncé disponible dans le payload.</em>
             )}
           </p>
         </div>
@@ -727,7 +727,7 @@ function QuestionDetail({ q }: { q: Question }) {
         <div className="flex items-center gap-2">
           <Badge tone="accent">{lang}</Badge>
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
-            Squelette propose au candidat (a completer)
+            Squelette proposé au candidat (à compléter)
           </span>
         </div>
 
@@ -743,7 +743,7 @@ function QuestionDetail({ q }: { q: Question }) {
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-warning/40 bg-warning/5 p-3 text-xs text-warning">
-            Aucun starterCode genere.
+            Aucun starterCode généré.
           </div>
         )}
 
@@ -751,7 +751,7 @@ function QuestionDetail({ q }: { q: Question }) {
           <details className="rounded-xl border border-border bg-surface">
             <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground">
               <FlaskConical className="h-3.5 w-3.5 text-accent" />
-              Tests caches (executes en sandbox)
+              Tests cachés (exécutés en sandbox)
             </summary>
             <div className="border-t border-border">
               <CodeEditor
@@ -781,7 +781,7 @@ function QuestionDetail({ q }: { q: Question }) {
         <div className="rounded-xl border border-border bg-surface p-3">
           <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
             <Code2 className="h-3 w-3" />
-            Scenario
+            Scénario
           </div>
           <p className="whitespace-pre-wrap text-sm text-foreground">
             {parsed.scenario}
@@ -814,7 +814,7 @@ function QuestionDetail({ q }: { q: Question }) {
 function Steps({ current }: { current: 1 | 2 | 3 }) {
   const steps = [
     { num: 1, label: 'CV' },
-    { num: 2, label: 'Competences' },
+    { num: 2, label: 'Compétences' },
     { num: 3, label: 'Questions' },
   ];
   return (

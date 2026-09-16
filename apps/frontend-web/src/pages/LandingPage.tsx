@@ -46,7 +46,7 @@ export function LandingPage() {
             href="#securite"
             className="px-4 py-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
           >
-            Securite
+            Sécurité
           </a>
           <a
             href="#tarifs"
@@ -78,7 +78,7 @@ export function LandingPage() {
         <div className="animate-fade-in-up">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-1 text-xs font-medium text-muted backdrop-blur-md">
             <Sparkles className="h-3.5 w-3.5 text-accent" />
-            Nouveau · Generation de tests propulsee par GPT-4o
+            Nouveau · Génération de tests propulsée par GPT-4o
           </div>
 
           <h1 className="font-display text-display-sm leading-[1.05] tracking-tighter text-foreground sm:text-display lg:text-display-lg">
@@ -87,13 +87,13 @@ export function LandingPage() {
               technique
             </span>
             <br />
-            assiste par IA,
+            assisté par IA,
             <br />
             du CV au verdict.
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-            SkillForge analyse le CV, genere un test sur mesure, execute le code dans
+            SkillForge analyse le CV, génère un test sur mesure, exécute le code dans
             une sandbox Docker durcie, et restitue un compte rendu IA — en quelques
             minutes.
           </p>
@@ -107,13 +107,13 @@ export function LandingPage() {
             </Link>
             <a href="#fonctionnement">
               <Button variant="secondary" size="xl">
-                Voir comment ca marche
+                Voir comment ça marche
               </Button>
             </a>
           </div>
 
           <div className="mt-10">
-            <AvatarStack count={4} label="3 200+ candidats evalues" />
+            <AvatarStack count={4} label="3 200+ candidats évalués" />
           </div>
         </div>
 
@@ -152,18 +152,18 @@ export function LandingPage() {
         <div className="mx-auto max-w-2xl text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            Comment ca marche
+            Comment ça marche
           </div>
           <h2 className="font-display text-4xl font-semibold tracking-tighter text-foreground sm:text-5xl">
             Du CV au verdict,
             <br />
             <span className="bg-text-accent-gradient bg-clip-text text-transparent">
-              en 3 etapes.
+              en 3 étapes.
             </span>
           </h2>
           <p className="mt-4 text-base text-muted">
-            Un workflow concu pour les recruteurs techniques exigeants, sans
-            compromis sur la securite.
+            Un workflow conçu pour les recruteurs techniques exigeants, sans
+            compromis sur la sécurité.
           </p>
         </div>
 
@@ -180,8 +180,8 @@ export function LandingPage() {
               Importez le CV
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              PDF, DOCX, ou texte libre. L'IA extrait competences, technologies, et
-              annees d'experience.
+              PDF, DOCX, ou texte libre. L’IA extrait compétences, technologies, et
+              années d’expérience.
             </p>
           </Card>
 
@@ -194,10 +194,10 @@ export function LandingPage() {
               02 · generate
             </div>
             <h3 className="font-display text-xl font-semibold text-foreground">
-              Generez le test
+              Générez le test
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              QCM, exercices de code (PHP, JS), cas pratiques. Adapte au profil du
+              QCM, exercices de code (PHP, JS), cas pratiques. Adapté au profil du
               candidat, en un clic.
             </p>
           </Card>
@@ -214,7 +214,7 @@ export function LandingPage() {
               Recevez le verdict
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Score, compte rendu IA, detection d'anomalies. Decidez en quelques
+              Score, compte rendu IA, détection d’anomalies. Décidez en quelques
               minutes au lieu de plusieurs heures.
             </p>
           </Card>
@@ -232,11 +232,11 @@ export function LandingPage() {
                 Sandbox Docker durcie
               </div>
               <h3 className="font-display text-3xl font-semibold tracking-tight text-foreground">
-                Execution de code candidat sans risque pour vos systemes.
+                Exécution de code candidat sans risque pour vos systèmes.
               </h3>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-                Chaque snippet est execute dans un conteneur seccomp + cap-drop=ALL,
-                sans reseau, FS read-only, 256 Mo RAM max, 5 secondes wall-clock.
+                Chaque snippet est exécuté dans un conteneur seccomp + cap-drop=ALL,
+                sans réseau, FS read-only, 256 Mo RAM max, 5 secondes wall-clock.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-background-soft px-3 py-1 text-xs font-medium text-foreground">
@@ -264,7 +264,7 @@ export function LandingPage() {
               <Zap className="h-5 w-5" />
             </div>
             <h3 className="font-display text-xl font-semibold text-foreground">
-              Multi-modeles LLM
+              Multi-modèles LLM
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               OpenAI, Anthropic Claude, GitHub Models, mock. Choisissez selon votre
@@ -281,8 +281,8 @@ export function LandingPage() {
               Argon2id + JWT
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Hashage moderne des mots de passe, sessions stateless, tokens
-              candidats signes a usage unique.
+              Hachage moderne des mots de passe, sessions stateless, tokens
+              candidats signés à usage unique.
             </p>
           </Card>
 
@@ -295,7 +295,7 @@ export function LandingPage() {
               Compte rendu IA
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Forces, faiblesses, raisons de recommandation : un brief humain pret a
+              Forces, faiblesses, raisons de recommandation : un brief humain prêt à
               transmettre au manager.
             </p>
           </Card>
@@ -309,8 +309,8 @@ export function LandingPage() {
               RGPD by design
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Donnees hebergees en UE, purge automatique 12 mois, droits d'acces et
-              effacement integres.
+              Données hébergées en UE, purge automatique 12 mois, droits d’accès et
+              effacement intégrés.
             </p>
           </Card>
         </div>
@@ -326,17 +326,17 @@ export function LandingPage() {
             <div>
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-white/80">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Securite niveau production
+                Sécurité niveau production
               </div>
               <h3 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                Pensee comme une plateforme bancaire,
+                Pensée comme une plateforme bancaire,
                 <br />
-                pas un POC d'ecole.
+                pas un POC d’école.
               </h3>
               <p className="mt-4 max-w-lg text-sm leading-relaxed text-white/70">
-                Authentification forte, isolation totale de l'execution candidat,
-                journaux d'audit, validation par OPA, scans Trivy sur chaque image —
-                rien n'est laisse au hasard.
+                Authentification forte, isolation totale de l’exécution candidat,
+                journaux d’audit, validation par OPA, scans Trivy sur chaque image —
+                rien n’est laissé au hasard.
               </p>
             </div>
 
@@ -368,15 +368,15 @@ export function LandingPage() {
       <section id="tarifs" className="mx-auto max-w-7xl px-6 py-20">
         <div className="text-center">
           <h2 className="font-display text-4xl font-semibold tracking-tighter text-foreground sm:text-5xl">
-            Pret a evaluer votre prochain
+Prêt à évaluer votre prochain
             <br />
             <span className="bg-text-accent-gradient bg-clip-text text-transparent">
               recrutement tech ?
             </span>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted">
-            Cree pendant un stage M2 a l'Universite Cote d'Azur · Innovation
-            recrutement assistee par IA.
+            Créé pendant un stage M2 à l’Université Côte d’Azur · Innovation
+            recrutement assistée par IA.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link to="/login">
@@ -399,7 +399,7 @@ export function LandingPage() {
             <span>SkillForge · © 2026 · Tsarajoro</span>
           </div>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-foreground">Confidentialite</a>
+            <a href="#" className="hover:text-foreground">Confidentialité</a>
             <a href="#" className="hover:text-foreground">Conditions</a>
             <a href="#" className="hover:text-foreground">Contact</a>
           </div>

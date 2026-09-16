@@ -59,7 +59,7 @@ export function Layout() {
             <button
               type="button"
               onClick={handleLogout}
-              title="Se deconnecter"
+              title="Se déconnecter"
               className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-soft hover:text-foreground"
             >
               <LogOut className="h-3.5 w-3.5" />

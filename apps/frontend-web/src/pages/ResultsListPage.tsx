@@ -15,10 +15,10 @@ import {
 import { cn } from '@/lib/cn';
 
 const PROFILE_LABELS: Record<string, string> = {
-  DEV_PHP: 'Developpeur PHP',
-  INT_WORDPRESS: 'Integrateur WordPress',
-  DEV_VUE: 'Developpeur Vue.js',
-  SEO_TECH: 'Specialiste SEO technique',
+  DEV_PHP: 'Développeur PHP',
+  INT_WORDPRESS: 'Intégrateur WordPress',
+  DEV_VUE: 'Développeur Vue.js',
+  SEO_TECH: 'Spécialiste SEO technique',
 };
 
 const AVATAR_COLORS = [
@@ -99,7 +99,7 @@ export function ResultsListPage() {
       <div className="text-center">
         <Badge tone="accent" className="mb-4">
           <ClipboardCheck className="h-3 w-3" />
-          Resultats des passations
+          Résultats des passations
         </Badge>
         <h1 className="font-display text-display-sm leading-[1.05] tracking-tighter text-foreground">
           Performances des{' '}
@@ -112,7 +112,7 @@ export function ResultsListPage() {
             ? 'Chargement…'
             : items.length === 0
               ? 'Aucune passation pour le moment.'
-              : `${counts.submitted} terminee${counts.submitted > 1 ? 's' : ''} · ${counts.inProgress} en cours`}
+              : `${counts.submitted} terminée${counts.submitted > 1 ? 's' : ''} · ${counts.inProgress} en cours`}
         </p>
       </div>
 
@@ -129,17 +129,17 @@ export function ResultsListPage() {
               <Inbox className="h-6 w-6" />
             </div>
             <h3 className="font-display text-xl font-semibold text-foreground">
-              Aucune passation enregistree
+              Aucune passation enregistrée
             </h3>
             <p className="mt-2 text-sm text-muted">
-              Envoyez une invitation a un candidat depuis la banque de questions
-              pour voir les resultats ici.
+              Envoyez une invitation à un candidat depuis la banque de questions
+              pour voir les résultats ici.
             </p>
             <Link
               to="/app/review"
               className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent-strong hover:underline"
             >
-              Aller a la banque de questions
+              Aller à la banque de questions
               <ChevronRight className="h-4 w-4" />
             </Link>
           </CardBody>

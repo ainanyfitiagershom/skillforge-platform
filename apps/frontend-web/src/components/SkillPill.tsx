@@ -6,7 +6,7 @@ export type SkillLevel = 'JUNIOR' | 'CONFIRME' | 'SENIOR' | 'UNKNOWN';
 
 const LEVELS: { value: Exclude<SkillLevel, 'UNKNOWN'>; label: string }[] = [
   { value: 'JUNIOR', label: 'Junior' },
-  { value: 'CONFIRME', label: 'Confirme' },
+  { value: 'CONFIRME', label: 'Confirmé' },
   { value: 'SENIOR', label: 'Senior' },
 ];
 

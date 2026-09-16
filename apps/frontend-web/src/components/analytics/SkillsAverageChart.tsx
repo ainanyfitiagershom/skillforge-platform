@@ -66,8 +66,8 @@ export function SkillsAverageChart({ skills }: Props) {
 
   const heading =
     data.length > 0 && data[0].category === 'Profil'
-      ? { title: 'Score moyen par profil', hint: 'Referentiel de competences non peuple : fallback sur profil du test' }
-      : { title: 'Score moyen par competence', hint: 'Moyenne des scores obtenus sur les questions liees a chaque competence' };
+      ? { title: 'Score moyen par profil', hint: 'Référentiel de compétences non peuplé : fallback sur profil du test' }
+      : { title: 'Score moyen par compétence', hint: 'Moyenne des scores obtenus sur les questions liées à chaque compétence' };
 
   return (
     <Card variant="elevated" className="p-6">
@@ -77,7 +77,7 @@ export function SkillsAverageChart({ skills }: Props) {
       <p className="mt-0.5 text-xs text-muted">{heading.hint}</p>
       {data.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-border bg-background-soft py-12 text-center text-xs text-muted">
-          Aucune donnee disponible pour le moment.
+          Aucune donnée disponible pour le moment.
         </div>
       ) : (
         <div className="mt-4 h-64 w-full">

@@ -71,7 +71,7 @@ export function CandidatePassationPage() {
         setQuestions(res.questions);
         const raw = sessionStorage.getItem(`skillforge.passation.${token}`);
         if (!raw) {
-          setError("Vous n'avez pas commence le test. Revenez sur l'accueil.");
+          setError("Vous n’avez pas commencé le test. Revenez sur l’accueil.");
           return;
         }
         let sessionData: { id: string; fraudConsent?: boolean };
@@ -264,7 +264,7 @@ export function CandidatePassationPage() {
             disabled={safeIndex === 0}
           >
             <ChevronLeft className="h-4 w-4" />
-            Precedente
+            Précédente
           </Button>
 
           {safeIndex < questions.length - 1 ? (
@@ -287,10 +287,10 @@ export function CandidatePassationPage() {
 }
 
 const FRAUD_LABELS: Record<FraudEventType, string> = {
-  FOCUS_LOSS: 'Sortie de l onglet detectee',
-  PASTE_SUSPICIOUS: 'Copier-coller volumineux detecte',
-  FAST_ANSWER: 'Temps de reponse inhabituel detecte',
-  DEVTOOLS_OPEN: 'Outils developpeur detectes',
+  FOCUS_LOSS: 'Sortie de l’onglet détectée',
+  PASTE_SUSPICIOUS: 'Copier-coller volumineux détecté',
+  FAST_ANSWER: 'Temps de réponse inhabituel détecté',
+  DEVTOOLS_OPEN: 'Outils développeur détectés',
 };
 
 function FraudBanner({ signal }: { signal: FraudSignal | null }) {
@@ -319,7 +319,7 @@ function FraudBanner({ signal }: { signal: FraudSignal | null }) {
       <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" />
       <div className="text-xs text-amber-900 dark:text-amber-100">
         <div className="font-semibold">{FRAUD_LABELS[signal.type]}</div>
-        <div className="mt-0.5 opacity-80">Evenement enregistre pour le recruteur.</div>
+        <div className="mt-0.5 opacity-80">Événement enregistré pour le recruteur.</div>
       </div>
     </div>
   );
@@ -359,13 +359,13 @@ function QuestionCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Badge tone={tone}>{question.type}</Badge>
-          <Badge tone="muted">Difficulte {question.difficulty}/5</Badge>
+          <Badge tone="muted">Difficulté {question.difficulty}/5</Badge>
         </CardTitle>
       </CardHeader>
       <CardBody>
         <p className="text-base leading-relaxed text-foreground">
           {question.statement || (
-            <em className="text-muted">(enonce dans le payload)</em>
+            <em className="text-muted">(énoncé dans le payload)</em>
           )}
         </p>
 
@@ -502,7 +502,7 @@ function TextAnswerEditor({
       {scenario && (
         <div className="mb-4 rounded-2xl border border-border bg-background-soft px-4 py-3">
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-            Scenario
+            Scénario
           </p>
           <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground">
             {scenario}
@@ -514,10 +514,10 @@ function TextAnswerEditor({
         onChange={(e) => handleChange(e.target.value)}
         rows={8}
         className="block w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
-        placeholder="Votre reponse ici…"
+        placeholder="Votre réponse ici…"
       />
       <p className="mt-2 font-mono text-[10px] text-muted">
-        Sauvegarde automatique 1 s apres la derniere frappe
+        Sauvegarde automatique 1 s après la dernière frappe
       </p>
     </div>
   );
@@ -559,7 +559,7 @@ function CodeAnswerEditor({
           status: 'ERROR',
           exitCode: -1,
           stdout: '',
-          stderr: err instanceof Error ? err.message : 'Erreur reseau',
+          stderr: err instanceof Error ? err.message : 'Erreur réseau',
           durationMs: 0,
           testsPassed: 0,
           testsTotal: 0,
@@ -574,7 +574,7 @@ function CodeAnswerEditor({
       <div className="flex items-center gap-2">
         <Badge tone="accent">{language}</Badge>
         <span className="font-mono text-[10px] text-muted">
-          execute en sandbox Docker durcie (seccomp + cap-drop=ALL)
+          exécuté en sandbox Docker durcie (seccomp + cap-drop=ALL)
         </span>
       </div>
       <div className="overflow-hidden rounded-2xl border border-border">
@@ -587,7 +587,7 @@ function CodeAnswerEditor({
         disabled={running || code.trim().length === 0}
       >
         <Play className="h-4 w-4" />
-        {running ? 'Execution en sandbox…' : 'Executer'}
+        {running ? 'Exécution en sandbox…' : 'Exécuter'}
       </Button>
 
       {runResult && <RunResultPanel result={runResult} />}
@@ -642,18 +642,40 @@ function RunResultPanel({ result }: { result: RunCodeResult }) {
           </pre>
         </div>
       )}
-      {result.stderr && (
-        <div className="mt-3">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-danger">
-            stderr
-          </p>
-          <pre className="mt-1 overflow-x-auto rounded-xl bg-surface p-3 font-mono text-[11px] text-danger">
-            {result.stderr}
-          </pre>
-        </div>
-      )}
+      {(() => {
+        const cleaned = cleanStderr(result.stderr);
+        if (!cleaned) return null;
+        const isSuccess = result.exitCode === 0;
+        return (
+          <div className="mt-3">
+            <p className={`font-mono text-[10px] uppercase tracking-widest ${isSuccess ? 'text-muted' : 'text-danger'}`}>
+              {isSuccess ? 'sortie diagnostique' : 'stderr'}
+            </p>
+            <pre className={`mt-1 overflow-x-auto rounded-xl bg-surface p-3 font-mono text-[11px] ${isSuccess ? 'text-muted' : 'text-danger'}`}>
+              {cleaned}
+            </pre>
+          </div>
+        );
+      })()}
     </div>
   );
+}
+
+/** Retire les warnings cosmetiques de Node (ExperimentalWarning Permission API, etc.)
+ *  qui ne sont pas de vraies erreurs et paniquent inutilement les candidats. */
+function cleanStderr(stderr: string | undefined | null): string {
+  if (!stderr) return '';
+  return stderr
+    .split('\n')
+    .filter((line) => {
+      const t = line.trim();
+      if (!t) return false;
+      if (t.startsWith('(node:') && t.includes('ExperimentalWarning')) return false;
+      if (t.startsWith('(Use `node --trace-warnings')) return false;
+      return true;
+    })
+    .join('\n')
+    .trim();
 }
 
 function formatTime(s: number): string {
