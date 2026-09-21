@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { CodeEditor } from '@/components/CodeEditor';
 import { ApiError, CandidateGroup, ReviewQuestion, api } from '@/lib/api';
 import {
   Check,
@@ -997,11 +998,11 @@ function TestDetailModal({
   const allApproved = pending === 0 && approved > 0;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 backdrop-blur-sm p-4 sm:p-8"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm px-4 py-6 sm:px-8"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl rounded-3xl bg-background shadow-2xl"
+        className="relative w-full max-w-5xl rounded-3xl bg-white shadow-2xl dark:bg-neutral-900"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -1058,7 +1059,7 @@ function TestDetailModal({
         </div>
 
         {/* Footer : actions globales */}
-        <div className="flex items-center justify-between gap-3 border-t border-border bg-background-soft/60 p-4">
+        <div className="flex items-center justify-between gap-3 rounded-b-3xl border-t border-border bg-white p-4 dark:bg-neutral-900">
           <Button variant="ghost" size="sm" onClick={onDeleteTest}>
             <Trash2 className="h-4 w-4" />
             Supprimer le test
@@ -1112,7 +1113,7 @@ function QuestionRow({
         'rounded-2xl border p-4 transition-colors',
         isApproved && 'border-emerald-300/50 bg-emerald-50/40 dark:border-emerald-800/50 dark:bg-emerald-950/20',
         isRejected && 'border-rose-300/50 bg-rose-50/40 dark:border-rose-800/50 dark:bg-rose-950/20',
-        !isApproved && !isRejected && 'border-border bg-surface',
+        !isApproved && !isRejected && 'border-border bg-white dark:bg-neutral-800',
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -1120,8 +1121,8 @@ function QuestionRow({
           <div className="mb-1 flex items-center gap-2 text-xs">
             <span className="font-mono font-semibold text-muted">Q{index}</span>
             <span className={cn('inline-flex h-2 w-2 rounded-full', TYPE_DOT_COLORS[question.type])} />
-            <span className="text-muted">{question.type}</span>
-            <span className="text-muted">· difficulté {question.difficulty}/5</span>
+            <Badge tone="warning">{question.type}</Badge>
+            <Badge tone="muted">difficulté {question.difficulty}/5</Badge>
             {isApproved && <Badge tone="success">Approuvée</Badge>}
             {isRejected && <Badge tone="danger">Rejetée</Badge>}
           </div>
@@ -1146,6 +1147,148 @@ function QuestionRow({
           </Button>
         </div>
       </div>
+
+      {/* Preview complet du payload selon le type (options QCM, editeur code, scenario) */}
+      <div className="mt-3">
+        <QuestionPayloadPreview type={question.type} jsonPayload={question.jsonPayload} />
+      </div>
+    </div>
+  );
+}
+
+type ParsedPayload = {
+  options?: string[];
+  correctIndex?: number;
+  explanation?: string;
+  language?: string;
+  starterCode?: string;
+  hiddenTests?: string;
+  scenario?: string;
+  expectedAnswerPoints?: string[];
+};
+
+/** Preview riche du contenu d une question selon son type. */
+function QuestionPayloadPreview({
+  type,
+  jsonPayload,
+}: {
+  type: ReviewQuestion['type'];
+  jsonPayload: string;
+}) {
+  let parsed: ParsedPayload = {};
+  try {
+    parsed = JSON.parse(jsonPayload);
+  } catch {
+    return (
+      <div className="rounded-xl border border-danger/30 bg-danger/5 p-3 text-xs text-danger">
+        Payload JSON invalide.
+      </div>
+    );
+  }
+
+  if (type === 'QCM') {
+    const options = parsed.options ?? [];
+    const correctIndex = parsed.correctIndex ?? -1;
+    return (
+      <div className="space-y-1.5">
+        {options.map((opt, i) => {
+          const isCorrect = i === correctIndex;
+          return (
+            <div
+              key={i}
+              className={cn(
+                'flex items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm',
+                isCorrect
+                  ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30'
+                  : 'border-border bg-white dark:bg-neutral-800',
+              )}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="font-mono text-xs text-muted">{String.fromCharCode(65 + i)}</span>
+                <span className="truncate text-foreground">{opt}</span>
+              </div>
+              {isCorrect && <Badge tone="success">correct</Badge>}
+            </div>
+          );
+        })}
+        {parsed.explanation && (
+          <div className="mt-2 rounded-xl border border-dashed border-border bg-white px-3 py-2 text-xs text-muted dark:bg-neutral-800">
+            <span className="font-semibold text-foreground">Explication :</span> {parsed.explanation}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (type === 'CODE') {
+    const language = parsed.language ?? 'JS';
+    const starterCode = parsed.starterCode ?? '';
+    const hiddenTests = parsed.hiddenTests ?? '';
+    const monacoLang: 'PHP' | 'JS' = language === 'PHP' ? 'PHP' : 'JS';
+    return (
+      <div className="space-y-2">
+        <div className="rounded-xl border border-border bg-white overflow-hidden dark:bg-neutral-800">
+          <div className="flex items-center gap-2 border-b border-border bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted dark:bg-neutral-800">
+            <Badge tone="info">{language}</Badge>
+            <span>Squelette proposé au candidat</span>
+          </div>
+          <CodeEditor
+            value={starterCode || '// Aucun starterCode généré.'}
+            onChange={() => {}}
+            language={monacoLang}
+            readOnly
+            height="140px"
+          />
+        </div>
+        {hiddenTests && (
+          <details className="rounded-xl border border-border bg-white overflow-hidden dark:bg-neutral-800">
+            <summary className="cursor-pointer border-b border-border bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted hover:text-foreground dark:bg-neutral-800">
+              Tests cachés (exécutés en sandbox)
+            </summary>
+            <CodeEditor
+              value={hiddenTests}
+              onChange={() => {}}
+              language={monacoLang}
+              readOnly
+              height="120px"
+            />
+          </details>
+        )}
+        {parsed.explanation && (
+          <div className="rounded-xl border border-dashed border-border bg-white px-3 py-2 text-xs text-muted dark:bg-neutral-800">
+            <span className="font-semibold text-foreground">Explication :</span> {parsed.explanation}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // CAS_PRATIQUE
+  return (
+    <div className="space-y-2">
+      {parsed.scenario && (
+        <div className="rounded-xl border border-border bg-white px-3 py-2 dark:bg-neutral-800">
+          <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted">Scénario</div>
+          <p className="text-sm text-foreground whitespace-pre-wrap">{parsed.scenario}</p>
+        </div>
+      )}
+      {parsed.expectedAnswerPoints && parsed.expectedAnswerPoints.length > 0 && (
+        <div className="rounded-xl border border-border bg-white px-3 py-2 dark:bg-neutral-800">
+          <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted">
+            Points attendus dans la réponse
+          </div>
+          <ul className="list-disc space-y-0.5 pl-5 text-sm text-foreground">
+            {parsed.expectedAnswerPoints.map((p, i) => (
+              <li key={i}>{p}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {parsed.explanation && (
+        <div className="rounded-xl border border-dashed border-border bg-white px-3 py-2 text-xs text-muted dark:bg-neutral-800">
+          <span className="font-semibold text-foreground">Explication :</span> {parsed.explanation}
+        </div>
+      )}
     </div>
   );
 }

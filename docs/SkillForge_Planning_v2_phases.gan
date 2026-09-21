@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SkillForge - Planning stage M2 MBDS (par phases)" company="Tsarajoro" webLink="" view-date="2026-05-11" view-index="0" gantt-divider-location="420" resource-divider-location="300" version="3.3.3316" locale="fr">
+    <description>Variante 2 - Planning regroupé en 3 grandes phases (Cadrage / Développement / Finalisation). Vue synthétique adaptée au mémoire. Auteur : GERSHOM Ny Aina Fitia.</description>
+    <view zooming-state="default:3" id="gantt-chart">
+        <field id="tpd3" name="Nom" width="260" order="0"/>
+        <field id="tpd4" name="Date de début" width="80" order="1"/>
+        <field id="tpd5" name="Date de fin" width="80" order="2"/>
+        <option id="color.recent"><![CDATA[#4472c4]]></option>
+        <option id="taskLabelUp"><![CDATA[]]></option>
+        <option id="taskLabelDown"><![CDATA[]]></option>
+        <option id="taskLabelLeft"><![CDATA[]]></option>
+        <option id="taskLabelRight"><![CDATA[name]]></option>
+    </view>
+    <view id="resource-table">
+        <field id="0" name="Nom" width="210" order="0"/>
+        <field id="1" name="Rôle" width="86" order="1"/>
+    </view>
+    <calendars>
+        <day-types>
+            <day-type id="0"/>
+            <day-type id="1"/>
+            <default-week id="1" name="default" sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+            <only-show-weekends value="false"/>
+            <overriden-day-types/>
+            <days/>
+        </day-types>
+    </calendars>
+    <tasks empty-milestones="true">
+        <taskproperties>
+            <taskproperty id="tpd0" name="type" type="default" valuetype="icon"/>
+            <taskproperty id="tpd1" name="priority" type="default" valuetype="icon"/>
+            <taskproperty id="tpd2" name="info" type="default" valuetype="icon"/>
+            <taskproperty id="tpd3" name="name" type="default" valuetype="text"/>
+            <taskproperty id="tpd4" name="begindate" type="default" valuetype="date"/>
+            <taskproperty id="tpd5" name="enddate" type="default" valuetype="date"/>
+            <taskproperty id="tpd6" name="duration" type="default" valuetype="int"/>
+            <taskproperty id="tpd7" name="completion" type="default" valuetype="int"/>
+            <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
+            <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
+        </taskproperties>
+
+        <!-- ============================================================ -->
+        <!-- PHASE 1 - CADRAGE ET CONCEPTION (11 mai - 5 juin, 4 semaines) -->
+        <!-- ============================================================ -->
+        <task id="100" name="Phase 1 - Cadrage et conception" color="#4472c4" meeting="false" start="2026-05-11" duration="20" complete="100" expand="true">
+            <task id="101" name="Analyse du besoin et étude de l'existant" color="#4472c4" meeting="false" start="2026-05-11" duration="6" complete="100" expand="true"/>
+            <task id="102" name="Rédaction du cahier des charges" color="#4472c4" meeting="false" start="2026-05-19" duration="4" complete="100" expand="true"/>
+            <task id="103" name="Modélisation UML et MCD" color="#4472c4" meeting="false" start="2026-05-25" duration="6" complete="100" expand="true"/>
+            <task id="104" name="Architecture technique et choix des outils" color="#4472c4" meeting="false" start="2026-06-02" duration="4" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- PHASE 2 - DÉVELOPPEMENT (8 juin - 14 août, 10 semaines)       -->
+        <!-- ============================================================ -->
+        <task id="200" name="Phase 2 - Développement" color="#4472c4" meeting="false" start="2026-06-08" duration="50" complete="100" expand="true">
+            <task id="201" name="Analyse CV automatisée par IA (POC 1)" color="#4472c4" meeting="false" start="2026-06-08" duration="10" complete="100" expand="true"/>
+            <task id="202" name="Génération adaptative des évaluations (POC 2)" color="#4472c4" meeting="false" start="2026-06-22" duration="10" complete="100" expand="true"/>
+            <task id="203" name="Parcours candidat et sandbox durcie (POC 3)" color="#4472c4" meeting="false" start="2026-07-06" duration="10" complete="100" expand="true"/>
+            <task id="204" name="Correction, résultats et anti-fraude" color="#4472c4" meeting="false" start="2026-07-20" duration="10" complete="100" expand="true"/>
+            <task id="205" name="Statistiques et tableau de bord (POC 4)" color="#4472c4" meeting="false" start="2026-08-03" duration="10" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- PHASE 3 - FINALISATION (17 août - 11 septembre, 4 semaines)   -->
+        <!-- ============================================================ -->
+        <task id="300" name="Phase 3 - Finalisation" color="#4472c4" meeting="false" start="2026-08-17" duration="20" complete="50" expand="true">
+            <task id="301" name="Tests fonctionnels et unitaires" color="#4472c4" meeting="false" start="2026-08-17" duration="3" complete="100" expand="true"/>
+            <task id="302" name="Audit sécurité OWASP ZAP" color="#4472c4" meeting="false" start="2026-08-20" duration="3" complete="100" expand="true"/>
+            <task id="303" name="Tests de charge k6" color="#4472c4" meeting="false" start="2026-08-25" duration="4" complete="70" expand="true"/>
+            <task id="304" name="Recette globale avec l'encadreur" color="#4472c4" meeting="false" start="2026-08-31" duration="3" complete="0" expand="true"/>
+            <task id="305" name="Corrections finales et documentation" color="#4472c4" meeting="false" start="2026-09-03" duration="8" complete="0" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- JALONS - Soutenances                                          -->
+        <!-- ============================================================ -->
+        <task id="900" name="Soutenance intermédiaire 1" color="#c00000" meeting="true" start="2026-06-05" duration="0" complete="100" expand="true"/>
+        <task id="901" name="Soutenance intermédiaire 2" color="#c00000" meeting="true" start="2026-08-14" duration="0" complete="0" expand="true"/>
+        <task id="902" name="Soutenance finale M2 MBDS" color="#c00000" meeting="true" start="2026-09-15" duration="0" complete="0" expand="true"/>
+    </tasks>
+    <resources/>
+    <allocations/>
+    <vacations/>
+    <previous/>
+    <roles roleset-name="Default"/>
+</project>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SkillForge - Planning stage M2 MBDS (par POCs)" company="Tsarajoro" webLink="" view-date="2026-05-11" view-index="0" gantt-divider-location="440" resource-divider-location="300" version="3.3.3316" locale="fr">
+    <description>Variante 3 - Planning organisé autour des 4 preuves de concept (POC) qui structurent le projet. Met en avant la logique R&amp;D du stage. Auteur : GERSHOM Ny Aina Fitia.</description>
+    <view zooming-state="default:3" id="gantt-chart">
+        <field id="tpd3" name="Nom" width="280" order="0"/>
+        <field id="tpd4" name="Date de début" width="80" order="1"/>
+        <field id="tpd5" name="Date de fin" width="80" order="2"/>
+        <option id="color.recent"><![CDATA[#548235]]></option>
+        <option id="taskLabelUp"><![CDATA[]]></option>
+        <option id="taskLabelDown"><![CDATA[]]></option>
+        <option id="taskLabelLeft"><![CDATA[]]></option>
+        <option id="taskLabelRight"><![CDATA[name]]></option>
+    </view>
+    <view id="resource-table">
+        <field id="0" name="Nom" width="210" order="0"/>
+        <field id="1" name="Rôle" width="86" order="1"/>
+    </view>
+    <calendars>
+        <day-types>
+            <day-type id="0"/>
+            <day-type id="1"/>
+            <default-week id="1" name="default" sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+            <only-show-weekends value="false"/>
+            <overriden-day-types/>
+            <days/>
+        </day-types>
+    </calendars>
+    <tasks empty-milestones="true">
+        <taskproperties>
+            <taskproperty id="tpd0" name="type" type="default" valuetype="icon"/>
+            <taskproperty id="tpd1" name="priority" type="default" valuetype="icon"/>
+            <taskproperty id="tpd2" name="info" type="default" valuetype="icon"/>
+            <taskproperty id="tpd3" name="name" type="default" valuetype="text"/>
+            <taskproperty id="tpd4" name="begindate" type="default" valuetype="date"/>
+            <taskproperty id="tpd5" name="enddate" type="default" valuetype="date"/>
+            <taskproperty id="tpd6" name="duration" type="default" valuetype="int"/>
+            <taskproperty id="tpd7" name="completion" type="default" valuetype="int"/>
+            <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
+            <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
+        </taskproperties>
+
+        <!-- ============================================================ -->
+        <!-- FONDATIONS (11 mai - 5 juin)                                  -->
+        <!-- ============================================================ -->
+        <task id="100" name="Fondations du projet" color="#548235" meeting="false" start="2026-05-11" duration="20" complete="100" expand="true">
+            <task id="101" name="Cahier des charges et étude de l'existant" color="#548235" meeting="false" start="2026-05-11" duration="10" complete="100" expand="true"/>
+            <task id="102" name="Architecture, UML, MCD" color="#548235" meeting="false" start="2026-05-25" duration="10" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- POC 1 - ANALYSE DE CV PAR IA (8-19 juin)                      -->
+        <!-- ============================================================ -->
+        <task id="200" name="POC 1 - Analyse de CV assistée par IA" color="#548235" meeting="false" start="2026-06-08" duration="10" complete="100" expand="true">
+            <task id="201" name="Extraction texte PDF/DOCX" color="#548235" meeting="false" start="2026-06-08" duration="3" complete="100" expand="true"/>
+            <task id="202" name="Détection des compétences par modèle IA" color="#548235" meeting="false" start="2026-06-11" duration="4" complete="100" expand="true"/>
+            <task id="203" name="Interface recruteur de validation" color="#548235" meeting="false" start="2026-06-17" duration="3" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- POC 2 - GÉNÉRATION ADAPTATIVE (22 juin - 3 juillet)           -->
+        <!-- ============================================================ -->
+        <task id="300" name="POC 2 - Génération adaptative des évaluations" color="#548235" meeting="false" start="2026-06-22" duration="10" complete="100" expand="true">
+            <task id="301" name="Génération de QCM, code, cas pratiques" color="#548235" meeting="false" start="2026-06-22" duration="4" complete="100" expand="true"/>
+            <task id="302" name="Banque de questions et réutilisation" color="#548235" meeting="false" start="2026-06-26" duration="3" complete="100" expand="true"/>
+            <task id="303" name="Interface de validation des questions" color="#548235" meeting="false" start="2026-07-01" duration="3" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- POC 3 - SANDBOX DOCKER SÉCURISÉE (6-17 juillet)               -->
+        <!-- ============================================================ -->
+        <task id="400" name="POC 3 - Sandbox Docker sécurisée" color="#548235" meeting="false" start="2026-07-06" duration="10" complete="100" expand="true">
+            <task id="401" name="Service isolé backend-sandbox" color="#548235" meeting="false" start="2026-07-06" duration="3" complete="100" expand="true"/>
+            <task id="402" name="Durcissement seccomp + cap-drop=ALL" color="#548235" meeting="false" start="2026-07-09" duration="3" complete="100" expand="true"/>
+            <task id="403" name="Harness de tests (50 attaques, 0 évasion)" color="#548235" meeting="false" start="2026-07-14" duration="4" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- PARCOURS UTILISATEURS (6-31 juillet en parallèle)             -->
+        <!-- ============================================================ -->
+        <task id="500" name="Parcours utilisateurs complet" color="#548235" meeting="false" start="2026-07-06" duration="20" complete="100" expand="true">
+            <task id="501" name="Passation candidat + éditeur de code" color="#548235" meeting="false" start="2026-07-06" duration="10" complete="100" expand="true"/>
+            <task id="502" name="Correction automatique et scoring" color="#548235" meeting="false" start="2026-07-20" duration="4" complete="100" expand="true"/>
+            <task id="503" name="Mécanismes anti-fraude comportementaux" color="#548235" meeting="false" start="2026-07-24" duration="3" complete="100" expand="true"/>
+            <task id="504" name="Compte rendu IA automatisé" color="#548235" meeting="false" start="2026-07-29" duration="3" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- POC 4 - STATISTIQUES ET DASHBOARD (3-14 août)                 -->
+        <!-- ============================================================ -->
+        <task id="600" name="POC 4 - Statistiques et amélioration continue" color="#548235" meeting="false" start="2026-08-03" duration="10" complete="100" expand="true">
+            <task id="601" name="Indicateurs discriminants et difficulté" color="#548235" meeting="false" start="2026-08-03" duration="4" complete="100" expand="true"/>
+            <task id="602" name="Tableau de bord recruteur" color="#548235" meeting="false" start="2026-08-07" duration="3" complete="100" expand="true"/>
+            <task id="603" name="Boucle de recommandation des questions" color="#548235" meeting="false" start="2026-08-12" duration="3" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- TESTS ET LIVRAISON (17 août - 11 septembre)                   -->
+        <!-- ============================================================ -->
+        <task id="700" name="Tests, sécurisation et livraison" color="#548235" meeting="false" start="2026-08-17" duration="20" complete="50" expand="true">
+            <task id="701" name="Audit OWASP ZAP" color="#548235" meeting="false" start="2026-08-17" duration="5" complete="100" expand="true"/>
+            <task id="702" name="Tests de charge k6 (20 candidats)" color="#548235" meeting="false" start="2026-08-24" duration="5" complete="70" expand="true"/>
+            <task id="703" name="Recette globale et corrections" color="#548235" meeting="false" start="2026-08-31" duration="5" complete="0" expand="true"/>
+            <task id="704" name="Documentation et livraison finale" color="#548235" meeting="false" start="2026-09-07" duration="5" complete="0" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- JALONS - Soutenances                                          -->
+        <!-- ============================================================ -->
+        <task id="900" name="Soutenance intermédiaire 1" color="#c00000" meeting="true" start="2026-06-05" duration="0" complete="100" expand="true"/>
+        <task id="901" name="Soutenance intermédiaire 2" color="#c00000" meeting="true" start="2026-08-14" duration="0" complete="0" expand="true"/>
+        <task id="902" name="Soutenance finale M2 MBDS" color="#c00000" meeting="true" start="2026-09-15" duration="0" complete="0" expand="true"/>
+    </tasks>
+    <resources/>
+    <allocations/>
+    <vacations/>
+    <previous/>
+    <roles roleset-name="Default"/>
+</project>

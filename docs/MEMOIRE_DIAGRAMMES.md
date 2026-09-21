@@ -486,47 +486,55 @@ stateDiagram-v2
 ## Diagramme 10 — Planning Gantt macro (chapitre 4.4)
 
 **Objectif :** frise chronologique des 8 sprints du stage.
+**Dates réelles** issues du mémoire (chap. 4.4 « Planification ») : stage du **11 mai 2026 au 11 septembre 2026**.
 **Outil recommandé :** Mermaid (rapide) OU **GanttProject** desktop pour un rendu plus pro (export PNG/PDF/HTML).
 
 **Version Mermaid :**
 
 ```mermaid
 gantt
-    title Planning SkillForge — 8 sprints × 2 semaines (avril 2026 → août 2026)
+    title Planning SkillForge — Stage 4 mois (11 mai → 11 septembre 2026)
     dateFormat  YYYY-MM-DD
     axisFormat  %d %b
 
-    section Cadrage
-    S0 Cadrage, CDC, état de l'art       :done, s0, 2026-04-01, 14d
+    section Cadrage & Conception
+    S0 Cadrage, CDC, état de l'art       :done, s0, 2026-05-11, 2026-05-22
+    S1 Conception UML, MCD, architecture :done, s1, 2026-05-25, 2026-06-05
 
-    section Conception & MVP
-    S1 UML, MCD, MVP backend             :done, s1, after s0, 14d
+    section Développement
+    S2 Analyse CV + intégration IA       :done, s2, 2026-06-08, 2026-06-19
+    S3 Génération des évaluations        :done, s3, 2026-06-22, 2026-07-03
+    S4 Parcours candidat + sandbox       :done, s4, 2026-07-06, 2026-07-17
+    S5 Correction + résultats + fraude   :done, s5, 2026-07-20, 2026-07-31
+    S6 Statistiques + tableau de bord    :done, s6, 2026-08-03, 2026-08-14
 
-    section POC 1 & 2
-    S2 POC 1 Analyse CV + RGPD           :done, s2, after s1, 14d
-    S3 POC 2 Génération adaptative       :done, s3, after s2, 14d
-
-    section POC 3 & suite
-    S4 POC 3 Sandbox + IHM candidat      :done, s4, after s3, 14d
-    S5 Auto-grading + compte rendu IA    :done, s5, after s4, 14d
-
-    section POC 4 & Sécurité
-    S6 POC 4 Statistiques + dashboard    :done, s6, after s5, 14d
-    S7 Tests sécurité + charge (ZAP, k6) :active, s7, after s6, 14d
-
-    section Livraison
-    S8 Recette + mise en production      :s8, after s7, 14d
+    section Finalisation
+    S7 Tests + sécurisation              :active, s7, 2026-08-17, 2026-08-28
+    S8 Recette + documentation           :s8, 2026-08-31, 2026-09-11
 
     section Jalons
-    Soutenance M2 MBDS                    :milestone, sout, 2026-10-15, 0d
+    Soutenance intermédiaire mai/juin    :milestone, sm1, 2026-06-05, 0d
+    Soutenance intermédiaire août        :milestone, sm2, 2026-08-14, 0d
+    Soutenance finale M2 MBDS            :milestone, sfin, 2026-09-15, 0d
 ```
 
 **Version GanttProject (recommandée pour rendu final)** :
-1. Créer un projet neuf, dates de début 2026-04-01, fin 2026-08-31.
-2. Créer 8 tâches parents "S0 Cadrage" à "S8 Recette", 14 jours chacune, chaînées.
-3. Ajouter le jalon "Soutenance" au 2026-10-15.
-4. Décomposer S7 et S8 en sous-tâches si tu veux un niveau de détail plus fin.
-5. Export → PNG ou PDF → insérer dans le Word.
+1. Créer un projet neuf, date début **11 mai 2026**, date fin **11 septembre 2026**.
+2. Créer 9 tâches (S0 à S8), 2 semaines chacune, chaînées :
+   - S0 Cadrage : 11-22 mai
+   - S1 Conception : 25 mai-5 juin
+   - S2 Analyse CV : 8-19 juin
+   - S3 Génération : 22 juin-3 juillet
+   - S4 Parcours candidat + sandbox : 6-17 juillet
+   - S5 Correction + résultats : 20-31 juillet
+   - S6 Statistiques + dashboard : 3-14 août
+   - S7 Tests + sécurisation : 17-28 août
+   - S8 Recette + finalisation : 31 août-11 septembre
+3. Ajouter 3 jalons de soutenance (intermédiaire mars/mai/juin, intermédiaire fin mai/début juin, finale début septembre) selon les dates que ton prof t'a communiquées.
+4. Marquer S0 à S6 en « Terminé », S7 en « En cours », S8 en « À faire ».
+5. Export → PNG ou PDF → insérer dans le Word au chapitre 4.4.
+
+**Rendu attendu** : chaque sprint apparaît sous forme de barre horizontale colorée, les jalons sous forme de losange. Les 3 sections (Cadrage & Conception / Développement / Finalisation) regroupent visuellement les sprints par grande phase du projet.
 
 ---
 

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SkillForge - Planning stage M2 MBDS" company="Tsarajoro" webLink="" view-date="2026-05-11" view-index="0" gantt-divider-location="420" resource-divider-location="300" version="3.3.3316" locale="fr">
+    <description>Planning du stage de fin d'études M2 MBDS - SkillForge. Stage du 11 mai au 11 septembre 2026 (4 mois), découpé en 9 sprints de 2 semaines. Auteur : GERSHOM Ny Aina Fitia. Entreprise : Tsarajoro.</description>
+    <view zooming-state="default:3" id="gantt-chart">
+        <field id="tpd3" name="Nom" width="260" order="0"/>
+        <field id="tpd4" name="Date de début" width="80" order="1"/>
+        <field id="tpd5" name="Date de fin" width="80" order="2"/>
+        <option id="color.recent"><![CDATA[#5b9bd5]]></option>
+        <option id="taskLabelUp"><![CDATA[]]></option>
+        <option id="taskLabelDown"><![CDATA[]]></option>
+        <option id="taskLabelLeft"><![CDATA[]]></option>
+        <option id="taskLabelRight"><![CDATA[name]]></option>
+    </view>
+    <view id="resource-table">
+        <field id="0" name="Nom" width="210" order="0"/>
+        <field id="1" name="Rôle" width="86" order="1"/>
+    </view>
+    <calendars>
+        <day-types>
+            <day-type id="0"/>
+            <day-type id="1"/>
+            <default-week id="1" name="default" sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+            <only-show-weekends value="false"/>
+            <overriden-day-types/>
+            <days/>
+        </day-types>
+    </calendars>
+    <tasks empty-milestones="true">
+        <taskproperties>
+            <taskproperty id="tpd0" name="type" type="default" valuetype="icon"/>
+            <taskproperty id="tpd1" name="priority" type="default" valuetype="icon"/>
+            <taskproperty id="tpd2" name="info" type="default" valuetype="icon"/>
+            <taskproperty id="tpd3" name="name" type="default" valuetype="text"/>
+            <taskproperty id="tpd4" name="begindate" type="default" valuetype="date"/>
+            <taskproperty id="tpd5" name="enddate" type="default" valuetype="date"/>
+            <taskproperty id="tpd6" name="duration" type="default" valuetype="int"/>
+            <taskproperty id="tpd7" name="completion" type="default" valuetype="int"/>
+            <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
+            <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
+        </taskproperties>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 0 - CADRAGE (11-22 mai 2026)                           -->
+        <!-- ============================================================ -->
+        <task id="100" name="S0 - Cadrage" color="#5b9bd5" meeting="false" start="2026-05-11" duration="10" complete="100" expand="true">
+            <task id="101" name="Analyse du besoin métier avec Tsarajoro" color="#5b9bd5" meeting="false" start="2026-05-11" duration="3" complete="100" expand="true"/>
+            <task id="102" name="Étude de l'existant et état de l'art" color="#5b9bd5" meeting="false" start="2026-05-14" duration="3" complete="100" expand="true"/>
+            <task id="103" name="Rédaction du cahier des charges" color="#5b9bd5" meeting="false" start="2026-05-19" duration="4" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 1 - CONCEPTION (25 mai - 5 juin)                       -->
+        <!-- ============================================================ -->
+        <task id="110" name="S1 - Conception" color="#5b9bd5" meeting="false" start="2026-05-25" duration="10" complete="100" expand="true">
+            <task id="111" name="Modélisation UML (cas d'utilisation, séquences)" color="#5b9bd5" meeting="false" start="2026-05-25" duration="3" complete="100" expand="true"/>
+            <task id="112" name="Modèle conceptuel de données (MCD)" color="#5b9bd5" meeting="false" start="2026-05-28" duration="3" complete="100" expand="true"/>
+            <task id="113" name="Architecture technique et choix des outils" color="#5b9bd5" meeting="false" start="2026-06-02" duration="4" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 2 - POC 1 ANALYSE CV (8-19 juin)                       -->
+        <!-- ============================================================ -->
+        <task id="120" name="S2 - POC 1 Analyse CV et IA" color="#5b9bd5" meeting="false" start="2026-06-08" duration="10" complete="100" expand="true">
+            <task id="121" name="Import PDF/DOCX et extraction du contenu" color="#5b9bd5" meeting="false" start="2026-06-08" duration="3" complete="100" expand="true"/>
+            <task id="122" name="Intégration modèle IA et détection compétences" color="#5b9bd5" meeting="false" start="2026-06-11" duration="4" complete="100" expand="true"/>
+            <task id="123" name="Interface recruteur : validation des compétences" color="#5b9bd5" meeting="false" start="2026-06-17" duration="3" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 3 - POC 2 GÉNÉRATION (22 juin - 3 juillet)             -->
+        <!-- ============================================================ -->
+        <task id="130" name="S3 - POC 2 Génération des évaluations" color="#5b9bd5" meeting="false" start="2026-06-22" duration="10" complete="100" expand="true">
+            <task id="131" name="Génération de QCM, exercices et cas pratiques" color="#5b9bd5" meeting="false" start="2026-06-22" duration="4" complete="100" expand="true"/>
+            <task id="132" name="Banque de questions réutilisables" color="#5b9bd5" meeting="false" start="2026-06-26" duration="3" complete="100" expand="true"/>
+            <task id="133" name="Interface de validation des questions par le recruteur" color="#5b9bd5" meeting="false" start="2026-07-01" duration="3" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 4 - PARCOURS CANDIDAT + SANDBOX (6-17 juillet)         -->
+        <!-- ============================================================ -->
+        <task id="140" name="S4 - POC 3 Parcours candidat et sandbox" color="#5b9bd5" meeting="false" start="2026-07-06" duration="10" complete="100" expand="true">
+            <task id="141" name="Lien d'invitation candidat sécurisé" color="#5b9bd5" meeting="false" start="2026-07-06" duration="2" complete="100" expand="true"/>
+            <task id="142" name="Interface de passation candidat" color="#5b9bd5" meeting="false" start="2026-07-08" duration="3" complete="100" expand="true"/>
+            <task id="143" name="Éditeur de code intégré et sauvegarde progressive" color="#5b9bd5" meeting="false" start="2026-07-13" duration="2" complete="100" expand="true"/>
+            <task id="144" name="Service sandbox Docker durcie (seccomp, cap-drop)" color="#5b9bd5" meeting="false" start="2026-07-15" duration="3" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 5 - CORRECTION ET RÉSULTATS (20-31 juillet)            -->
+        <!-- ============================================================ -->
+        <task id="150" name="S5 - Correction et résultats" color="#5b9bd5" meeting="false" start="2026-07-20" duration="10" complete="100" expand="true">
+            <task id="151" name="Correction automatique et calcul des scores" color="#5b9bd5" meeting="false" start="2026-07-20" duration="3" complete="100" expand="true"/>
+            <task id="152" name="Mécanismes anti-fraude comportementaux" color="#5b9bd5" meeting="false" start="2026-07-23" duration="3" complete="100" expand="true"/>
+            <task id="153" name="Génération du compte rendu IA" color="#5b9bd5" meeting="false" start="2026-07-28" duration="4" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 6 - STATISTIQUES ET DASHBOARD (3-14 août)              -->
+        <!-- ============================================================ -->
+        <task id="160" name="S6 - POC 4 Statistiques et tableau de bord" color="#5b9bd5" meeting="false" start="2026-08-03" duration="10" complete="100" expand="true">
+            <task id="161" name="Indicateurs discriminants (pouvoir, difficulté)" color="#5b9bd5" meeting="false" start="2026-08-03" duration="4" complete="100" expand="true"/>
+            <task id="162" name="Analyse des questions et résultats par compétence" color="#5b9bd5" meeting="false" start="2026-08-07" duration="3" complete="100" expand="true"/>
+            <task id="163" name="Tableau de bord recruteur avec graphiques" color="#5b9bd5" meeting="false" start="2026-08-12" duration="3" complete="100" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 7 - TESTS ET SÉCURISATION (17-28 août)                 -->
+        <!-- ============================================================ -->
+        <task id="170" name="S7 - Tests et sécurisation" color="#5b9bd5" meeting="false" start="2026-08-17" duration="10" complete="90" expand="true">
+            <task id="171" name="Tests fonctionnels et unitaires JUnit" color="#5b9bd5" meeting="false" start="2026-08-17" duration="3" complete="100" expand="true"/>
+            <task id="172" name="Audit sécurité OWASP ZAP (baseline + full scan)" color="#5b9bd5" meeting="false" start="2026-08-20" duration="3" complete="100" expand="true"/>
+            <task id="173" name="Tests de charge k6 (20 candidats simultanés)" color="#5b9bd5" meeting="false" start="2026-08-25" duration="4" complete="70" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- SPRINT 8 - RECETTE ET FINALISATION (31 août - 11 septembre)   -->
+        <!-- ============================================================ -->
+        <task id="180" name="S8 - Recette et finalisation" color="#5b9bd5" meeting="false" start="2026-08-31" duration="10" complete="0" expand="true">
+            <task id="181" name="Recette globale avec l'encadreur" color="#5b9bd5" meeting="false" start="2026-08-31" duration="3" complete="0" expand="true"/>
+            <task id="182" name="Corrections des bugs remontés" color="#5b9bd5" meeting="false" start="2026-09-03" duration="3" complete="0" expand="true"/>
+            <task id="183" name="Documentation technique et guide d'exploitation" color="#5b9bd5" meeting="false" start="2026-09-08" duration="4" complete="0" expand="true"/>
+        </task>
+
+        <!-- ============================================================ -->
+        <!-- JALONS - Soutenances (à ajuster selon dates réelles)          -->
+        <!-- ============================================================ -->
+        <task id="900" name="Soutenance intermédiaire 1" color="#c00000" meeting="true" start="2026-06-05" duration="0" complete="100" expand="true"/>
+        <task id="901" name="Soutenance intermédiaire 2" color="#c00000" meeting="true" start="2026-08-14" duration="0" complete="0" expand="true"/>
+        <task id="902" name="Soutenance finale M2 MBDS" color="#c00000" meeting="true" start="2026-09-15" duration="0" complete="0" expand="true"/>
+    </tasks>
+    <resources/>
+    <allocations/>
+    <vacations/>
+    <previous/>
+    <roles roleset-name="Default"/>
+</project>
