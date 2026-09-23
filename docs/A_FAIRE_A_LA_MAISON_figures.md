@@ -1,214 +1,375 @@
-# À faire à la maison — 3 dernières figures du mémoire
+# À faire à la maison — Images restantes pour le mémoire
 
-**Objectif :** insérer les 3 dernières images manquantes dans
+**Objectif :** produire toutes les images manquantes pour finaliser
 `MEMOIRE-itu-MBDS-v2.docx`.
 
-**Durée totale estimée :** ~30 minutes.
-
-**Ordre recommandé :** Figure 10 → Figure 12 → Figure 1
-(les 2 Mermaid d'abord car même outil, le Gantt en dernier).
+**Durée totale estimée :** ~1 heure.
 
 ---
 
-## Ce qu'il te faut
+## Vue d'ensemble : ce qu'il reste à faire
 
-- Ton fichier `MEMOIRE-itu-MBDS-v2.docx` ouvert dans Word / LibreOffice
-- Une connexion internet
-- Ton fichier `docs/SkillForge_Planning.gan` (pour le Gantt)
-- **GanttProject Desktop** installé (téléchargement gratuit : https://www.ganttproject.biz)
+| # | Emplacement dans le mémoire | Statut | Ce qu'il faut produire |
+|---|---|---|---|
+| **1** | Figure 11 (page 52, corps) | ⚠️ Bug : image dupliquée | **1 image** : MCD conceptuel (mermaid) |
+| **2** | Annexe 1 — Figure 13 | À créer | **1 image** : MPD complet (DBeaver) |
+| **3** | Annexe 2 — Figures 14 à 16 | À créer | **3 captures** d'interfaces |
+| **4** | Annexe 3 — Figure 17 | À créer | **1 image** : schéma sandbox (mermaid) |
+| **5** | Annexe 4 — Figure 18 | À créer | **1 image** : schéma multi-providers LLM (mermaid) |
+
+**Total : 7 images à produire (Figure 11 corrigée + Figures 13 à 18).**
+
+**Note importante sur la numérotation :** ton mémoire s'arrête à **Figure 12** dans le corps. Les annexes continuent donc naturellement à **Figure 13** puis 14, 15, 16, 17, 18 — pas de saut, pas de trou.
 
 ---
 
-# Figure 10 — Organisation des principaux packages du backend
+# IMAGE 1 — Figure 11 : Modèle de données de SkillForge (CORRECTION)
 
-## Emplacement dans le mémoire
+**Emplacement :** page 52 du mémoire, chapitre 7.2.3 « Modélisation de données »
+**Type :** MCD conceptuel (entités-relations)
+**Outil :** mermaid.live
+**Durée :** 5 min
 
-Chapitre **7.2.2 "Le code source – vue statique"**.
-Tu chercheras dans le texte la légende `Figure 10 : Organisation des principaux packages du backend SkillForge` — l'image doit venir juste au-dessus de cette légende.
+## Problème
+
+Dans la v2 actuelle, Figure 11 (page 52) affiche la même image que Figure 10
+(page 51) — les packages backend. Or Figure 11 doit être le modèle
+conceptuel de données.
 
 ## Étapes
 
-**1.** Ouvre https://mermaid.live/ dans ton navigateur.
-
-**2.** Efface tout le contenu par défaut dans la zone de gauche.
-
+**1.** Ouvre https://mermaid.live/
+**2.** Efface le contenu par défaut
 **3.** Colle le code suivant :
+
+```mermaid
+erDiagram
+    USER ||--o{ TEST : "crée"
+    CANDIDATE ||--o{ CV : "possède"
+    CANDIDATE ||--o{ TEST : "cible"
+    CV ||--o| CV_ANALYSIS : "analysé"
+    TEST ||--|{ QUESTION : "contient"
+    TEST ||--|| INVITATION : "envoyée via"
+    INVITATION ||--o| PASSATION : "démarre"
+    PASSATION ||--|{ ANSWER : "produit"
+    QUESTION ||--o{ ANSWER : "répondue"
+    PASSATION ||--o{ FRAUD_EVENT : "détecte"
+    PASSATION ||--|| REPORT : "génère"
+
+    USER {
+        uuid id
+        string email
+        string password_hash
+        string role
+    }
+    CANDIDATE {
+        uuid id
+        string email
+        string display_name
+    }
+    CV {
+        uuid id
+        string filename
+        bytes content
+    }
+    CV_ANALYSIS {
+        uuid id
+        jsonb skills_detected
+        string llm_provider
+    }
+    TEST {
+        uuid id
+        string name
+        string profile_code
+    }
+    QUESTION {
+        uuid id
+        string type
+        int difficulty
+        jsonb payload
+        string status
+    }
+    INVITATION {
+        uuid id
+        string token
+        string access_code
+        timestamp expires_at
+    }
+    PASSATION {
+        uuid id
+        timestamp started_at
+        timestamp submitted_at
+    }
+    ANSWER {
+        uuid id
+        jsonb response
+        int score
+    }
+    FRAUD_EVENT {
+        uuid id
+        string type
+        timestamp occurred_at
+    }
+    REPORT {
+        uuid id
+        int global_score
+        string recommendation
+        text explanation
+    }
+```
+
+**4.** Actions → PNG (renomme en `figure_11_mcd.png`)
+**5.** Dans Word, page 52 : remplace l'image dupliquée par `figure_11_mcd.png`
+**6.** La légende « Figure 11 : Modèle de données de SkillForge » reste inchangée
+
+---
+
+# IMAGE 2 — Annexe 1 : Modèle physique complet (MPD)
+
+**Emplacement :** nouvelle Annexe 1, à insérer après le chapitre 10 Bibliographie
+**Type :** MPD physique (toutes les tables SQL + colonnes + clés étrangères)
+**Outil :** DBeaver (auto-généré depuis la BDD PostgreSQL)
+**Durée :** 10 min
+
+## Pourquoi DBeaver et pas mermaid ?
+
+DBeaver produit un rendu identique à celui du mémoire MADIS (tables colorées
+avec colonnes détaillées et flèches FK). Auto-généré depuis la vraie base
+de données → zéro risque d'oubli de table ou de colonne.
+
+## Étapes
+
+**1.** Vérifie que DBeaver est installé :
+
+```bash
+which dbeaver || sudo pacman -S dbeaver
+```
+
+**2.** Vérifie que le backend tourne (la BDD PostgreSQL doit être accessible) :
+
+```bash
+cd ~/Documents/st/skillforge-platform
+docker compose ps
+```
+
+Si la BDD n'est pas démarrée :
+
+```bash
+docker compose up -d postgres
+```
+
+**3.** Ouvre DBeaver, crée une nouvelle connexion PostgreSQL avec les
+paramètres définis dans `apps/backend-app/.env` (host: localhost, port: 5432,
+database: skillforge_db, user + password: cf .env).
+
+**4.** Dans l'arbre à gauche, déplie :
+`skillforge_db → Schemas → public → Tables`
+
+**5.** Clic droit sur **Tables** → **View Diagram**
+
+**6.** DBeaver génère automatiquement le diagramme complet. Attends
+quelques secondes que la disposition se stabilise.
+
+**7.** Ajuste si nécessaire :
+   - Zoom pour que tout soit lisible
+   - Déplace les tables trop chevauchées
+
+**8.** Menu contextuel sur le diagramme → **Save as image** → choisis PNG
+avec la résolution maximum. Nomme le fichier `figure_13_mpd.png`.
+
+**9.** Dans Word, insère cette image dans l'Annexe 1 (voir texte
+d'accompagnement dans `docs/MEMOIRE_ANNEXES.md`).
+
+## Astuce
+
+Si DBeaver refuse à cause de la BDD non démarrée, tu peux aussi passer par
+un outil en ligne comme https://dbdiagram.io/ en collant le schéma SQL
+extrait de tes migrations Flyway (V1 à V7). Mais DBeaver reste plus rapide
+et plus fidèle.
+
+---
+
+# IMAGE 3 — Annexe 2 : Captures d'interfaces complémentaires
+
+**Emplacement :** nouvelle Annexe 2
+**Type :** captures d'écran de l'application en local
+**Outil :** ton système (Print Screen ou outil de capture)
+**Durée :** 15 min
+
+## Écrans à capturer
+
+Vise **3 à 4 captures d'interfaces qui ne sont PAS déjà dans le corps du
+mémoire**. Les Figures 3 à 7 (corps) montrent déjà : création d'évaluation,
+validation des questions, passation, exercice de code, résultats.
+
+**Écrans complémentaires à capturer (choisis-en 3 ou 4) :**
+
+| # | Écran | URL locale | Nom fichier suggéré |
+|---|---|---|---|
+| A | Liste des tests (tableau avec filtres) | http://localhost:5173/app/review | `figure_14_liste_tests.png` |
+| B | Détail d'un rapport candidat complet | http://localhost:5173/app/reports/{id} | `figure_15_rapport.png` |
+| C | Dashboard analytique recruteur | http://localhost:5173/app/dashboard | `figure_16_dashboard.png` |
+
+## Étapes
+
+**1.** Démarre l'application complète :
+
+```bash
+cd ~/Documents/st/skillforge-platform
+docker compose up -d postgres mailpit
+cd apps/backend-app && mvn spring-boot:run &
+cd ../backend-sandbox && mvn spring-boot:run &
+cd ../frontend-web && npm run dev
+```
+
+**2.** Ouvre http://localhost:5173, connecte-toi avec un compte recruteur.
+
+**3.** Pour chaque écran choisi :
+   - Navigue jusqu'à l'écran
+   - Attends que les données se chargent (pas d'écran vide)
+   - Utilise **Print Screen** (ou `gnome-screenshot -a` pour capturer une zone)
+   - Sauvegarde en PNG
+
+**4.** Vérifie que chaque capture contient :
+   - Toute la zone utile (pas coupée)
+   - Aucune donnée personnelle sensible (utilise des candidats fictifs de démo)
+   - Bonne résolution (viser 1600 px de large minimum)
+
+**5.** Dans Word, insère les 3 images dans l'Annexe 2 avec les légendes
+Figure 14, Figure 15, Figure 16.
+
+---
+
+# IMAGE 4 — Annexe 3 : Schéma de la sandbox durcie
+
+**Emplacement :** nouvelle Annexe 3
+**Type :** schéma d'architecture de la sandbox Docker
+**Outil :** mermaid.live
+**Durée :** 5 min
+
+## Étapes
+
+**1.** Ouvre https://mermaid.live/
+**2.** Colle le code suivant :
+
+```mermaid
+flowchart LR
+    A[Candidat<br/>navigateur] -->|Code soumis| B[backend-app<br/>Spring Boot]
+    B -->|HTTP interne| C[backend-sandbox<br/>service isolé]
+    C -->|docker run| D[Conteneur éphémère]
+
+    subgraph D[Conteneur d'exécution isolé]
+        direction TB
+        E[seccomp<br/>syscalls filtrés]
+        F[cap-drop=ALL<br/>aucune capability]
+        G[network=none<br/>pas de réseau]
+        H[read-only rootfs<br/>FS non modifiable]
+        I[pids-limit=64<br/>fork bomb bloqué]
+        J[memory=256M<br/>cpus=1]
+        K[user=1001<br/>non-root]
+    end
+
+    D -->|stdout / stderr / exit code| C
+    C -->|Résultat| B
+    B -->|Score + feedback| A
+
+    style D fill:#fff4e6,stroke:#d97706,stroke-width:2px
+    style A fill:#e0f2fe
+    style B fill:#dbeafe
+    style C fill:#dbeafe
+```
+
+**3.** Actions → PNG → nomme `figure_17_sandbox.png`
+**4.** Insère dans Annexe 3 dans Word (légende : Figure 17)
+
+---
+
+# IMAGE 5 — Annexe 4 : Schéma multi-providers LLM
+
+**Emplacement :** nouvelle Annexe 4
+**Type :** schéma d'abstraction des fournisseurs LLM
+**Outil :** mermaid.live
+**Durée :** 5 min
+
+## Étapes
+
+**1.** Ouvre https://mermaid.live/
+**2.** Colle le code suivant :
 
 ```mermaid
 flowchart TB
-    subgraph COM["com.tsarajoro.skillforge"]
-        AUTH["auth<br/>(JWT, login, refresh)"]
-        CV["cv<br/>(parsing PDF / DOCX / OCR)"]
-        GEN["generation<br/>(prompts, service génération)"]
-        CAND["candidate<br/>(passations, invitations)"]
-        REP["report<br/>(comptes rendus IA, export PDF)"]
-        ANA["analytics<br/>(indices discriminants, dashboard)"]
-        MAIL["mail<br/>(MailService, templates HTML)"]
-        SBX["sandbox<br/>(client HTTP vers backend-sandbox)"]
-        LLM["llm<br/>(LlmClient + implémentations)"]
-        SEC["security<br/>(SecurityConfig, filtres, CSP)"]
-        EXC["exception<br/>(GlobalExceptionHandler)"]
-    end
+    A[Service métier<br/>CvAnalysisService, QuestionGeneratorService, ReportGeneratorService]
+    A --> B{{Interface<br/>LlmClient}}
 
-    AUTH --> SEC
-    CAND --> LLM
-    CAND --> SBX
-    CAND --> MAIL
-    GEN --> LLM
-    CV --> LLM
-    REP --> LLM
-    CAND --> EXC
-    GEN --> EXC
-    AUTH --> EXC
+    B -.->|LLM_PROVIDER=openai| C1[OpenAiLlmClient]
+    B -.->|LLM_PROVIDER=groq| C2[GroqLlmClient]
+    B -.->|LLM_PROVIDER=gemini| C3[GeminiLlmClient]
+    B -.->|LLM_PROVIDER=claude| C4[ClaudeLlmClient]
+    B -.->|LLM_PROVIDER=github| C5[GithubModelsLlmClient]
+    B -.->|LLM_PROVIDER=ollama| C6[OllamaLlmClient<br/>local, souverain]
+
+    C1 --> D1[api.openai.com]
+    C2 --> D2[api.groq.com]
+    C3 --> D3[generativelanguage.googleapis.com]
+    C4 --> D4[api.anthropic.com]
+    C5 --> D5[models.inference.ai.azure.com]
+    C6 --> D6[localhost:11434<br/>Ollama on-premise]
+
+    style B fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style C6 fill:#dcfce7
+    style D6 fill:#dcfce7
+    style A fill:#dbeafe
 ```
 
-**4.** Le rendu apparaît à droite. Vérifie que tu vois bien tous les packages (auth, cv, generation, candidate, report, analytics, mail, sandbox, llm, security, exception).
-
-**5.** En haut à droite, clique **Actions → PNG**. L'image se télécharge.
-    (Renomme si tu veux : `figure_10_packages.png`)
-
-**6.** Dans Word / LibreOffice :
-   - Va au chapitre 7.2.2
-   - Clique juste au-dessus de la ligne `Figure 10 : Organisation des principaux packages...`
-   - Insertion → Image → sélectionne l'image téléchargée
-   - Centre l'image, redimensionne si nécessaire
+**3.** Actions → PNG → nomme `figure_18_llm_providers.png`
+**4.** Insère dans Annexe 4 dans Word (légende : Figure 18)
 
 ---
 
-# Figure 12 — Séquence interne de l'accès sécurisé à une passation
+# Récapitulatif final — checklist à cocher
 
-## Emplacement dans le mémoire
+Coche au fur et à mesure. Quand tout est coché, le mémoire est complet côté
+images.
 
-Chapitre **7.2.4 "Réalisation des cas d'utilisation"**.
-Tu chercheras dans le texte la légende `Figure 12 : Séquence interne de l'accès sécurisé à une passation` — l'image doit venir juste au-dessus.
+## Corps du mémoire (correction)
 
-## Étapes
+- [ ] **Figure 11** (page 52) : MCD conceptuel généré via mermaid.live et
+      inséré à la place de l'image dupliquée
 
-**1.** Reste sur https://mermaid.live/ (même onglet que Figure 10).
+## Annexes (créations)
 
-**2.** Efface le contenu précédent.
+- [ ] **Annexe 1 — Figure 13** : MPD complet exporté depuis DBeaver
+- [ ] **Annexe 2 — Figures 14, 15, 16** : 3 captures d'interfaces
+      complémentaires
+- [ ] **Annexe 3 — Figure 17** : schéma sandbox généré via mermaid.live
+- [ ] **Annexe 4 — Figure 18** : schéma multi-providers LLM généré via
+      mermaid.live
 
-**3.** Colle le code suivant :
+## Numérotation finale des figures
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor C as Candidat
-    participant FE as Frontend
-    participant BE as Backend principal
-    participant DB as Base de données
+Après ces ajouts, le mémoire contiendra une numérotation **continue** de
+Figure 1 à Figure 18 :
 
-    C->>FE: Saisit email + code d'accès
-    FE->>BE: POST /candidate/passations/start
-    BE->>DB: Vérifie le token d'invitation
-    alt Invitation invalide ou expirée
-        BE-->>FE: HTTP 410 (lien invalide)
-        FE-->>C: Message d'erreur
-    end
-    BE->>BE: Vérifie le code d'accès<br/>(comparaison temps constant)
-    alt Code incorrect (5e échec)
-        BE-->>FE: HTTP 403 (blocage 15 min)
-        FE-->>C: Message d'erreur
-    end
-    BE->>BE: Vérifie l'identité du candidat
-    BE->>DB: Crée la passation
-    BE-->>FE: 200 OK + PassationDto
-    FE-->>C: Redirection vers la première question
-```
+**Corps du mémoire :**
+- Figure 1 à 12 (déjà présentes ou corrigées)
 
-**4.** Le rendu apparaît à droite. Tu dois voir un diagramme de séquence avec 4 colonnes verticales : Candidat, Frontend, Backend principal, Base de données, avec des flèches horizontales entre elles.
+**Annexes :**
+- Figure 13 — MPD complet (Annexe 1)
+- Figure 14 — Liste des évaluations (Annexe 2)
+- Figure 15 — Rapport candidat (Annexe 2)
+- Figure 16 — Dashboard analytique (Annexe 2)
+- Figure 17 — Sandbox (Annexe 3)
+- Figure 18 — Multi-providers LLM (Annexe 4)
 
-**5.** Actions → PNG → télécharge.
-    (Renomme : `figure_12_sequence.png`)
+Continuité parfaite, aucun numéro sauté.
 
-**6.** Dans Word :
-   - Va au chapitre 7.2.4
-   - Insère l'image juste au-dessus de la légende `Figure 12 : ...`
-   - Centre et redimensionne
+## Table des figures
+
+Après avoir inséré toutes les images, dans Word :
+Références → Insérer une table des illustrations (ou clique droit sur la
+table existante → Mettre à jour les champs) pour régénérer la liste
+automatiquement.
 
 ---
 
-# Figure 1 — Macro-planning du projet SkillForge (Gantt)
-
-## Emplacement dans le mémoire
-
-Chapitre **4.4 "Planification"**.
-Tu chercheras dans le texte le placeholder `[INSÉRER ICI UN DIAGRAMME DE GANTT MACRO DU PROJET]` — l'image doit remplacer ce placeholder.
-
-## Étapes
-
-**1.** Télécharge et installe **GanttProject Desktop** depuis https://www.ganttproject.biz
-    (Bouton "Free download", disponible Linux/Mac/Windows.)
-
-**2.** Lance GanttProject.
-
-**3.** **Fichier → Ouvrir** → sélectionne le fichier
-    `docs/SkillForge_Planning.gan` (dans ton projet skillforge-platform).
-
-    Note : tu as 3 versions disponibles dans le dossier `docs/` :
-    - `SkillForge_Planning.gan` : par sprints S0 à S8 (recommandé)
-    - `SkillForge_Planning_v2_phases.gan` : par 3 phases (Cadrage/Dev/Finalisation)
-    - `SkillForge_Planning_v3_pocs.gan` : par POCs (met les 4 POC en avant)
-    Choisis celle qui te plaît le plus visuellement.
-
-**4.** Vérifie et ajuste si besoin :
-   - Les 3 jalons de soutenance (losanges rouges) : ajuste les dates si le
-     prof t'a communiqué des dates différentes des miennes (double-clic sur
-     le jalon → changer la date).
-   - Les couleurs par défaut sont bleu-gris ; tu peux les changer via
-     Édition → Options → Couleurs des tâches.
-
-**5.** **Fichier → Exporter le projet → PNG image**
-   - Une fenêtre de dialogue s'ouvre
-   - Choisis "Diagramme de Gantt" (pas "Diagramme des ressources")
-   - Ajuste la largeur (2400 px conseillé pour un rendu net)
-   - Enregistre le fichier PNG où tu veux
-    (Renomme : `figure_1_gantt.png`)
-
-**6.** Dans Word :
-   - Va au chapitre 4.4
-   - Trouve la ligne `[INSÉRER ICI UN DIAGRAMME DE GANTT MACRO DU PROJET]`
-   - Supprime cette ligne
-   - Insertion → Image → sélectionne `figure_1_gantt.png`
-   - La légende `Figure 1 : Macro-planning du projet SkillForge` est déjà
-     dans ton texte, il suffit que l'image soit juste au-dessus.
-
----
-
-# Récapitulatif final
-
-Une fois les 3 images insérées, tu auras dans ton mémoire :
-
-**Figures dans l'ordre :**
-- Figure 1 : Macro-planning du projet SkillForge ✅ (celle du Gantt)
-- Figure 2 : Diagramme global des cas d'utilisation (déjà présente)
-- Figures 3 à 7 : Captures d'interfaces (déjà présentes)
-- Figure 8 : Architecture logicielle (déjà présente)
-- Figure 9 : Architecture technique (déjà présente)
-- Figure 10 : Organisation des packages backend ✅ (celle de Mermaid)
-- Figure 11 : Modèle de données (déjà présente)
-- Figure 12 : Séquence interne accès sécurisé ✅ (celle de Mermaid)
-
-**Tableaux :**
-- Tableaux 1 à 8 (le Tableau 8 sur les tests de sécurité est le dernier ajouté)
-
-**Total : 12 figures + 8 tableaux.**
-
----
-
-## Astuces générales
-
-- **Résolution PNG** : sur mermaid.live et GanttProject, vise 2400 px de large
-  pour que l'image reste lisible même imprimée.
-- **Centrage dans Word** : sélectionne l'image → onglet Accueil → alignement
-  centré.
-- **Légende Word automatique** : tu peux utiliser Références → Insérer une
-  légende, ça permet de générer automatiquement la Liste des figures.
-- **Ne renumérote pas** : les Figure 10 / 12 / 1 correspondent déjà aux
-  numéros attendus dans ton texte, ne les change pas.
-
----
-
-*Fiche créée pour t'aider à finaliser le mémoire à la maison.
-Une fois les 3 images intégrées, on passera au renforcement du chapitre 8
-puis au nettoyage final (glossaire, biblio, table des matières).*
+*Fiche mise à jour le 2026-09-23 — remplace toutes les versions précédentes.*
