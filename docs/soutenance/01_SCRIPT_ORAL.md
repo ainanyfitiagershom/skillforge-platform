@@ -235,7 +235,7 @@ Règles générales pour l'oral :
 
 ---
 
-## Slide 16 — Difficultés rencontrées (1 min)
+## Slide 16 — Difficultés rencontrées, ressources et livrables (1 min 30)
 
 > Trois difficultés majeures ont marqué le projet, chacune résolue par une décision d'architecture.
 >
@@ -246,22 +246,36 @@ Règles générales pour l'oral :
 > **Troisième difficulté** : les premières générations de l'IA produisaient des questions de qualité variable. Résolu par un renforcement des prompts, avec des règles strictes par type de question.
 >
 > Ces trois épisodes ont été **formateurs** : ils ont validé les choix d'architecture initiaux et enrichi ma compréhension des systèmes multi-composants.
+>
+> **[Enchaîner en fin de slide, sans changer de diapo]** Un mot rapide sur les **ressources mises en œuvre par Tsarajoro** : un poste de travail équipé, un accès aux clés API des fournisseurs IA, et surtout l'accompagnement régulier de mon encadreur professionnel, Monsieur RAVELOMANANTIANA Tahirintsoa Ulrich, avec qui je me suis synchronisé toutes les deux semaines.
+>
+> Enfin, **côté livrables laissés à Tsarajoro** : le code source complet dans le dépôt Git de l'entreprise, sept migrations Flyway versionnées, la documentation technique, le mémoire, et un scénario de démonstration reproductible.
 
 *Transition finale.*
 
 ---
 
-## Slide 17 — Apports, limites et perspectives (1 min 15)
+## Slide 17 — Bilan et perspectives (1 min 45)
 
-> Je termine avec un bilan honnête, en trois blocs.
+> Je termine avec le bilan du projet, en trois temps : côté entreprise, côté personnel, puis les perspectives.
 >
-> **[Apports]** Côté apports, SkillForge est aujourd'hui une plateforme complète, testée et documentée. Environ 15 000 lignes de Java et 10 000 lignes de TypeScript. Une sandbox validée par un harnais reproductible. Une architecture multi-LLM prouvée en pratique. Une base réutilisable pour les prochains recrutements de Tsarajoro.
+> **[BILAN CÔTÉ ENTREPRISE — les 3 questions imposées]**
 >
-> **[Limites]** Côté limites, je suis transparent : la mise en production n'a pas été exécutée, la couverture des tests frontend reste à renforcer, le guide utilisateur reste à formaliser, et les tests de charge doivent aller au-delà de vingt candidats simultanés.
+> **Le produit répond-il au besoin de Tsarajoro ?** Oui. Les cinq objectifs fixés au démarrage sont pleinement atteints, mesurés, et validés par un harnais reproductible. La plateforme couvre le processus complet, du CV au verdict.
 >
-> **[Perspectives]** Côté perspectives, plusieurs axes s'ouvrent : le déploiement chez Tsarajoro, l'extension à d'autres langages comme Go ou Rust, l'intégration avec des ATS externes, et le développement d'une offre 100 % on-premise via Ollama pour les clients qui exigent la souveraineté totale.
+> **Quelle est son exploitation en entreprise ?** SkillForge est aujourd'hui prêt à être déployé chez Tsarajoro pour ses propres recrutements techniques. La base est modulaire, réutilisable, et l'architecture multi-LLM permet un choix de fournisseur adapté au contexte.
 >
-> Ce projet m'a fait passer d'une posture de développeur à une posture d'ingénieur logiciel, en autonomie complète pendant quatre mois.
+> **Quelles sont les perspectives ?** Le déploiement en production chez Tsarajoro, la montée en charge vers plus de cent candidats simultanés, l'extension à d'autres langages comme Go, Rust ou C#, l'intégration avec des ATS externes comme Lever ou Greenhouse, et une offre 100 % on-premise via Ollama pour la souveraineté totale des données.
+>
+> **[BILAN PERSONNEL — les 4 axes]**
+>
+> **Techniquement**, j'ai approfondi Java 21, Spring Boot 3, le durcissement Docker et l'intégration multi-LLM, en passant d'une posture de développeur à une posture d'ingénieur logiciel.
+>
+> **Méthodologiquement**, j'ai mené un projet Scrum en autonomie complète pendant quatre mois, en absorbant les imprévus sans casser le planning.
+>
+> **Humainement**, la relation régulière avec mon encadreur m'a appris à argumenter mes choix techniques et à communiquer en français académique.
+>
+> **Professionnellement**, je repars avec un produit livré, une base solide pour ma carrière et la certitude d'avoir contribué durablement à Tsarajoro.
 >
 > Je vous remercie de votre attention et je suis à votre disposition pour vos questions.
 
@@ -288,8 +302,8 @@ Règles générales pour l'oral :
 | **VIDÉO** | **8:00** | **19:05** |
 | 14 Résultats fonctionnels | 0:45 | 19:50 |
 | 15 Résultats mesurés | 0:45 | 20:35 → 20:35 |
-| 16 Difficultés | 1:00 | 21:35 |
-| 17 Bilan | 1:15 | 22:50 |
+| 16 Difficultés + ressources + livrables | 1:30 | 22:05 |
+| 17 Bilan entreprise (3 questions) + personnel (4 axes) + perspectives | 1:45 | 23:50 |
 
 **Attention** : le total tourne autour de 22-23 minutes si la vidéo dépasse 8 min. Si la vidéo fait 10 min, il faut couper certains commentaires (voir "options d'ajustement" ci-dessous).
 

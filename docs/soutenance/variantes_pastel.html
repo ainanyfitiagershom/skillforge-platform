@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>SkillForge — 3 slides retenus (design pastel)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue-50:  #EEF4FB;
+  --blue-100: #DBE7F4;
+  --blue-500: #7DA3D0;
+  --blue-700: #4A6FA5;
+
+  --mint-50:  #EFF6F1;
+  --mint-100: #D4E9DC;
+  --mint-500: #8FBBA1;
+  --mint-700: #5B8B75;
+
+  --rose-50:  #FBF0EF;
+  --rose-100: #F1DEDD;
+  --rose-500: #D5A5A2;
+  --rose-700: #B08585;
+
+  --yellow-50:  #FDF9EF;
+  --yellow-100: #F0E4C3;
+  --yellow-500: #D5BC7E;
+  --yellow-700: #B8985F;
+
+  --violet-50:  #F4EFF9;
+  --violet-100: #E6DAF1;
+  --violet-500: #A793C8;
+  --violet-700: #7A63A3;
+
+  --ink:      #2A3241;
+  --ink-soft: #4B5563;
+  --muted:    #8B93A1;
+  --divider:  #EAECEF;
+  --paper:    #FFFFFF;
+  --bg:       #F5F6F8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--ink); }
+
+.page {
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.page h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.page > .intro {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 40px;
+  max-width: 800px;
+  line-height: 1.6;
+}
+
+/* SLIDE — canevas 16:9 */
+.slide {
+  width: 100%;
+  aspect-ratio: 20 / 11.25;
+  background: var(--paper);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 40px;
+  padding: 4.5% 5.5%;
+  font-size: 1vw;
+}
+
+.slide-label {
+  position: absolute;
+  top: 3%;
+  right: 3%;
+  padding: 0.55em 1.2em;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.75em;
+  font-weight: 600;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+/* HEADER commun */
+.slide-header {
+  margin-bottom: 4%;
+}
+.slide-header .kicker {
+  font-size: 0.85em;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-bottom: 0.7em;
+}
+.slide-header h2 {
+  font-size: 2.4em;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.slide-header .rule {
+  width: 3em;
+  height: 3px;
+  background: var(--mint-500);
+  margin-top: 0.8em;
+  border-radius: 2px;
+}
+
+/* Footer commun */
+.slide-footer {
+  position: absolute;
+  bottom: 4%;
+  left: 5.5%;
+  right: 5.5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8em;
+  color: var(--ink-soft);
+}
+.slide-footer .left { line-height: 1.5; }
+.slide-footer .right { text-align: right; line-height: 1.5; }
+
+/* SECTION heading */
+.section-heading {
+  padding: 40px 40px 15px 40px;
+  border-top: 2px solid var(--divider);
+  margin-top: 20px;
+}
+.section-heading h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+.section-heading p {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ============================================================
+   SLIDE 07 · B — 4 étapes serpentin avec KPI dessous
+   ============================================================ */
+.s7b-content {
+  position: relative;
+  height: 70%;
+  padding-top: 3%;
+}
+.s7b-svg-wrap { position: relative; width: 100%; height: 100%; }
+.s7b-svg-wrap svg.wave {
+  position: absolute;
+  top: 32%;
+  left: 5%;
+  width: 90%;
+  height: 30%;
+  z-index: 1;
+}
+.s7b-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+.s7b-step {
+  flex: 1;
+  text-align: center;
+  padding: 0 1%;
+}
+.s7b-step .icon-circle {
+  width: 4.2em; height: 4.2em;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6em;
+  font-weight: 700;
+  margin-bottom: 0.7em;
+}
+.s7b-step .verb {
+  font-size: 1.35em;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.4em;
+}
+.s7b-step .desc {
+  font-size: 0.75em;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 0.7em;
+}
+.s7b-step .kpi {
+  font-size: 0.72em;
+  font-weight: 600;
+  padding: 0.4em 1em;
+  border-radius: 20px;
+  display: inline-block;
+}
+/* Cercles alignés à la même hauteur (zigzag désactivé) */
+.s7b-step:nth-child(1) .icon-circle { background: var(--blue-100); color: var(--blue-700); }
+.s7b-step:nth-child(1) .kpi { background: var(--blue-50); color: var(--blue-700); }
+.s7b-step:nth-child(2) .icon-circle { background: var(--mint-100); color: var(--mint-700); }
+.s7b-step:nth-child(2) .kpi { background: var(--mint-50); color: var(--mint-700); }
+.s7b-step:nth-child(3) .icon-circle { background: var(--rose-100); color: var(--rose-700); }
+.s7b-step:nth-child(3) .kpi { background: var(--rose-50); color: var(--rose-700); }
+.s7b-step:nth-child(4) .icon-circle { background: var(--violet-100); color: var(--violet-700); }
+.s7b-step:nth-child(4) .kpi { background: var(--violet-50); color: var(--violet-700); }
+
+/* ============================================================
+   SLIDE 12 · B — Serpentin de 7 étapes
+   ============================================================ */
+.s12b-content {
+  position: relative;
+  height: 75%;
+  padding-top: 3%;
+}
+.s12b-svg-wrap {
+  position: relative;
+  width: 100%;
+  height: 55%;
+}
+.s12b-svg-wrap svg {
+  position: absolute;
+  top: 45%;
+  left: 5%;
+  width: 90%;
+  height: 30%;
+}
+.s12b-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  position: relative;
+  z-index: 2;
+  height: 100%;
+}
+.s12b-step {
+  flex: 1;
+  text-align: center;
+  padding: 0 0.5%;
+  position: relative;
+}
+.s12b-step .num {
+  width: 3.2em; height: 3.2em;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.3em;
+  color: white;
+  margin-bottom: 0.8em;
+}
+.s12b-step .code {
+  font-family: monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.3em;
+}
+.s12b-step .desc {
+  font-size: 0.7em;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.s12b-step:nth-child(odd)  { transform: translateY(-1.5em); }
+.s12b-step:nth-child(1) .num { background: var(--blue-500); }
+.s12b-step:nth-child(2) .num { background: var(--mint-500); }
+.s12b-step:nth-child(3) .num { background: var(--rose-500); }
+.s12b-step:nth-child(4) .num { background: var(--yellow-500); }
+.s12b-step:nth-child(5) .num { background: var(--violet-500); }
+.s12b-step:nth-child(6) .num { background: var(--blue-500); }
+.s12b-step:nth-child(7) .num { background: var(--mint-500); }
+
+.s12b-bottom {
+  position: absolute;
+  bottom: 11%;
+  left: 5.5%;
+  right: 5.5%;
+  text-align: center;
+  padding: 1em 2em;
+  background: var(--mint-50);
+  border-radius: 40px;
+  font-size: 0.95em;
+  color: var(--mint-700);
+  font-weight: 600;
+}
+
+/* ============================================================
+   SLIDE 15 · A — 5 objectifs serpentin
+   ============================================================ */
+.s15a-content {
+  position: relative;
+  height: 70%;
+  padding-top: 3%;
+}
+.s15a-svg-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.s15a-svg-wrap svg.wave {
+  position: absolute;
+  top: 30%;
+  left: 3%;
+  width: 94%;
+  height: 30%;
+  z-index: 1;
+}
+.s15a-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+.s15a-step {
+  flex: 1;
+  text-align: center;
+  padding: 0 1%;
+}
+.s15a-step .icon-circle {
+  width: 4em; height: 4em;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6em;
+  font-weight: 700;
+  margin-bottom: 0.7em;
+}
+.s15a-step .verb {
+  font-size: 1.35em;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.5em;
+}
+.s15a-step .desc {
+  font-size: 0.75em;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.s15a-step:nth-child(odd)  .icon-circle,
+.s15a-step:nth-child(odd)  { transform: translateY(-1em); }
+.s15a-step:nth-child(1) .icon-circle { background: var(--blue-100); color: var(--blue-700); }
+.s15a-step:nth-child(2) .icon-circle { background: var(--mint-100); color: var(--mint-700); }
+.s15a-step:nth-child(3) .icon-circle { background: var(--rose-100); color: var(--rose-700); }
+.s15a-step:nth-child(4) .icon-circle { background: var(--yellow-100); color: var(--yellow-700); }
+.s15a-step:nth-child(5) .icon-circle { background: var(--violet-100); color: var(--violet-700); }
+
+</style>
+</head>
+<body>
+
+<div class="page">
+<h1>SkillForge — 3 slides retenus pour la soutenance</h1>
+<p class="intro">
+Les trois designs retenus après itérations : les objectifs (07·B), la sandbox (12·B) et les cinq résultats atteints (15·A).
+Palette pastel épurée, layouts serpentins cohérents entre eux.
+</p>
+
+
+<!-- =============================================================== -->
+<div class="section-heading">
+  <h3>Slide 07 — Quatre objectifs mesurables</h3>
+  <p>Retenu : 07·B (serpentin horizontal avec 4 étapes numérotées).</p>
+</div>
+
+<!-- SLIDE 07 · B — 4 étapes serpentin -->
+<div class="slide">
+  <span class="slide-label">07 · B</span>
+  <div class="slide-header">
+    <div class="kicker">03 · Objectifs</div>
+    <h2>Quatre objectifs mesurables</h2>
+    <div class="rule"></div>
+  </div>
+
+  <div class="s7b-content">
+    <div class="s7b-svg-wrap">
+      <svg class="wave" viewBox="0 0 1000 100" preserveAspectRatio="none">
+        <path d="M 50 50 Q 175 5 325 50 T 675 50 T 950 50"
+              fill="none" stroke="#DBE7F4" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="s7b-steps">
+        <div class="s7b-step">
+          <div class="icon-circle">01</div>
+          <div class="verb">Analyser</div>
+          <div class="desc">Extraire les compétences du CV par IA</div>
+          <div class="kpi">Cible : &lt; 15 s / CV</div>
+        </div>
+        <div class="s7b-step">
+          <div class="icon-circle">02</div>
+          <div class="verb">Générer</div>
+          <div class="desc">Tests adaptés : QCM, code, cas pratique</div>
+          <div class="kpi">Cible : 3 types</div>
+        </div>
+        <div class="s7b-step">
+          <div class="icon-circle">03</div>
+          <div class="verb">Sécuriser</div>
+          <div class="desc">Isoler l'exécution dans une sandbox durcie</div>
+          <div class="kpi">Cible : 0 évasion / 50</div>
+        </div>
+        <div class="s7b-step">
+          <div class="icon-circle">04</div>
+          <div class="verb">Restituer</div>
+          <div class="desc">Rapport d&#39;évaluation complet : score, forces, faiblesses</div>
+          <div class="kpi">Cible : Rapport en 1 clic</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-footer">
+    <div class="left">Présenté par GERSHOM Ny Aina Fitia<br>Octobre 2026</div>
+    <div class="right">SkillForge<br>07 · B</div>
+  </div>
+</div>
+
+
+<!-- =============================================================== -->
+<div class="section-heading">
+  <h3>Slide 12 — Sandbox durcie : sept verrous de sécurité</h3>
+  <p>Retenu : 12·B (serpentin horizontal avec 7 étapes numérotées).</p>
+</div>
+
+<!-- SLIDE 12 · B — Serpentin -->
+<div class="slide">
+  <span class="slide-label">12 · B</span>
+  <div class="slide-header">
+    <div class="kicker">05 · Réalisation</div>
+    <h2>Sandbox durcie : sept verrous de sécurité</h2>
+    <div class="rule"></div>
+  </div>
+
+  <div class="s12b-content">
+    <div class="s12b-svg-wrap">
+      <svg viewBox="0 0 1000 100" preserveAspectRatio="none">
+        <path d="M 20 60 Q 100 20 200 60 T 400 60 T 600 60 T 800 60 T 980 60"
+              fill="none" stroke="#DBE7F4" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="s12b-steps">
+        <div class="s12b-step"><div class="num">1</div><div class="code">seccomp</div><div class="desc">appels système filtrés</div></div>
+        <div class="s12b-step"><div class="num">2</div><div class="code">cap-drop=ALL</div><div class="desc">aucune capability</div></div>
+        <div class="s12b-step"><div class="num">3</div><div class="code">network=none</div><div class="desc">aucun réseau</div></div>
+        <div class="s12b-step"><div class="num">4</div><div class="code">read-only</div><div class="desc">FS verrouillé</div></div>
+        <div class="s12b-step"><div class="num">5</div><div class="code">pids-limit=64</div><div class="desc">fork bombs</div></div>
+        <div class="s12b-step"><div class="num">6</div><div class="code">memory=256M</div><div class="desc">ressources plafonnées</div></div>
+        <div class="s12b-step"><div class="num">7</div><div class="code">user=1001</div><div class="desc">exécution non-root</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="s12b-bottom">
+    50 scénarios d'attaque testés · 0 évasion détectée · 0 vulnérabilité OWASP
+  </div>
+
+  <div class="slide-footer">
+    <div class="left">Présenté par GERSHOM Ny Aina Fitia<br>Octobre 2026</div>
+    <div class="right">SkillForge<br>12 · B</div>
+  </div>
+</div>
+
+
+<!-- =============================================================== -->
+<div class="section-heading">
+  <h3>Slide 15 — Cinq objectifs, cinq résultats atteints</h3>
+  <p>Retenu : 15·A (serpentin horizontal avec 5 étapes cochées).</p>
+</div>
+
+<!-- SLIDE 15 · A — Serpentin pastel -->
+<div class="slide">
+  <span class="slide-label">15 · A</span>
+  <div class="slide-header">
+    <div class="kicker">07 · Résultats</div>
+    <h2>Cinq objectifs, cinq résultats atteints</h2>
+    <div class="rule"></div>
+  </div>
+
+  <div class="s15a-content">
+    <div class="s15a-svg-wrap">
+      <svg class="wave" viewBox="0 0 1000 100" preserveAspectRatio="none">
+        <path d="M 40 50 Q 130 10 250 50 T 500 50 T 750 50 T 960 50"
+              fill="none" stroke="#D4E9DC" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="s15a-steps">
+        <div class="s15a-step">
+          <div class="icon-circle">✓</div>
+          <div class="verb">Analyser</div>
+          <div class="desc">Extraction des compétences du CV par IA</div>
+        </div>
+        <div class="s15a-step">
+          <div class="icon-circle">✓</div>
+          <div class="verb">Générer</div>
+          <div class="desc">QCM, exercices code, cas pratiques</div>
+        </div>
+        <div class="s15a-step">
+          <div class="icon-circle">✓</div>
+          <div class="verb">Sécuriser</div>
+          <div class="desc">0 évasion détectée sur 50 scénarios testés</div>
+        </div>
+        <div class="s15a-step">
+          <div class="icon-circle">✓</div>
+          <div class="verb">Restituer</div>
+          <div class="desc">Rapport d&#39;évaluation complet : score, forces et faiblesses</div>
+        </div>
+        <div class="s15a-step">
+          <div class="icon-circle">✓</div>
+          <div class="verb">Détecter</div>
+          <div class="desc">Anti-fraude comportementale</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-footer">
+    <div class="left">Présenté par GERSHOM Ny Aina Fitia<br>Octobre 2026</div>
+    <div class="right">SkillForge<br>15 · A</div>
+  </div>
+</div>
+
+
+</div><!-- .page -->
+
+</body>
+</html>
