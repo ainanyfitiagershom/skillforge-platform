@@ -1,4 +1,11 @@
-name: CI
+name: CI/CD
+
+# Pipeline SkillForge
+# -------------------
+# Integration continue : compile et teste les trois services sur chaque push
+# et chaque pull request vers main.
+# Deploiement continu : si les trois jobs CI passent sur un push vers main,
+# le backend applicatif est redeploye en appelant le Deploy Hook Render.
 
 on:
   push:
@@ -8,7 +15,8 @@ on:
 
 jobs:
 
-  # Build et tests du backend applicatif
+  # ===== CI =====
+
   backend-app:
     name: Backend applicatif (Spring Boot)
     runs-on: ubuntu-latest
@@ -16,7 +24,7 @@ jobs:
       run:
         working-directory: apps/backend-app
     steps:
-      - name: Checkout du dépôt
+      - name: Checkout du depot
         uses: actions/checkout@v4
 
       - name: Installation Java 21
@@ -33,7 +41,6 @@ jobs:
         run: mvn -B test
         continue-on-error: true
 
-  # Build du backend sandbox
   backend-sandbox:
     name: Backend sandbox (Docker runner)
     runs-on: ubuntu-latest
@@ -41,7 +48,7 @@ jobs:
       run:
         working-directory: apps/backend-sandbox
     steps:
-      - name: Checkout du dépôt
+      - name: Checkout du depot
         uses: actions/checkout@v4
 
       - name: Installation Java 21
@@ -58,7 +65,6 @@ jobs:
         run: mvn -B test
         continue-on-error: true
 
-  # Build du frontend web
   frontend-web:
     name: Frontend web (React + Vite)
     runs-on: ubuntu-latest
@@ -66,7 +72,7 @@ jobs:
       run:
         working-directory: apps/frontend-web
     steps:
-      - name: Checkout du dépôt
+      - name: Checkout du depot
         uses: actions/checkout@v4
 
       - name: Installation de pnpm
@@ -81,8 +87,40 @@ jobs:
           cache: pnpm
           cache-dependency-path: apps/frontend-web/pnpm-lock.yaml
 
-      - name: Installation des dépendances
+      - name: Installation des dependances
         run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm run build
+
+  # ===== CD =====
+
+  deploy-backend:
+    name: Deploiement backend (Render)
+    needs: [backend-app, backend-sandbox, frontend-web]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verification du secret Deploy Hook
+        env:
+          HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK_URL" ]; then
+            echo "Secret RENDER_DEPLOY_HOOK manquant. Configurer dans Settings > Secrets."
+            exit 1
+          fi
+
+      - name: Declenchement du deploiement Render
+        env:
+          HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          echo "Appel du Deploy Hook Render pour skillforge-api..."
+          HTTP_CODE=$(curl -s -o /tmp/render-response.json -w "%{http_code}" -X POST "$HOOK_URL")
+          echo "Reponse Render : HTTP $HTTP_CODE"
+          cat /tmp/render-response.json
+          echo
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
+            echo "Deploy Hook Render en erreur (code $HTTP_CODE)."
+            exit 1
+          fi
+          echo "Deploiement Render declenche avec succes."
