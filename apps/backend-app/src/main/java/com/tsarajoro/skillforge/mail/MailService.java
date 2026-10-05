@@ -120,7 +120,6 @@ public class MailService {
             <html lang="fr"><head><meta charset="utf-8"><title>SkillForge — Votre test technique</title></head>
             <body style="margin:0;padding:40px 16px;font-family:'Inter Tight','Inter','SF Pro Text',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#f5f7fa 0%%,#eef2f7 40%%,#e4ebf4 100%%);color:#0a1628;-webkit-font-smoothing:antialiased;">
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%%" style="max-width:720px;margin:0 auto;">
-                <!-- Header brand -->
                 <tr><td style="padding:0 8px 24px;">
                   <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
                     <tr>
@@ -135,10 +134,8 @@ public class MailService {
                   </table>
                 </td></tr>
 
-                <!-- Main card -->
                 <tr><td style="background:#ffffff;border-radius:24px;padding:0;box-shadow:0 24px 48px -12px rgba(10,22,40,0.12),0 2px 8px rgba(10,22,40,0.04);overflow:hidden;">
 
-                  <!-- Hero band gradient blanc -> bleu clair, texte sombre lisible -->
                   <table role="presentation" cellpadding="0" cellspacing="0" width="100%%" style="border-collapse:collapse;">
                     <tr><td style="background:linear-gradient(135deg,#ffffff 0%%,#f0f9ff 55%%,#e0f2fe 100%%);padding:40px 48px;color:#0a1628;border-bottom:1px solid #e4ebf4;">
                       <div style="font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:#0284c7;margin-bottom:14px;">Nouvelle invitation</div>
@@ -147,7 +144,6 @@ public class MailService {
                     </td></tr>
                   </table>
 
-                  <!-- Body -->
                   <table role="presentation" cellpadding="0" cellspacing="0" width="100%%" style="border-collapse:collapse;">
                     <tr><td style="padding:36px 48px 8px;">
                       <p style="margin:0 0 16px;font-size:16px;font-weight:600;color:#0a1628;letter-spacing:-0.01em;">%s</p>
@@ -157,7 +153,6 @@ public class MailService {
                     </td></tr>
                   </table>
 
-                  <!-- Access code block — style OTP boxes -->
                   <table role="presentation" cellpadding="0" cellspacing="0" width="100%%" style="border-collapse:collapse;">
                     <tr><td style="padding:0 48px 4px;">
                       <div style="padding:24px;background:linear-gradient(135deg,#f0f9ff 0%%,#e0f2fe 100%%);border-radius:16px;border:1px solid #bae6fd;text-align:center;">
@@ -172,7 +167,6 @@ public class MailService {
                     </td></tr>
                   </table>
 
-                  <!-- CTA button -->
                   <table role="presentation" cellpadding="0" cellspacing="0" width="100%%" style="border-collapse:collapse;">
                     <tr><td align="center" style="padding:32px 48px 8px;">
                       <a href="%s" style="display:inline-block;padding:16px 44px;background:linear-gradient(135deg,#0284c7 0%%,#0ea5e9 100%%);color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:-0.01em;border-radius:14px;box-shadow:0 8px 24px -8px rgba(14,165,233,0.5);">
@@ -181,7 +175,6 @@ public class MailService {
                     </td></tr>
                   </table>
 
-                  <!-- Backup link -->
                   <table role="presentation" cellpadding="0" cellspacing="0" width="100%%" style="border-collapse:collapse;">
                     <tr><td style="padding:20px 48px 32px;">
                       <div style="padding:14px 16px;background:#f5f7fa;border-radius:10px;border:1px solid #e4ebf4;">
@@ -191,7 +184,6 @@ public class MailService {
                     </td></tr>
                   </table>
 
-                  <!-- Info tips -->
                   <table role="presentation" cellpadding="0" cellspacing="0" width="100%%" style="border-collapse:collapse;">
                     <tr><td style="padding:0 48px 28px;">
                       <div style="border-top:1px solid #e4ebf4;padding-top:20px;">
@@ -216,7 +208,6 @@ public class MailService {
 
                 </td></tr>
 
-                <!-- Footer -->
                 <tr><td style="padding:24px 8px 0;text-align:center;">
                   <div style="font-size:11px;color:#94a3b8;line-height:1.6;">
                     Cet email vous a été envoyé automatiquement par SkillForge.<br/>

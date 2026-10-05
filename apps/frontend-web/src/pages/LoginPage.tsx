@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ApiError, api, saveTokens } from '@/lib/api';
-import { AvatarStack } from '@/components/ui/AvatarStack';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -116,10 +115,6 @@ export function LoginPage() {
           </div>
         </div>
 
-        {/* Social proof */}
-        <div className="relative z-10">
-          <AvatarStack count={4} label="3 200+ candidats évalués" />
-        </div>
       </aside>
 
       {/* ============== COLONNE DROITE : formulaire ============== */}

@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { AvatarStack } from '@/components/ui/AvatarStack';
 import { AppMockup } from '@/components/AppMockup';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -112,9 +111,6 @@ export function LandingPage() {
             </a>
           </div>
 
-          <div className="mt-10">
-            <AvatarStack count={4} label="3 200+ candidats évalués" />
-          </div>
         </div>
 
         {/* Hero right : mockup app */}

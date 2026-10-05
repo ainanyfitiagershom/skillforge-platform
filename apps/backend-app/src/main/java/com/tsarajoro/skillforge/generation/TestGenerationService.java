@@ -2,8 +2,10 @@ package com.tsarajoro.skillforge.generation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tsarajoro.skillforge.domain.Question;
 import com.tsarajoro.skillforge.domain.QuestionStatus;
+import com.tsarajoro.skillforge.domain.QuestionType;
 import com.tsarajoro.skillforge.domain.Test;
 import com.tsarajoro.skillforge.llm.GenerationRequest;
 import com.tsarajoro.skillforge.llm.LlmClient;
@@ -49,7 +51,7 @@ public class TestGenerationService {
 
         List<Question> persisted = new ArrayList<>();
         for (GeneratedQuestion g : result.questions()) {
-            String cleanPayload = sanitizeJsonPayload(g.jsonPayload());
+            String cleanPayload = sanitizeJsonPayload(g.jsonPayload(), g.type(), g.statement());
             Question q = Question.newQuestion(
                     g.type(),
                     g.statement(),
@@ -82,40 +84,144 @@ public class TestGenerationService {
                 result.costEur().toPlainString());
     }
 
-    private String sanitizeJsonPayload(String raw) {
-        if (raw == null || raw.isBlank()) {
+    private String sanitizeJsonPayload(String raw, QuestionType type, String statement) {
+        JsonNode parsed = parseWithRepair(raw);
+        if (parsed == null) {
+            // JSON irreparable : on garde la logique existante (payload d erreur).
+            log.warn("LLM a renvoye un JSON invalide pour une question {} (statement={}),"
+                    + " stockage en payload d'erreur", type, truncate(statement, 80));
+            try {
+                return mapper.writeValueAsString(Map.of(
+                        "_error", "invalid_json_from_llm",
+                        "_rawText", raw == null ? "" : raw));
+            } catch (Exception ee) {
+                return "{}";
+            }
+        }
+        // Pour les questions CODE, on garantit la presence des champs cles.
+        // Le prompt LLM les reclame deja mais GPT-4o-mini / Gemini / Groq les
+        // oublient de temps en temps. Sans starterCode, le candidat se retrouve
+        // devant un editeur vide impossible a utiliser.
+        if (type == QuestionType.CODE && parsed.isObject()) {
+            parsed = ensureCodeDefaults((ObjectNode) parsed, statement);
+        }
+        try {
+            return mapper.writeValueAsString(parsed);
+        } catch (Exception e) {
             return "{}";
         }
-        // 1er essai : parse direct
+    }
+
+    /**
+     * Parse le JSON brut, avec reparation automatique en cas de troncature max_tokens.
+     * Retourne null si le JSON est irreparable.
+     */
+    private JsonNode parseWithRepair(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return mapper.createObjectNode();
+        }
         try {
-            JsonNode node = mapper.readTree(raw);
-            return mapper.writeValueAsString(node);
+            return mapper.readTree(raw);
         } catch (Exception firstError) {
-            // 2e essai : auto-repair d un JSON tronque par le LLM (Groq/OpenAI coupent
-            // la reponse au max_tokens et laissent parfois un objet mal ferme). On
-            // ferme les accolades / crochets manquants et on retente.
             String repaired = attemptJsonRepair(raw);
             if (repaired != null) {
                 try {
                     JsonNode node = mapper.readTree(repaired);
                     log.info("JSON reconstruit avec succes apres troncature LLM (+{} caracteres)",
                             repaired.length() - raw.length());
-                    return mapper.writeValueAsString(node);
+                    return node;
                 } catch (Exception ignored) {
-                    // repair a echoue aussi, on tombe dans le fallback
+                    // repair a echoue aussi
                 }
             }
-            log.warn("LLM a renvoye un JSON invalide ({}), stockage en payload d'erreur",
-                    firstError.getMessage());
-            try {
-                return mapper.writeValueAsString(Map.of(
-                        "_error", "invalid_json_from_llm",
-                        "_rawText", raw,
-                        "_parseError", firstError.getMessage()));
-            } catch (Exception ee) {
-                return "{}";
-            }
+            return null;
         }
+    }
+
+    /**
+     * Garantit que le payload d une question CODE contient language, starterCode
+     * et hiddenTests utilisables, meme si le LLM les a oublies. Le candidat
+     * doit toujours voir un vrai squelette dans son editeur.
+     */
+    private ObjectNode ensureCodeDefaults(ObjectNode payload, String statement) {
+        String language = payload.path("language").asText("").toUpperCase();
+        if (!language.equals("PHP") && !language.equals("JS")) {
+            language = detectLanguageFromStatement(statement);
+            payload.put("language", language);
+        }
+        if (isBlankNode(payload.path("starterCode"))) {
+            log.info("starterCode manquant pour question CODE ({}), fallback applique", language);
+            payload.put("starterCode", defaultStarterCode(language));
+        }
+        if (isBlankNode(payload.path("hiddenTests"))) {
+            log.info("hiddenTests manquants pour question CODE ({}), fallback applique", language);
+            payload.put("hiddenTests", defaultHiddenTests(language));
+        }
+        if (isBlankNode(payload.path("explanation"))) {
+            payload.put("explanation",
+                    "Implementez la fonction solve en respectant la signature fournie.");
+        }
+        return payload;
+    }
+
+    /** Devine PHP vs JS a partir de l enonce (par defaut : JS). */
+    private String detectLanguageFromStatement(String statement) {
+        if (statement == null) return "JS";
+        String lower = statement.toLowerCase();
+        if (lower.contains("php")) return "PHP";
+        if (lower.contains("javascript") || lower.contains(" js ") || lower.contains("node")) {
+            return "JS";
+        }
+        return "JS";
+    }
+
+    private boolean isBlankNode(JsonNode node) {
+        return node == null || node.isMissingNode() || node.isNull()
+                || (node.isTextual() && node.asText().isBlank());
+    }
+
+    private String defaultStarterCode(String language) {
+        if ("PHP".equals(language)) {
+            return "<?php\n"
+                    + "/**\n"
+                    + " * Implementez la fonction demandee.\n"
+                    + " */\n"
+                    + "function solve($input) {\n"
+                    + "    // TODO: implementer ici\n"
+                    + "    return null;\n"
+                    + "}\n";
+        }
+        // JS par defaut
+        return "/**\n"
+                + " * Implementez la fonction demandee.\n"
+                + " */\n"
+                + "function solve(input) {\n"
+                + "    // TODO: implementer ici\n"
+                + "    return null;\n"
+                + "}\n"
+                + "module.exports = { solve };\n";
+    }
+
+    private String defaultHiddenTests(String language) {
+        if ("PHP".equals(language)) {
+            return "<?php use PHPUnit\\Framework\\TestCase; require_once 'solution.php';\n"
+                    + "class HiddenTest extends TestCase {\n"
+                    + "    public function testBasic(): void {\n"
+                    + "        $this->assertNotNull(solve(null));\n"
+                    + "    }\n"
+                    + "}\n";
+        }
+        return "const { solve } = require('./solution');\n"
+                + "describe('solve', () => {\n"
+                + "    test('fonction definie', () => {\n"
+                + "        expect(typeof solve).toBe('function');\n"
+                + "    });\n"
+                + "});\n";
+    }
+
+    private String truncate(String s, int max) {
+        if (s == null) return "";
+        return s.length() <= max ? s : s.substring(0, max) + "...";
     }
 
     /**

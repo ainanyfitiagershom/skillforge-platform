@@ -44,6 +44,16 @@ spring:
           auth: ${SMTP_AUTH:false}
           starttls:
             enable: ${SMTP_STARTTLS:false}
+          # Pour Gmail en port 465 (SSL direct au lieu de STARTTLS 587),
+          # necessaire quand l hebergeur bloque le port 587 (cas Render Free).
+          ssl:
+            enable: ${SMTP_SSL_ENABLE:false}
+            trust: ${SMTP_SSL_TRUST:}
+          # Timeouts explicites pour eviter que la connexion traine une minute
+          # avant de rendre la main quand le port SMTP est bloque.
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
 
 server:
   port: ${SERVER_PORT:8090}  # 8080 deja pris par Traefik d'un autre projet
