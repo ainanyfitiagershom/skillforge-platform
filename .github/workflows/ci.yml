@@ -125,59 +125,7 @@ jobs:
           fi
           echo "Deploiement Render declenche avec succes."
 
-  deploy-frontend:
-    name: Deploiement frontend (Vercel)
-    needs: [backend-app, backend-sandbox, frontend-web]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/frontend-web
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-    steps:
-      - name: Checkout du depot
-        uses: actions/checkout@v4
-
-      - name: Verification des secrets Vercel
-        run: |
-          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
-            echo "Secrets Vercel manquants (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID)."
-            echo "Les configurer dans Settings > Secrets > Actions."
-            exit 1
-          fi
-
-      - name: Installation de pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Installation Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: pnpm
-          cache-dependency-path: apps/frontend-web/pnpm-lock.yaml
-
-      - name: Installation des dependances
-        run: pnpm install --frozen-lockfile
-
-      - name: Build du frontend
-        run: pnpm run build
-
-      - name: Copie du vercel.json dans dist (pour les rewrites)
-        run: cp vercel.json dist/vercel.json
-
-      - name: Installation de Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Deploiement du dossier dist sur Vercel (production)
-        run: |
-          URL=$(vercel deploy dist \
-            --prod \
-            --yes \
-            --token="$VERCEL_TOKEN" \
-            --cwd .)
-          echo "Deploiement Vercel reussi : $URL"
+  # Note : le deploiement frontend sur Vercel est gere par la GitHub App
+  # Vercel (integration native) et non par ce workflow. Vercel detecte
+  # chaque push sur main et redeploie automatiquement a partir du dossier
+  # apps/frontend-web, avec les rewrites definis dans vercel.json.
