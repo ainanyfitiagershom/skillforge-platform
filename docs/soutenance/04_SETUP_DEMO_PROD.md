@@ -20,8 +20,8 @@ Tu peux faire les deux ou juste une, selon ce que tu veux montrer.
 
 | Service | URL |
 |---|---|
-| Frontend (recruteur + candidat) | https://skillforge-platform-ivlix3b1p-fitias-projects.vercel.app |
-| Page de login recruteur | https://skillforge-platform-ivlix3b1p-fitias-projects.vercel.app/login |
+| Frontend (recruteur + candidat) | https://skillforge-platform-pi.vercel.app |
+| Page de login recruteur | https://skillforge-platform-pi.vercel.app/login |
 | API backend | https://skillforge-api-xde0.onrender.com |
 | API health check | https://skillforge-api-xde0.onrender.com/actuator/health |
 | Swagger UI (API interactive) | https://skillforge-api-xde0.onrender.com/swagger-ui/index.html |
@@ -255,7 +255,7 @@ tres pratique pour montrer au jury que les requetes arrivent vraiment).
 
 #### Partie recruteur (3 min)
 
-1. Ouvre https://skillforge-platform-ivlix3b1p-fitias-projects.vercel.app
+1. Ouvre https://skillforge-platform-pi.vercel.app
    dans la fenetre recruteur
 2. Login : `recruteur@skillforge.app` / `SkillForgeFitia2026!`
 3. Dashboard : montre les KPIs (meme si vides, ca prouve que ca marche)
