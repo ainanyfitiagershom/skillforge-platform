@@ -167,6 +167,9 @@ jobs:
       - name: Recuperation de l environnement Vercel (production)
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
+      - name: Installation des dependances
+        run: pnpm install --frozen-lockfile
+
       - name: Build du frontend pour production
         run: vercel build --prod --token="$VERCEL_TOKEN"
 
