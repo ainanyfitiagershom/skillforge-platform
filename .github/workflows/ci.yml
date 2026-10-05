@@ -161,19 +161,23 @@ jobs:
           cache: pnpm
           cache-dependency-path: apps/frontend-web/pnpm-lock.yaml
 
-      - name: Installation de Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Recuperation de l environnement Vercel (production)
-        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-
       - name: Installation des dependances
         run: pnpm install --frozen-lockfile
 
-      - name: Build du frontend pour production
-        run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Build du frontend
+        run: pnpm run build
 
-      - name: Deploiement sur Vercel (production)
+      - name: Copie du vercel.json dans dist (pour les rewrites)
+        run: cp vercel.json dist/vercel.json
+
+      - name: Installation de Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploiement du dossier dist sur Vercel (production)
         run: |
-          URL=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          URL=$(vercel deploy dist \
+            --prod \
+            --yes \
+            --token="$VERCEL_TOKEN" \
+            --cwd .)
           echo "Deploiement Vercel reussi : $URL"
