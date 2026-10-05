@@ -32,7 +32,7 @@ export function LoginPage() {
   return (
     <div className="grid min-h-screen grid-cols-1 bg-app-gradient lg:grid-cols-2">
       {/* ============== COLONNE GAUCHE : marketing ============== */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden p-12 lg:flex">
+      <aside className="relative hidden flex-col justify-center overflow-hidden p-12 lg:flex">
         {/* Blobs decoratifs */}
         <div
           className="blob-accent left-12 top-32 h-72 w-72"
@@ -44,7 +44,7 @@ export function LoginPage() {
         />
 
         {/* Logo + retour Landing */}
-        <Link to="/" className="relative z-10 flex items-center gap-2 w-fit">
+        <Link to="/" className="absolute left-12 top-12 z-10 flex items-center gap-2 w-fit">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-gradient text-white shadow-md">
             <span className="font-display text-lg font-bold">S</span>
           </div>
