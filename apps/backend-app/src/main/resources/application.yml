@@ -16,7 +16,7 @@ spring:
           time_zone: UTC
   flyway:
     enabled: true
-    baseline-on-migrate: true
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:false}
 
   # SMTP pour l envoi des invitations candidat.
   # En dev : Mailpit SkillForge du docker-compose (skillforge-mailpit sur localhost:1026,

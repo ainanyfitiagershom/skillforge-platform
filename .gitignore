@@ -4,9 +4,7 @@
 
 # ----- Secrets / Environnement -----
 .env
-.env.local
-.env.*.local
-.env.production
+.env.*
 *.pem
 *.key
 secrets/
