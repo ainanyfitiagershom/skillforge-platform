@@ -5,6 +5,12 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5434/skillforge}
     username: ${DB_USER:skillforge}
     password: ${DB_PASSWORD:skillforge_dev}
+    hikari:
+      # Pose le search_path PostgreSQL a chaque connexion ouverte par le pool.
+      # Indispensable quand le schema metier n est pas public (ex: Supabase
+      # ou cohabitation avec d autres applications). Alignee sur
+      # HIBERNATE_DEFAULT_SCHEMA pour que JPA et SQL natif voient les memes tables.
+      connection-init-sql: SET search_path TO ${HIBERNATE_DEFAULT_SCHEMA:public}, public
   jpa:
     open-in-view: false
     hibernate:
