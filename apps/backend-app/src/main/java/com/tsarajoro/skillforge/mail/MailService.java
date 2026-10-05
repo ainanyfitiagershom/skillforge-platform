@@ -1,37 +1,28 @@
 package com.tsarajoro.skillforge.mail;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
 /**
  * Envoi transactionnel des mails candidats (invitation).
  *
- * <p>Configuration :
- *   spring.mail.host / port / username / password (variables env SMTP_*),
- *   skillforge.mail.enabled / from / from-name / frontend-base-url.
+ * <p>S appuie sur un {@link EmailSender} injecte (SMTP via JavaMail OU Resend
+ * via API HTTPS), choisi par la propriete {@code skillforge.mail.provider}.
+ * La construction du template HTML reste ici.
  *
- * <p>En dev, un container Mailpit du stack Linkuma capture les mails
- * (UI http://mail.linkuma.local). En prod, override par variables env
- * pour cibler un SMTP reel.
+ * <p>Configuration applicative :
+ *   skillforge.mail.enabled / from / from-name / frontend-base-url.
  */
 @Service
 public class MailService {
 
     private static final Logger log = LoggerFactory.getLogger(MailService.class);
 
-    private final JavaMailSender mailSender;
+    private final EmailSender emailSender;
 
     @Value("${skillforge.mail.enabled:true}")
     private boolean enabled;
@@ -45,8 +36,8 @@ public class MailService {
     @Value("${skillforge.mail.frontend-base-url:http://localhost:5173}")
     private String frontendBaseUrl;
 
-    public MailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public MailService(EmailSender emailSender) {
+        this.emailSender = emailSender;
     }
 
     /**
@@ -67,21 +58,20 @@ public class MailService {
             return false;
         }
         try {
-            MimeMessage msg = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(msg, false, StandardCharsets.UTF_8.name());
-            helper.setFrom(new InternetAddress(from, fromName, StandardCharsets.UTF_8.name()));
-            helper.setTo(candidateEmail);
-            helper.setSubject(subject(profileLabel));
-            helper.setText(htmlBody(candidateName, token, accessCode, profileLabel, ttlHours), true);
-            mailSender.send(msg);
+            emailSender.send(
+                    candidateEmail,
+                    from,
+                    fromName,
+                    subject(profileLabel),
+                    htmlBody(candidateName, token, accessCode, profileLabel, ttlHours));
             // Ne PAS logguer le token complet : quiconque a acces aux logs pourrait
             // reconstruire le lien candidat (fix C2 code review). On loggue juste
             // les 8 premiers caracteres pour la tracabilite.
             String tokenPrefix = token == null ? "?" : token.substring(0, Math.min(8, token.length())) + "...";
             log.info("Mail invitation envoye a {} (token {})", candidateEmail, tokenPrefix);
             return true;
-        } catch (MessagingException | MailException | UnsupportedEncodingException e) {
-            // Echec SMTP : on ne veut pas casser la creation d invitation.
+        } catch (EmailSender.EmailSendException e) {
+            // Echec reseau ou fournisseur : on ne veut pas casser la creation d invitation.
             // Le recruteur pourra toujours copier le lien manuellement.
             log.warn("Echec envoi mail invitation a {} : {}", candidateEmail, e.getMessage());
             return false;

@@ -123,11 +123,19 @@ skillforge:
     cv-retention-months: 12
   mail:
     enabled: ${MAIL_ENABLED:true}
+    # Fournisseur d envoi : smtp (defaut, dev local avec Mailpit ou serveur
+    # dedie) ou resend (prod cloud, API HTTPS, requis sur Render Free qui
+    # bloque les ports SMTP sortants).
+    provider: ${MAIL_PROVIDER:smtp}
     from: ${MAIL_FROM:no-reply@skillforge.local}
     from-name: ${MAIL_FROM_NAME:SkillForge - Tsarajoro}
     # URL publique du frontend (utilisee pour construire le lien candidat dans l email).
     # En dev : http://localhost:5173. En prod : URL SkillForge Tsarajoro.
     frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
+    resend:
+      # Cle API Resend, obligatoire si provider=resend.
+      # A creer sur https://resend.com/api-keys avec le scope Sending access.
+      api-key: ${RESEND_API_KEY:}
   sandbox:
     # URL du service backend-sandbox (port 8091 par defaut)
     url: ${SANDBOX_URL:http://localhost:8091}
