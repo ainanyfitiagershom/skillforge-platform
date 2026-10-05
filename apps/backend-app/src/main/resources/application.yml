@@ -53,6 +53,9 @@ management:
     web:
       exposure:
         include: health,info,metrics
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:true}
 
 skillforge:
   jwt:
