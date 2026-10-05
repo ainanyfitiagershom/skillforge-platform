@@ -8,8 +8,8 @@ import { ApiError, api, saveTokens } from '@/lib/api';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('recruteur@tsarajoro.dev');
-  const [password, setPassword] = useState('password123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
