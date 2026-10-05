@@ -17,6 +17,10 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:false}
+    # Schema dedie a SkillForge (evite les objets Supabase deja presents dans public)
+    schemas: ${FLYWAY_SCHEMAS:public}
+    default-schema: ${FLYWAY_DEFAULT_SCHEMA:public}
+    create-schemas: true
 
   # SMTP pour l envoi des invitations candidat.
   # En dev : Mailpit SkillForge du docker-compose (skillforge-mailpit sur localhost:1026,
