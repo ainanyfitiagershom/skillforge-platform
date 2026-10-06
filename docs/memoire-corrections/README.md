@@ -1,157 +1,68 @@
 # Corrections du mémoire M2 MBDS — Mode d'emploi
 
-Ce dossier regroupe **toutes les propositions de correction** du mémoire
-SkillForge, en réponse à la fiche de retour du prof Rojo RABENANAHARY
+Ce dossier regroupe les propositions de correction du mémoire SkillForge en
+réponse à la fiche de retour du prof Rojo RABENANAHARY
 (1er octobre 2026, verdict *« Corrections importantes »*).
 
-**Objectif** : atteindre 18+/20 à la soutenance du 7 octobre 2026.
+**Objectif** : atteindre 18+/20 à la soutenance.
+
+Deux générations de fichiers coexistent :
+- **Vagues initiales** (dossiers 00, 02, 03, 04) : les premières propositions
+  rédigées juste après la fiche prof. Elles ont servi à produire la version 3
+  du mémoire.
+- **Fix post-audit v2 et v3** (dossiers 06 à 16) : fix ciblés sur ce qui
+  restait partiel après la v2, puis compléments pour la v3 et plan de
+  dégraissage.
 
 ---
 
 ## Structure du dossier
 
+### Suivi global
+
 | Fichier | Rôle |
 |---|---|
 | `README.md` | Ce fichier — mode d'emploi |
-| `00_suivi_consignes_prof.md` | **Tableau de bord** des 54 critères du prof avec statut par critère |
-| `00_journal_relectures.md` | Journal des relectures et corrections (R-01, R-02, …) pour éviter les régressions |
-| `01_degraissage.md` | **Vague 1** — Dégraissage (passage de 50 à 40 pages) |
-| `02_etat_art.md` | **Vague 2** — État de l'art enrichi (le gros morceau IA + données + sécurité) |
-| `03_scrum_budget.md` | **Vague 3** — Scrum vérifiable + planning + risques + budget consolidé |
-| `04_finition.md` | **Vague 4** — Exigences, UML, tests, conclusion, bibliographie |
-| `05_slides.md` | **Vague 5** — Harmonisation des slides avec le mémoire corrigé |
+| `00_journal_relectures.md` | Journal des relectures R-01 à R-08 (évite les régressions) |
+| `00_suivi_consignes_prof.md` | **Tableau de bord des 54 critères du prof** avec statut par critère |
+| `06_audit_v2.md` | Audit exhaustif de la v2 contre les 54 critères (septembre 2026) |
+
+### Vagues initiales (premières propositions, sources de la v3)
+
+| Fichier | Vague | Contenu |
+|---|---|---|
+| `02_etat_art.md` | V2 | État de l'art enrichi : IA + données + sécurité + synthèse choix (18 critères C) |
+| `03_scrum_budget.md` | V3 | Scrum vérifiable + planning + risques + budget (5 critères E) |
+| `04_finition.md` | V4 | Exigences, UML, tests, conclusion, bibliographie (17 critères A/B/D/F/G/H/I/J) |
+
+### Fix post-audit (ciblés après v2, utilisés pour produire v3)
+
+| Fichier | Critère | Contenu |
+|---|---|---|
+| `07_acronymes_glossaire.md` | M-A4 | Table d'acronymes (22 entrées) + glossaire (17 entrées) séparés |
+| `08_renvois_biblio_222.md` | M-J2 | Corriger les 4 renvois biblio faux en 2.2.2 |
+| `09_sources_orphelines.md` | M-J2 suite | Insérer les sources [1]-[5] dans le corps pour qu'elles ne soient pas orphelines |
+| `10_MEGA_GUIDE_MEMOIRE.md` | multi | Guide des 5 fix de forme restants (mots-clés FR/EN, 2.5, Conclusion, 4.3.1-5, pagination x/N) |
+| `12_PLANIFICATION_M-E7.md` | M-E7 | Nouvelle section Planification + Figure 1 (prévisionnel) + Figure 2 (réalisé) + 4 écarts |
+| `13_UML_M-F2.md` | M-F2 | Diagramme d'activités + diagramme d'états de la passation (Mermaid prêts) |
+| `14_BIBLIO_M-J1.md` | M-J1 | 5 nouvelles références (RGPD, loi 2014-038, AI Act, HELM, Combe) + 3 insertions dans le corps |
+| `16_DEGRAISSAGE_v3_contenu.md` | M-A7 | **Plan de dégraissage courant** : passer de 48 à 40 pages uniquement par le contenu (10 fix, -7,1 pages) |
 
 ---
 
 ## Ordre d'application recommandé
 
-Les vagues sont **numérotées dans l'ordre où elles doivent être
-intégrées** dans le Word. Cet ordre n'est pas arbitraire : chaque vague
-prépare la suivante.
+### Si tu intègres pour la première fois dans le Word
 
-### Pourquoi cet ordre ?
+Suivre l'ordre des vagues V2 → V3 → V4, puis appliquer les fix post-audit
+dans l'ordre numérique (06, 07, 08, 09, 10, 12, 13, 14, 16).
 
-```
-V1 Dégraissage      →  libère ~8 pages dans le Word
-                       (pour accueillir les ajouts de V2)
+### Si tu reprends la correction en cours de route
 
-V2 État de l'art    →  ajoute ~3-4 pages d'IA / RGPD / choix
-                       (le chapitre 2 prend sa forme finale)
-
-V3 Scrum + budget   →  rend la démarche vérifiable
-                       (chapitre 4 complet et chiffré)
-
-V4 Finition         →  UML, tests, conclusion, biblio
-                       (le mémoire est complet et prêt à relire)
-
-V5 Slides           →  harmonisation finale avec le mémoire corrigé
-                       (les slides reflètent le document écrit)
-```
-
-**Règle** : ne pas commencer V5 avant que V1 à V4 soient intégrées, sinon
-les slides vont diverger du mémoire.
-
----
-
-## Procédure détaillée par vague
-
-### Vague 1 — Dégraissage (`01_degraissage.md`)
-
-1. Ouvrir le Word du mémoire v2.
-2. **Section 4.1.4 Outils** → remplacer par le paragraphe + tableau proposés.
-3. **Section 4.1.5 Gestion configuration** → remplacer par la version condensée.
-4. **Section 4.4 Budget** → remplacer par la version condensée (sera
-   enrichie en Vague 3).
-5. **Section 5.3.1 IHM** → garder uniquement 2 captures, déplacer les 3
-   autres en Annexe 2.
-6. **Corriger le titre de la Figure 5** (M-F4).
-7. Vérifier le compte de pages : objectif ~42 pages après V1.
-
-### Vague 2 — État de l'art (`02_etat_art.md`)
-
-Vague la plus volumineuse (18 critères). À intégrer section par section
-dans le chapitre 2.
-
-1. ⭐ **M-C12** → insérer le tableau de synthèse des choix **en fin de 2.7**.
-2. ⭐ **M-C8** → enrichir 2.3 avec les 4 sous-sections IA (comparatif LLM,
-   protocole d'évaluation, biais + AI Act, synthèse).
-3. ⭐ **M-C9** → ajouter la sous-section RGPD / loi 2014-038 en fin de 2.5.
-4. ⭐ **M-C11** → ajouter la section contexte local Madagascar en fin de 2.6.
-5. ⭐ **M-C6** → insérer la matrice d'isolation dans 2.4.
-6. Puis dérouler les critères secondaires (M-B2, M-B3, M-C2 à M-C13,
-   M-D1, M-F5, M-G1, M-G2) selon leur emplacement indiqué dans le
-   fichier.
-7. Chaque entrée précédée de *« [à confirmer] »* nécessite une donnée
-   réelle (demander à l'encadreur Tsarajoro).
-
-### Vague 3 — Scrum + budget (`03_scrum_budget.md`)
-
-1. **M-E2** → réécrire 4.1.1 avec Scrum adapté solo, rôles, sprints,
-   artefacts.
-2. **M-E3** → ajouter le paragraphe de contribution personnelle.
-3. **M-E6** → créer la section 4.3 avec le tableau des contraintes et le
-   registre des risques (9 risques).
-4. ⭐ **M-E7** → réécrire 4.2 avec le macro-planning 8 sprints + écarts
-   assumés + **produire le diagramme de Gantt** dans GanttProject.
-5. **M-E8** → mettre à jour 4.4 avec le tableau budget consolidé final.
-
-### Vague 4 — Finition (`04_finition.md`)
-
-Les 17 critères sont regroupés par chapitre. Suggestion d'ordre :
-
-1. 🔴 **M-F2** → produire les 3 diagrammes Mermaid (séquence, états,
-   composants + ER de M-G4). *Seul critère noté « Absent » par le prof.*
-2. **M-A2** → remplacer le résumé/abstract par les versions FR + EN.
-3. **M-A4** → ajouter la liste d'acronymes après la table des matières.
-4. **M-A6** → activer la pagination x/N dans Word.
-5. **M-B1** → ajouter le paragraphe d'annonce du plan en fin
-   d'introduction.
-6. **M-D4** → ajouter les objectifs SMART et la liste des livrables.
-7. **M-F1 / M-F3** → formaliser 14 exigences fonctionnelles + 10 non
-   fonctionnelles.
-8. **M-G3 / M-G4 / M-G6** → compléter la conception du code, le modèle
-   de données et le déploiement.
-9. **M-H1** → **lancer les 3 campagnes de tests** (JUnit, OWASP ZAP, k6)
-   et remplir les cases *[à relever]*.
-10. **M-I1 / M-I2** → remplacer la conclusion par les versions
-    enrichies.
-11. **M-J1** → remplacer la bibliographie par la liste de 17 références.
-12. **M-J2** → **relire chaque renvoi `[n]`** dans tout le mémoire
-    (renumérotation complète après l'ajout des nouvelles sources).
-13. **M-A8** → passer le correcteur orthographique sur l'ensemble.
-
-### Vague 5 — Slides (`05_slides.md`)
-
-À ne commencer **qu'après avoir intégré V1 à V4** dans le mémoire.
-
-1. **S-1** → nouvelle slide de titre avec le titre validé.
-2. **S-3** → activer la numérotation x/N.
-3. **S-4 / S-5** → réordonner les slides selon la table de
-   correspondance (21 slides).
-4. **S-6 à S-11** → reconstruire chaque slide en reprenant les
-   figures et tableaux du mémoire corrigé.
-5. Enregistrer la **vidéo de secours** de la démo.
-6. Préparer les **questions probables du jury** (fichier à part dans
-   `docs/soutenance/`).
-
----
-
-## Règles de rédaction tenues sur toutes les vagues
-
-Issues des relectures successives (voir `00_journal_relectures.md`) :
-
-1. **Pas de phrase IA générique** — vocabulaire précis, pas de triade
-   artificielle, pas de « notamment » à répétition.
-2. **Analyse réelle du projet avant d'affirmer** — vérifier dans le
-   code, le repo Git et les fichiers de configuration avant toute
-   phrase factuelle sur l'outillage ou la méthode.
-3. **Chaque chiffre doit être vérifiable** — relevé fournisseur,
-   montant confirmé par Tsarajoro, mesure exécutée dans le projet. Si
-   pas de source, mentionner *[à confirmer]* et ne pas inventer.
-4. **Rester fidèle aux consignes du prof** — chaque correction renvoie
-   à un identifiant de critère (M-A1, M-C12, S-5, etc.).
-5. **Accents français obligatoires** dans tous les textes (y compris
-   majuscules : `État`, `À`, `École`).
+1. **Vérifier le statut dans `00_suivi_consignes_prof.md`** pour chaque critère
+2. **Appliquer uniquement les fix non traités** selon la liste du suivi
+3. **Terminer par le dégraissage** (`16_DEGRAISSAGE_v3_contenu.md`) une fois
+   que toutes les corrections ont été intégrées
 
 ---
 
@@ -169,44 +80,64 @@ l'état des 54 critères. Il utilise les statuts suivants :
 | ⚪ | Pas d'action nécessaire (déjà Conforme) |
 | ❌ | Décision explicite de ne pas traiter |
 
-À la clôture de la production : **54/54 critères en statut 🟡**
-(propositions prêtes). Le passage à 🟠 puis ✅ se fait au fur et à mesure
-de l'intégration dans le Word.
+---
+
+## Règles de rédaction tenues sur toutes les corrections
+
+Issues des relectures successives (voir `00_journal_relectures.md`) :
+
+1. **Pas de phrase IA générique** — vocabulaire précis, pas de triade
+   artificielle, pas de « notamment » à répétition
+2. **Analyse réelle du projet avant d'affirmer** — vérifier dans le code,
+   le repo Git et les fichiers de configuration
+3. **Chaque chiffre doit être vérifiable** — relevé réel, montant confirmé,
+   mesure exécutée. Si pas de source, mentionner *[à confirmer]* et ne pas
+   inventer
+4. **Rester fidèle aux consignes du prof** — chaque correction renvoie
+   à un identifiant de critère (M-A1, M-C12, S-5, etc.)
+5. **Accents français obligatoires** dans tous les textes (y compris
+   majuscules : `État`, `À`, `École`)
 
 ---
 
-## Travaux restants qui ne figurent pas dans ces fichiers
+## Zones intouchables (après v3)
 
-Ces points demandent une action manuelle ou des données que seul le
-rédacteur peut fournir :
+Toute nouvelle itération doit préserver :
 
-1. **Intégration dans le Word** du mémoire (V1 à V4).
-2. **Production des diagrammes** (séquence, états, composants, ER,
-   Gantt) depuis les codes Mermaid et le macro-planning.
-3. **Lancement des 3 campagnes de tests** (JUnit, OWASP ZAP, k6) pour
-   remplir les cases *[à relever]* dans 04_finition.md.
-4. **Confirmation des chiffres entreprise** avec l'encadreur Tsarajoro
-   (effectif, année de création, nombre de recrutements/an, heures par
-   candidat avant SkillForge).
-5. **Reconstruction du PPTX** à partir de la table de correspondance de
-   la Vague 5 (21 slides).
-6. **Enregistrement de la vidéo de secours** de la démo.
-7. **Push du workflow GitHub Actions** (commit `8b62abf` dans
-   `.github/workflows/ci.yml`).
-8. **Reconstitution a posteriori** du `docs/backlog.md` et des notes de
-   sprint si inexistants, à partir de l'historique Git réel.
+- **Chapitre 2 complet** — le prof demande à le renforcer, pas à le réduire
+- **Les corrections déjà intégrées en v3** :
+  - 2 diagrammes UML en 5.1 (séquence/activités + états passation) — M-F2
+  - Tableau 7 enrichi des exigences non fonctionnelles — M-F3
+  - Extraits de code (LlmClient + config sandbox) — M-G3
+  - Section 5.3.2 Interfaces enrichie — M-F5
+  - Section Planification + Figures 1 et 2 + 4 écarts — M-E7
+  - Bibliographie enrichie [13]-[17] + 3 insertions dans 2.3 et 2.5 — M-J1
+  - Table d'acronymes + glossaire séparés — M-A4
+  - Renvois biblio corrigés en 2.2.2 — M-J2
+  - Figure 11 (MCD) déplacée en annexe, Figure 12 condensée
+- **Tableaux chiffrés** : budget 1 050 000 MGA, k6 p95 4,37 s, JUnit 27 tests,
+  OWASP ZAP, livrables, risques, 90 jours, sprints, NFR
 
 ---
 
-## Pour revenir sur une vague
+## Pour les slides et la soutenance
 
-Si une relecture ultérieure du prof ou de l'encadreur demande une
-nouvelle itération :
+Les corrections liées aux slides et à la soutenance ne sont **plus dans ce
+dossier** mais dans `docs/soutenance/` :
 
-1. Ouvrir le fichier de la vague concernée.
-2. Appliquer la modification demandée.
+- `06_PLAN_SLIDES_V2.md` — plan complet des 20 slides v2
+- `07_SCRIPT_ORAL_V2.md` — script oral à mémoriser (20 min)
+- `08_SCRIPT_VIDEO_DEMO_V2.md` — script vidéo démo (5 min pile)
+
+---
+
+## Pour revenir sur une correction
+
+Si une relecture ultérieure du prof ou de l'encadreur demande une nouvelle
+itération :
+
+1. Ouvrir le fichier concerné (`xx_sujet.md`)
+2. Appliquer la modification demandée
 3. Ajouter une entrée R-NN dans `00_journal_relectures.md` avec la date,
-   la remarque reçue, l'analyse projet effectuée et la correction
-   appliquée.
-4. Mettre à jour le statut dans `00_suivi_consignes_prof.md` si
-   nécessaire.
+   la remarque reçue et la correction appliquée
+4. Mettre à jour le statut dans `00_suivi_consignes_prof.md`
