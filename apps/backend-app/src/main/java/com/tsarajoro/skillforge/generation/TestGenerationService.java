@@ -87,29 +87,57 @@ public class TestGenerationService {
     private String sanitizeJsonPayload(String raw, QuestionType type, String statement) {
         JsonNode parsed = parseWithRepair(raw);
         if (parsed == null) {
-            // JSON irreparable : on garde la logique existante (payload d erreur).
             log.warn("LLM a renvoye un JSON invalide pour une question {} (statement={}),"
-                    + " stockage en payload d'erreur", type, truncate(statement, 80));
-            try {
-                return mapper.writeValueAsString(Map.of(
-                        "_error", "invalid_json_from_llm",
-                        "_rawText", raw == null ? "" : raw));
-            } catch (Exception ee) {
-                return "{}";
+                    + " fallback payload applique", type, truncate(statement, 80));
+            if (type == QuestionType.CODE) {
+                parsed = defaultCodePayload(statement);
+            } else {
+                try {
+                    return mapper.writeValueAsString(Map.of(
+                            "_error", "invalid_json_from_llm",
+                            "_rawText", raw == null ? "" : raw));
+                } catch (Exception ee) {
+                    return "{}";
+                }
             }
         }
         // Pour les questions CODE, on garantit la presence des champs cles.
         // Le prompt LLM les reclame deja mais GPT-4o-mini / Gemini / Groq les
         // oublient de temps en temps. Sans starterCode, le candidat se retrouve
         // devant un editeur vide impossible a utiliser.
-        if (type == QuestionType.CODE && parsed.isObject()) {
-            parsed = ensureCodeDefaults((ObjectNode) parsed, statement);
+        if (type == QuestionType.CODE) {
+            ObjectNode codePayload;
+            if (parsed.isObject()) {
+                codePayload = (ObjectNode) parsed;
+            } else {
+                log.info("Payload CODE non objet, fallback applique");
+                codePayload = defaultCodePayload(statement);
+            }
+            parsed = ensureCodeDefaults(codePayload, statement);
         }
         try {
             return mapper.writeValueAsString(parsed);
         } catch (Exception e) {
+            if (type == QuestionType.CODE) {
+                try {
+                    return mapper.writeValueAsString(defaultCodePayload(statement));
+                } catch (Exception ignored) {
+                    return "{}";
+                }
+            }
             return "{}";
         }
+    }
+
+    private ObjectNode defaultCodePayload(String statement) {
+        String language = detectLanguageFromStatement(statement);
+        ObjectNode payload = mapper.createObjectNode();
+        payload.put("language", language);
+        payload.put("starterCode", defaultStarterCode(language, statement));
+        payload.put("hiddenTests", defaultHiddenTests(language, statement));
+        payload.put("explanation",
+                "Implementez la fonction solve en respectant la signature fournie.");
+        return payload;
     }
 
     /**
@@ -151,11 +179,11 @@ public class TestGenerationService {
         }
         if (isBlankNode(payload.path("starterCode"))) {
             log.info("starterCode manquant pour question CODE ({}), fallback applique", language);
-            payload.put("starterCode", defaultStarterCode(language));
+            payload.put("starterCode", defaultStarterCode(language, statement));
         }
         if (isBlankNode(payload.path("hiddenTests"))) {
             log.info("hiddenTests manquants pour question CODE ({}), fallback applique", language);
-            payload.put("hiddenTests", defaultHiddenTests(language));
+            payload.put("hiddenTests", defaultHiddenTests(language, statement));
         }
         if (isBlankNode(payload.path("explanation"))) {
             payload.put("explanation",
@@ -180,8 +208,29 @@ public class TestGenerationService {
                 || (node.isTextual() && node.asText().isBlank());
     }
 
-    private String defaultStarterCode(String language) {
+    private String defaultStarterCode(String language, String statement) {
+        String lower = statement == null ? "" : statement.toLowerCase();
         if ("PHP".equals(language)) {
+            if (lower.contains("somme") && lower.contains("tableau")) {
+                return "<?php\n"
+                        + "/**\n"
+                        + " * Calcule la somme des entiers du tableau.\n"
+                        + " */\n"
+                        + "function solve(array $numbers): int {\n"
+                        + "    // TODO: additionner les valeurs de $numbers\n"
+                        + "    return 0;\n"
+                        + "}\n";
+            }
+            if (lower.contains("palindrome")) {
+                return "<?php\n"
+                        + "/**\n"
+                        + " * Retourne true si la chaine est un palindrome.\n"
+                        + " */\n"
+                        + "function solve(string $text): bool {\n"
+                        + "    // TODO: verifier si $text est un palindrome\n"
+                        + "    return false;\n"
+                        + "}\n";
+            }
             return "<?php\n"
                     + "/**\n"
                     + " * Implementez la fonction demandee.\n"
@@ -191,7 +240,17 @@ public class TestGenerationService {
                     + "    return null;\n"
                     + "}\n";
         }
-        // JS par defaut
+        if (lower.contains("voyelle")) {
+            return "/**\n"
+                    + " * Retourne le nombre de voyelles dans une phrase.\n"
+                    + " */\n"
+                    + "function solve(sentence) {\n"
+                    + "  // TODO: compter les voyelles de sentence\n"
+                    + "  return 0;\n"
+                    + "}\n"
+                    + "\n"
+                    + "module.exports = { solve };\n";
+        }
         return "/**\n"
                 + " * Implementez la fonction demandee.\n"
                 + " */\n"
@@ -202,14 +261,42 @@ public class TestGenerationService {
                 + "module.exports = { solve };\n";
     }
 
-    private String defaultHiddenTests(String language) {
+    private String defaultHiddenTests(String language, String statement) {
+        String lower = statement == null ? "" : statement.toLowerCase();
         if ("PHP".equals(language)) {
+            if (lower.contains("somme") && lower.contains("tableau")) {
+                return "<?php use PHPUnit\\Framework\\TestCase; require_once 'solution.php';\n"
+                        + "class HiddenTest extends TestCase {\n"
+                        + "    public function testSomme(): void {\n"
+                        + "        $this->assertSame(10, solve([1, 2, 3, 4]));\n"
+                        + "        $this->assertSame(0, solve([]));\n"
+                        + "    }\n"
+                        + "}\n";
+            }
+            if (lower.contains("palindrome")) {
+                return "<?php use PHPUnit\\Framework\\TestCase; require_once 'solution.php';\n"
+                        + "class HiddenTest extends TestCase {\n"
+                        + "    public function testPalindrome(): void {\n"
+                        + "        $this->assertTrue(solve('kayak'));\n"
+                        + "        $this->assertFalse(solve('maison'));\n"
+                        + "    }\n"
+                        + "}\n";
+            }
             return "<?php use PHPUnit\\Framework\\TestCase; require_once 'solution.php';\n"
                     + "class HiddenTest extends TestCase {\n"
                     + "    public function testBasic(): void {\n"
                     + "        $this->assertNotNull(solve(null));\n"
                     + "    }\n"
                     + "}\n";
+        }
+        if (lower.contains("voyelle")) {
+            return "const { solve } = require('./solution');\n"
+                    + "describe('solve', () => {\n"
+                    + "  test('compte les voyelles', () => {\n"
+                    + "    expect(solve('Bonjour le monde')).toBe(6);\n"
+                    + "    expect(solve('xyz')).toBe(0);\n"
+                    + "  });\n"
+                    + "});\n";
         }
         return "const { solve } = require('./solution');\n"
                 + "describe('solve', () => {\n"
