@@ -2,6 +2,7 @@ package com.tsarajoro.skillforge.generation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tsarajoro.skillforge.domain.Question;
 import com.tsarajoro.skillforge.domain.QuestionStatus;
@@ -91,6 +92,8 @@ public class TestGenerationService {
                     + " fallback payload applique", type, truncate(statement, 80));
             if (type == QuestionType.CODE) {
                 parsed = defaultCodePayload(statement);
+            } else if (type == QuestionType.CAS_PRATIQUE) {
+                parsed = defaultCasPayload(raw, statement);
             } else {
                 try {
                     return mapper.writeValueAsString(Map.of(
@@ -114,6 +117,15 @@ public class TestGenerationService {
                 codePayload = defaultCodePayload(statement);
             }
             parsed = ensureCodeDefaults(codePayload, statement);
+        } else if (type == QuestionType.CAS_PRATIQUE) {
+            ObjectNode casPayload;
+            if (parsed.isObject()) {
+                casPayload = (ObjectNode) parsed;
+            } else {
+                log.info("Payload CAS_PRATIQUE non objet, fallback applique");
+                casPayload = defaultCasPayload(raw, statement);
+            }
+            parsed = ensureCasDefaults(casPayload, raw, statement);
         }
         try {
             return mapper.writeValueAsString(parsed);
@@ -121,6 +133,13 @@ public class TestGenerationService {
             if (type == QuestionType.CODE) {
                 try {
                     return mapper.writeValueAsString(defaultCodePayload(statement));
+                } catch (Exception ignored) {
+                    return "{}";
+                }
+            }
+            if (type == QuestionType.CAS_PRATIQUE) {
+                try {
+                    return mapper.writeValueAsString(defaultCasPayload(raw, statement));
                 } catch (Exception ignored) {
                     return "{}";
                 }
@@ -137,6 +156,27 @@ public class TestGenerationService {
         payload.put("hiddenTests", defaultHiddenTests(language, statement));
         payload.put("explanation",
                 "Implementez la fonction solve en respectant la signature fournie.");
+        return payload;
+    }
+
+    private ObjectNode defaultCasPayload(String raw, String statement) {
+        ObjectNode payload = mapper.createObjectNode();
+        payload.put("scenario", extractJsonStringField(raw, "scenario",
+                statement == null || statement.isBlank()
+                        ? "Decrivez votre demarche pour traiter ce cas projet."
+                        : statement));
+        ArrayNode points = mapper.createArrayNode();
+        List<String> extracted = extractJsonStringArray(raw, "expectedAnswerPoints");
+        if (extracted.isEmpty()) {
+            extracted = List.of(
+                    "Identifier les besoins et contraintes du projet.",
+                    "Proposer une solution technique structuree.",
+                    "Expliquer les etapes de mise en oeuvre et les controles.");
+        }
+        extracted.forEach(points::add);
+        payload.set("expectedAnswerPoints", points);
+        payload.put("explanation",
+                "Evaluer la pertinence, la structuration et la couverture des points attendus.");
         return payload;
     }
 
@@ -192,6 +232,33 @@ public class TestGenerationService {
         return payload;
     }
 
+    private ObjectNode ensureCasDefaults(ObjectNode payload, String raw, String statement) {
+        if (isBlankNode(payload.path("scenario"))) {
+            payload.put("scenario", extractJsonStringField(raw, "scenario",
+                    statement == null || statement.isBlank()
+                            ? "Decrivez votre demarche pour traiter ce cas projet."
+                            : statement));
+        }
+        JsonNode expected = payload.path("expectedAnswerPoints");
+        if (!expected.isArray() || expected.isEmpty()) {
+            ArrayNode points = mapper.createArrayNode();
+            List<String> extracted = extractJsonStringArray(raw, "expectedAnswerPoints");
+            if (extracted.isEmpty()) {
+                extracted = List.of(
+                        "Identifier les besoins et contraintes du projet.",
+                        "Proposer une solution technique structuree.",
+                        "Expliquer les etapes de mise en oeuvre et les controles.");
+            }
+            extracted.forEach(points::add);
+            payload.set("expectedAnswerPoints", points);
+        }
+        if (isBlankNode(payload.path("explanation"))) {
+            payload.put("explanation",
+                    "Evaluer la pertinence, la structuration et la couverture des points attendus.");
+        }
+        return payload;
+    }
+
     /** Devine PHP vs JS a partir de l enonce (par defaut : JS). */
     private String detectLanguageFromStatement(String statement) {
         if (statement == null) return "JS";
@@ -206,6 +273,41 @@ public class TestGenerationService {
     private boolean isBlankNode(JsonNode node) {
         return node == null || node.isMissingNode() || node.isNull()
                 || (node.isTextual() && node.asText().isBlank());
+    }
+
+    private String extractJsonStringField(String raw, String field, String fallback) {
+        if (raw == null || raw.isBlank()) return fallback;
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                "\"" + java.util.regex.Pattern.quote(field) + "\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"");
+        java.util.regex.Matcher matcher = pattern.matcher(raw);
+        if (!matcher.find()) return fallback;
+        return unescapeJsonString(matcher.group(1), fallback);
+    }
+
+    private List<String> extractJsonStringArray(String raw, String field) {
+        if (raw == null || raw.isBlank()) return List.of();
+        java.util.regex.Pattern arrayPattern = java.util.regex.Pattern.compile(
+                "\"" + java.util.regex.Pattern.quote(field) + "\"\\s*:\\s*\\[(.*)",
+                java.util.regex.Pattern.DOTALL);
+        java.util.regex.Matcher arrayMatcher = arrayPattern.matcher(raw);
+        if (!arrayMatcher.find()) return List.of();
+
+        java.util.regex.Pattern stringPattern = java.util.regex.Pattern.compile("\"((?:\\\\.|[^\"\\\\])*)\"");
+        java.util.regex.Matcher stringMatcher = stringPattern.matcher(arrayMatcher.group(1));
+        List<String> values = new ArrayList<>();
+        while (stringMatcher.find()) {
+            String value = unescapeJsonString(stringMatcher.group(1), "");
+            if (!value.isBlank()) values.add(value);
+        }
+        return values;
+    }
+
+    private String unescapeJsonString(String value, String fallback) {
+        try {
+            return mapper.readValue("\"" + value + "\"", String.class);
+        } catch (Exception e) {
+            return value == null || value.isBlank() ? fallback : value;
+        }
     }
 
     private String defaultStarterCode(String language, String statement) {
