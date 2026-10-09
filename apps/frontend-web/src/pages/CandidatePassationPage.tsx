@@ -97,14 +97,20 @@ export function CandidatePassationPage() {
               if (a.submittedCode != null) s.code = a.submittedCode;
               if (a.qcmSelectedIndex != null) s.qcmIndex = a.qcmSelectedIndex;
               if (a.lastTestsTotal != null && a.lastTestsTotal > 0) {
+                // Les colonnes status/exitCode/durationMs ne sont pas persistees cote
+                // backend : on les deduit du resultat des tests pour afficher un etat
+                // coherent au reload (sinon status=OK meme en cas d echec).
+                const passed = a.lastTestsPassed ?? 0;
+                const total = a.lastTestsTotal;
+                const allPassed = passed === total;
                 s.runResult = {
-                  status: 'OK',
-                  exitCode: 0,
+                  status: allPassed ? 'OK' : 'ERROR',
+                  exitCode: allPassed ? 0 : 1,
                   stdout: a.lastStdout ?? '',
                   stderr: a.lastStderr ?? '',
                   durationMs: 0,
-                  testsPassed: a.lastTestsPassed ?? 0,
-                  testsTotal: a.lastTestsTotal,
+                  testsPassed: passed,
+                  testsTotal: total,
                   score: a.score == null
                     ? 0
                     : (typeof a.score === 'number' ? a.score : parseFloat(a.score)) / 100,

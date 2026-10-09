@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, FraudEventType } from '@/lib/api';
 
-const PASTE_THRESHOLD = 200;
+const PASTE_THRESHOLD = 50;
 const FAST_ANSWER_MS = 5000;
 const FAST_ANSWER_MIN_LENGTH = 300;
 const FOCUS_DEDUP_MS = 500;
-const TYPE_THROTTLE_MS = 3000;
+const TYPE_THROTTLE_MS = 500;
 const DEVTOOLS_HEIGHT_DIFF = 160;
 
 export type FraudSignal = {
