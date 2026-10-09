@@ -79,8 +79,11 @@ public class SandboxRunner {
         String containerId = null;
         long start = System.nanoTime();
         try {
-            // 2) Construire la configuration de durcissement (tmpfs pour cache Jest seulement en JS)
-            HostConfig hostConfig = buildHardenedHostConfig(workDir, req.language() == Language.JS);
+            // 2) Construire la configuration de durcissement (tmpfs pour cache Jest seulement
+            //    en JS AVEC tests caches : sans tests, pas de Jest, pas besoin de tmpfs)
+            boolean needsJestCache = req.language() == Language.JS
+                    && req.hiddenTests() != null && !req.hiddenTests().isBlank();
+            HostConfig hostConfig = buildHardenedHostConfig(workDir, needsJestCache);
 
             // 3) Creer le conteneur
             //    --entrypoint vide : on court-circuite docker-entrypoint.sh qui casse
@@ -266,9 +269,11 @@ public class SandboxRunner {
                 setPosixPermissions(tests, "rw-r--r--");
                 // Config Jest minimale : evite la remontee /work -> / a la recherche
                 // d une config, qui echoue sous --experimental-permission.
+                // transform: {} desactive Babel (sinon Babel remonte l arbo pour
+                // trouver babel.config.js et echoue sur /work/.. interdit).
                 Path jestConf = workDir.resolve("jest.config.js");
                 Files.writeString(jestConf,
-                        "module.exports = { rootDir: '/work', testMatch: ['**/hidden.test.js'] };\n");
+                        "module.exports = { rootDir: '/work', testMatch: ['**/hidden.test.js'], transform: {} };\n");
                 setPosixPermissions(jestConf, "rw-r--r--");
                 // Pre-creation du dossier de cache Jest : le mode --experimental-permission
                 // interdit mkdirSync meme sur un chemin --allow-fs-write, il faut donc que
@@ -309,13 +314,7 @@ public class SandboxRunner {
                     "node",
                     "--experimental-permission",
                     "--allow-fs-read=/work",
-                    "--allow-fs-read=/usr/local/lib/node_modules",
-                    "--allow-fs-read=/usr/local/bin",
-                    "--allow-fs-read=/usr/lib",
-                    // Necessaire a la traversee du systeme de fichiers par Jest
-                    // pour trouver sa config. Seule la lecture des noms de dossiers
-                    // est ouverte ; leur contenu reste protege par les autres flags.
-                    "--allow-fs-read=/",
+                    "--allow-fs-read=/usr",
                     "--allow-fs-write=/work",
                     "--max-old-space-size=200"
             };
