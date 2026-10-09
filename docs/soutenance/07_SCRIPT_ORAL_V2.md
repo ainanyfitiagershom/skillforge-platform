@@ -39,14 +39,14 @@
 
 - Respirer avant de commencer, poser la voix, débit modéré.
 - Regarder le jury quand on parle d'objectifs et de résultats ; regarder la slide quand on introduit une figure ou un tableau.
-- Vidéo de secours MP4 (3 min, étapes 6 à 9 de la démo) préchargée sur le bureau et sur une clé USB. L'annoncer en entrant dans le bloc démo.
+- La démo est intégrée aux slides 14 à 16 sous forme d'une vidéo pré-enregistrée (5 minutes). Elle est jouée automatiquement à l'arrivée sur la slide 14, le commentaire se fait en voix off par-dessus. Prévoir le fichier `demo-video.mp4` sur le bureau et sur une clé USB au cas où le lecteur de slides refuse l'embed.
 - Boire une gorgée d'eau en fin de slide 16, avant d'enchaîner sur les résultats (slide 17).
 - Tenue sobre adaptée au contexte académique.
 - Message clé à répéter trois fois dans la soutenance : slide 11, slide 16, slide 20 — **« l'IA propose, le recruteur décide »**.
 - Formulation OWASP exacte : **« aucune alerte de niveau élevé, moyen ou faible »**. Ne jamais dire « zéro vulnérabilité ».
 - Vocabulaire interdit : « nouvelle génération », « entièrement assistée par IA », « révolutionnaire », « innovant ». Dire plutôt : plateforme interne, assistance IA, exécution isolée, contrôle humain.
 - Terminologie Scrum : parler de **Sprint 0 à Sprint 8**, jamais de « POC ».
-- Si la démo plante : « je bascule sur la vidéo que j'ai préparée », puis commentaire en voix off, sans paniquer.
+- Si la vidéo démo plante (lecture bloquée, son coupé) : rester calme, reprendre le fil au point où la vidéo s'est arrêtée, et basculer sur la clé USB au besoin. Les scripts des slides 14-16 restent compréhensibles sans la vidéo.
 
 ---
 
@@ -236,63 +236,113 @@
 
 ---
 
-### Slide 14/20 — Démo recruteur (durée cible : 2 min 00)
+### Slide 14/20 — Démo recruteur (vidéo pré-enregistrée, durée cible : 2 min 00)
+
+**Format** : la vidéo démo est lancée dès l'arrivée sur la slide. Pas de démo live. Tu commentes en voix off pendant que la vidéo défile. La vidéo doit être calée pour que ton commentaire tombe pile.
 
 **Action à l'écran** :
-- Ouvrir le navigateur sur `http://localhost:3000` (compte recruteur `recruteur@tsarajoro.mg`).
-- Si problème : lancer la vidéo MP4 depuis le bureau.
-- Étapes à l'écran :
-  1. Se connecter au tableau de bord recruteur.
-  2. Cliquer « Nouvelle évaluation », importer le CV de démo (`cv-demo.pdf`).
-  3. Lancer l'analyse IA, montrer les compétences détectées.
-  4. Valider, puis générer les questions, montrer les trois types proposés.
-  5. Cliquer « Inviter le candidat », montrer l'email dans Mailpit (`http://localhost:8025`).
+- Dès l'affichage de la slide 14, lancer la vidéo `demo-video.mp4` en plein écran (ou intégrée dans la slide avec autoplay).
+- La vidéo montre le parcours recruteur de bout en bout, enregistré depuis la production.
 
-**Script** :
+**Repères de timing dans la vidéo** (à mémoriser pour synchroniser le commentaire) :
 
-> « Voici la plateforme en direct. Je me connecte comme recruteur. Je crée une nouvelle évaluation et j'importe le CV du candidat. L'analyse IA tourne — en quelques secondes, les compétences détectées s'affichent. Je peux les ajuster manuellement avant validation. Une fois validées, je lance la génération des questions. La plateforme propose trois types de contenu : un QCM, un exercice de code, et un cas pratique, tous adaptés au profil extrait. Je valide le lot, puis j'invite le candidat. L'email part — je vous le montre dans Mailpit — avec un lien unique et un consentement à cocher. »
+| Timecode | Ce que montre la vidéo | Phrase à dire |
+|---|---|---|
+| 0:00 — 0:10 | Connexion recruteur sur la plateforme | Voici la plateforme SkillForge en production. Je me connecte comme recruteur. |
+| 0:10 — 0:30 | Création d'une nouvelle évaluation, saisie du candidat et import du CV | Je crée une nouvelle évaluation pour un candidat ciblé sur un profil développeur PHP. J'importe son CV, au format PDF. |
+| 0:30 — 0:55 | Analyse IA du CV, apparition des compétences détectées | L'analyse IA tourne. En moins de dix secondes, les compétences détectées s'affichent : PHP, Laravel, MySQL, Git, Docker. Le recruteur peut les corriger avant génération. |
+| 0:55 — 1:25 | Génération automatique des questions, QCM + code + cas pratique | Je lance la génération. L'IA produit trois types de contenu adaptés au profil : des QCM, deux exercices de code et deux cas pratiques. Chaque question est révisable avant envoi. |
+| 1:25 — 1:50 | Validation des questions, envoi de l'invitation, email reçu | Je valide le lot et génère l'invitation. Le candidat reçoit un lien unique et un code à six chiffres par email. Rien ne part sans la validation humaine. |
+| 1:50 — 2:00 | Transition visuelle (fade ou coupe) | Côté candidat maintenant. |
 
-**Transition vers slide 15** : « Côté candidat, voici ce qui se passe quand il ouvre son lien. »
+**Script complet (à lire en parallèle de la vidéo)** :
 
-**Note** : annoncer la vidéo de secours AVANT de commencer la démo live : « j'ai aussi une vidéo prête si la démo rencontre un problème réseau ». Ne pas commenter chaque clic, aller à l'essentiel.
+> « Voici la plateforme SkillForge, en production, sur Vercel pour le frontend et Render pour le backend. Je me connecte comme recruteur. Je crée une nouvelle évaluation pour un profil développeur PHP et j'importe le CV du candidat.
+>
+> L'analyse IA tourne. En moins de dix secondes, les compétences détectées s'affichent. Le recruteur garde le contrôle : il peut corriger, ajouter ou retirer avant la génération.
+>
+> Je lance la génération du test. L'IA produit trois types de contenu adaptés au profil : des QCM, des exercices de code, et des cas pratiques. Chaque question est révisable, modifiable, ou supprimable par le recruteur avant l'envoi.
+>
+> Je valide le lot et génère l'invitation. Le candidat reçoit un lien unique et un code à six chiffres par email. Rien ne part sans la validation humaine. »
+
+**Transition vers slide 15** : « Côté candidat, voici ce qu'il voit en ouvrant son lien. »
+
+**Note** :
+- Démarrer la vidéo au moment où tu termines la phrase de transition de la slide 13.
+- Si la vidéo désynchronise avec ta voix, c'est la voix qui s'adapte, pas la vidéo.
+- Mettre la vidéo en lecture automatique ou appuyer sur Espace dès l'affichage de la slide.
 
 ---
 
-### Slide 15/20 — Démo candidat (durée cible : 1 min 30)
+### Slide 15/20 — Démo candidat (vidéo pré-enregistrée, durée cible : 1 min 30)
+
+**Format** : vidéo pré-enregistrée, commentaire en voix off synchronisé.
 
 **Action à l'écran** :
-- Basculer sur la fenêtre privée du navigateur, ouvrir le lien candidat.
-- Étapes :
-  6. Candidat ouvre le lien, coche le consentement.
-  7. Répondre à deux questions QCM puis ouvrir l'exercice de code, lancer l'exécution.
-  8. Déclencher volontairement un signal anti-fraude : copier-coller et changement d'onglet.
+- Enchainement direct depuis la slide 14 (même fichier vidéo, nouvelle section).
+- Montre le parcours candidat : accès, QCM, exécution de code correct et faux.
 
-**Script** :
+**Repères de timing dans la vidéo** :
 
-> « Le candidat ouvre son lien unique. Il coche le consentement avant toute donnée collectée. Il répond au QCM, puis attaque l'exercice de code. Quand il lance l'exécution, le code part dans la sandbox, j'y reviens dans un instant. Je vais aussi déclencher volontairement deux signaux anti-fraude : un copier-coller massif, et un changement d'onglet. Vous voyez que l'évènement est tracé, sans bloquer le candidat — c'est le recruteur qui décidera en analysant le rapport. »
+| Timecode | Ce que montre la vidéo | Phrase à dire |
+|---|---|---|
+| 2:00 — 2:15 | Candidat ouvre le lien, saisit son code à six chiffres, consentement coché, démarrage | Le candidat ouvre son lien unique et saisit le code à six chiffres reçu par email. Il coche son consentement avant toute collecte de données. |
+| 2:15 — 2:35 | QCM rapides sans réflexion | Il traverse les QCM à grande vitesse, sans vraiment lire — ce comportement sera remonté par les signaux anti-fraude. |
+| 2:35 — 3:05 | Code PHP palindrome : première tentative fausse → ERROR → correction → OK | Il arrive sur l'exercice de code PHP. Première tentative : une solution naïve qui échoue aux tests cachés. Il corrige en normalisant la chaîne — cette fois les tests passent. Le code est exécuté dans une sandbox Docker durcie, j'y reviens sur la slide suivante. |
+| 3:05 — 3:30 | Code JS factorielle : code faux → ERROR → correct → OK | Même parcours en JavaScript sur une factorielle. Une erreur détectée, puis la solution correcte. L'éditeur affiche le résultat des tests et le score. |
 
-**Transition vers slide 16** : « Maintenant, le point sensible : que se passe-t-il si le candidat essaie d'attaquer la plateforme ? »
+**Script complet** :
 
-**Note** : rythme un peu plus rapide ici, c'est de l'interaction UI. Marquer le mot « tracé » sans jugement.
+> « Le candidat ouvre son lien unique et saisit le code à six chiffres reçu par email. Il coche son consentement avant toute collecte de données.
+>
+> Il traverse les QCM rapidement. Trop rapidement — ce comportement sera remonté dans les signaux anti-fraude.
+>
+> Il arrive sur l'exercice de code PHP sur les palindromes. Première tentative : une solution naïve. Les tests cachés échouent, et le candidat voit immédiatement son erreur. Il corrige en normalisant la chaîne avant comparaison. Cette fois les tests passent.
+>
+> Même parcours en JavaScript sur une factorielle. Une tentative fausse, puis la solution correcte. Chaque exécution tourne dans la sandbox Docker durcie. J'y arrive dans un instant. »
+
+**Transition vers slide 16** : « Maintenant le point sensible : que se passe-t-il si le candidat tente une attaque ? »
+
+**Note** :
+- La vidéo doit montrer clairement les transitions ERROR → OK pour marquer la pédagogie du système.
+- Les écarts de rythme candidat sont volontaires pour générer les signaux anti-fraude visibles slide 16.
 
 ---
 
-### Slide 16/20 — Démo attaque et rapport (durée cible : 1 min 30)
+### Slide 16/20 — Démo attaque et rapport recruteur (vidéo pré-enregistrée, durée cible : 1 min 30)
+
+**Format** : vidéo pré-enregistrée. Partie la plus dense de la démo : attaques sandbox + bascule côté recruteur pour le rapport.
 
 **Action à l'écran** :
-- Dans l'exercice de code, remplacer le squelette par un script test (lecture de `/etc/passwd` + appel réseau sortant).
-- Lancer, montrer le bloc d'erreur seccomp.
-- Revenir côté recruteur, ouvrir le rapport final de la passation.
-- Pointer : score global, forces/faiblesses, section anti-fraude.
-- Montrer rapidement le tableau de bord analytique.
+- La vidéo enchaîne les 3 attaques puis bascule sur l'interface recruteur.
 
-**Script** :
+**Repères de timing dans la vidéo** :
 
-> « Je bascule dans l'exercice et je saisis un code malveillant. Deux attaques classiques : lire /etc/passwd, puis ouvrir un appel réseau sortant. Je lance. Vous voyez : les deux appels système sont bloqués par seccomp, et le réseau est coupé par la configuration network-none. La sandbox renvoie une erreur, le reste de la plateforme n'est pas affecté. Je repasse côté recruteur. Le rapport final s'ouvre : score global, forces et faiblesses détectées par l'IA, et une section anti-fraude qui liste les évènements du candidat. Je rappelle le principe : l'IA propose la synthèse, le recruteur décide. »
+| Timecode | Ce que montre la vidéo | Phrase à dire |
+|---|---|---|
+| 3:30 — 3:50 | Attaque PHP : lecture de /etc/passwd, /etc/shadow, /proc/self/environ, /etc/hosts → 4 lignes `BLOQUE` | Le candidat tente de lire des fichiers système sensibles depuis le conteneur. Les quatre tentatives sont refusées : open_basedir côté PHP et readonly-rootfs côté Docker. |
+| 3:50 — 4:10 | Attaque JS : lecture `/etc/passwd` et `/proc/self/environ` depuis Node.js → 3 lignes `BLOQUE ERR_ACCESS_DENIED` | Même principe en JavaScript. Node 20 est lancé avec son Permission Model, qui restreint les lectures aux dossiers autorisés. Trois refus clairs. |
+| 4:10 — 4:30 | Attaque réseau JS : `http.get` vers google.com → `EAI_AGAIN` | Troisième scénario : tentative de connexion sortante. Le conteneur est lancé avec network-none, aucun paquet ne sort. Même la résolution DNS échoue. |
+| 4:30 — 5:00 | Bascule côté recruteur, ouverture du rapport : score global, score anti-fraude 100, 6 pastes, 3 sorties d'onglet, synthèse IA | Je bascule côté recruteur. Le rapport s'ouvre. Score global modéré, score anti-fraude à cent sur cent : six copier-coller volumineux et trois sorties d'onglet détectés. La synthèse IA liste forces et faiblesses, mais c'est le recruteur qui décide. |
+
+**Script complet** :
+
+> « Le candidat tente d'attaquer la plateforme pendant son test. Trois scénarios.
+>
+> Premier scénario : lire des fichiers système sensibles depuis le conteneur PHP. Les quatre tentatives sont refusées : open_basedir côté PHP et readonly-rootfs côté Docker.
+>
+> Deuxième scénario : même attaque mais en JavaScript. Node 20 est lancé avec son Permission Model, qui restreint les lectures aux dossiers autorisés. Trois refus clairs avec le code ERR_ACCESS_DENIED.
+>
+> Troisième scénario : tentative de connexion réseau sortante. Le conteneur est lancé avec network-none, aucun paquet ne sort. Même la résolution DNS échoue.
+>
+> Je bascule côté recruteur. Le rapport s'ouvre. Score anti-fraude à cent sur cent : six copier-coller volumineux et trois sorties d'onglet détectés automatiquement. La synthèse IA liste les forces et faiblesses du candidat, mais la décision finale reste au recruteur. L'IA propose, le recruteur décide. »
 
 **Transition vers slide 17** : « Fin de la démonstration. Je passe aux résultats mesurés. »
 
-**Note** : c'est la slide la plus technique de la démo. Si la sandbox ne bloque pas (très improbable), basculer sur la vidéo. Boire une gorgée d'eau avant la slide 17.
+**Note** :
+- C'est la slide avec le plus d'informations à faire passer. Si tu dépasses, c'est OK, grappiller 30 secondes sur la slide 17.
+- La phrase « L'IA propose, le recruteur décide » doit être prononcée nettement — c'est le fil rouge du projet.
+- Si quelqu'un dans le jury demande « c'est pré-enregistré ou live ? », répondre : « c'est une capture de la plateforme en production, enregistrée hier pour garantir la fluidité. La prod est bien active. »
 
 ---
 
@@ -302,11 +352,11 @@
 
 **Script** :
 
-> « Les cinq objectifs se traduisent en chiffres. Analyse de CV : module fonctionnel, validé par l'encadreur. Génération : les trois types sont produits et contrôlés à 100 %. Sécurisation de l'exécution : zéro évasion sur cinquante scénarios, cent exécutions valides, médiane 330 millisecondes, p95 à 422 millisecondes. Charge sur vingt utilisateurs virtuels pendant soixante secondes avec k6 : 823 checks sur 823 réussis, zéro erreur, un p95 à 4,37 secondes, en dessous de la cible de six secondes. Rapport candidat : score, forces, faiblesses et anti-fraude livrés. En complément : OWASP ZAP n'a remonté aucune alerte de niveau élevé, moyen ou faible, et la base de tests JUnit compte 27 tests, dont 25 passants et 2 ignorés. »
+> « Les cinq objectifs se traduisent en chiffres. Analyse de CV : module fonctionnel, validé par l'encadreur. Génération : les trois types sont produits et contrôlés à 100 %. Sécurisation de l'exécution : zéro évasion sur cinquante scénarios, cent exécutions valides, médiane 330 millisecondes, p95 à 422 millisecondes. Charge sur vingt utilisateurs virtuels pendant soixante secondes avec k6 : 823 checks sur 823 réussis, zéro erreur, un p95 à 4,37 secondes, en dessous de la cible de six secondes. Rapport candidat : score, forces, faiblesses et anti-fraude livrés. En complément : OWASP ZAP n'a remonté aucune alerte de niveau élevé, moyen ou faible, et la base de tests JUnit compte 27 tests, tous validés avec succès. »
 
 **Transition vers slide 18** : « Côté livrables maintenant. »
 
-**Note** : chaque chiffre doit sortir sans hésitation — c'est la slide où le jury vérifie la cohérence avec le mémoire. S'entraîner spécifiquement sur « 4,37 secondes » et « 27 tests, 25 passants, 2 ignorés ».
+**Note** : chaque chiffre doit sortir sans hésitation — c'est la slide où le jury vérifie la cohérence avec le mémoire. S'entraîner spécifiquement sur « 4,37 secondes » et « 27 tests tous validés ».
 
 ---
 
@@ -330,7 +380,7 @@
 
 **Script** :
 
-> « Trois difficultés concrètes. Un : l'indisponibilité de GitHub Models pendant deux jours, résolue par bascule vers OpenAI via LlmClient — c'est la preuve que l'abstraction sert. Deux : les tests JavaScript dans la sandbox, qui ont nécessité un ajustement du harnais d'exécution. Trois : la qualité variable des générations IA, traitée par renforcement des prompts et validation humaine systématique. Côté apports : une plateforme fonctionnelle testée, une sandbox validée contre cinquante attaques, une architecture multi-LLM, et une base réutilisable pour Tsarajoro. Côté perspectives : déploiement en production — en cours — montée en charge, extension à d'autres langages comme Go, Rust ou C-sharp, intégration à un ATS, et un mode cent pour cent local via Ollama. Sur le plan personnel, ce stage m'a fait progresser sur la sécurité applicative, la conception de prompts et l'architecture orientée domaines, en lien direct avec les enseignements MBDS sur les bases, la sécurité et le génie logiciel. »
+> « Trois difficultés concrètes. Un : l'indisponibilité de GitHub Models en cours de projet, résolue par bascule vers OpenAI comme fournisseur principal via LlmClient — c'est la preuve que l'abstraction sert. Deux : les tests JavaScript dans la sandbox, qui ont nécessité un ajustement du harnais d'exécution. Trois : la qualité variable des générations IA, traitée par renforcement des prompts et validation humaine systématique. Côté apports : une plateforme fonctionnelle testée, une sandbox validée contre cinquante attaques, une architecture multi-LLM, et une base réutilisable pour Tsarajoro. Côté perspectives : la plateforme est actuellement en préproduction sur Vercel et Render, et la prochaine étape est le déploiement en production sur l'infrastructure interne de Tsarajoro, pour héberger les données candidats directement dans l'environnement de l'entreprise. Suivront la montée en charge, l'extension à d'autres langages comme Go, Rust ou C-sharp, l'intégration à un ATS, et un mode cent pour cent local via Ollama. Sur le plan personnel, ce stage m'a fait progresser sur la sécurité applicative, la conception de prompts et l'architecture orientée domaines, en lien direct avec les enseignements MBDS sur les bases, la sécurité et le génie logiciel. »
 
 **Transition vers slide 20** : « Je conclus. »
 

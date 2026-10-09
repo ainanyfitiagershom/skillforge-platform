@@ -247,175 +247,226 @@ Phrase orale :
 
 ## 4. Bloc 2 - Candidat
 
-Objectif : tout montrer dans le meme lien candidat, sans refaire plusieurs
-tests : acces securise, QCM, code correct, signaux anti-fraude, attaque sandbox,
-remise du bon code, puis soumission.
+Duree cible : environ 3 min 30. Tout dans un seul lien candidat, dans l'ordre.
 
-### 4.1 Ouvrir l'invitation
+Les codes faux et corrects pour chaque exercice CODE ne sont PAS dans ce guide : les enonces varient selon la generation IA. Pendant le test, demander a Claude la bonne reponse en lui donnant l'enonce exact.
 
-1. Aller dans la fenetre navigation privee.
-2. Coller le lien candidat.
-3. Appuyer sur entree.
-4. Saisir le code d'acces recu par email.
-5. Verifier que le nom et l'email sont ceux du candidat invite.
-6. Cocher le consentement.
-7. Cliquer **Commencer**.
-
-Phrase orale :
-
-> Cote candidat, l'acces est controle par le lien et le code d'acces.
-
-### 4.2 Repondre au QCM
-
-1. Lire rapidement la premiere question QCM.
-2. Cocher une reponse.
-3. Cliquer **Suivant**.
-4. Sur une autre QCM, repondre tres vite pour simuler un comportement suspect.
-5. Si l'application affiche un signal, le laisser visible 1 ou 2 secondes.
-
-Ne pas perdre trop de temps ici : 5 a 10 secondes suffisent.
-
-Phrase orale :
-
-> Pendant la passation, certains comportements peuvent etre remontes comme
-> signaux de risque : reponses anormalement rapides, perte de focus ou actions
-> inhabituelles.
-
-### 4.3 Executer le code
-
-1. Aller a la question CODE.
-2. Montrer que le squelette de depart est bien present.
-3. Copier-coller le code valide.
-
-Si la question attend un double :
-
-```php
-<?php
-function solve(int $n): int {
-    return $n * 2;
-}
-```
-
-Si la question attend une somme de tableau :
-
-```php
-<?php
-function solve(array $numbers): int {
-    return array_sum($numbers);
-}
-```
-
-Si la question attend un palindrome :
-
-```php
-<?php
-function solve(string $text): bool {
-    $clean = strtolower(preg_replace('/[^a-z0-9]/i', '', $text));
-    return $clean === strrev($clean);
-}
-```
-
-Si la question est en JavaScript sur les voyelles :
-
-```js
-function solve(sentence) {
-  return (sentence.match(/[aeiouyàâäéèêëîïôöùûü]/gi) || []).length;
-}
-
-module.exports = { solve };
-```
-
-4. Cliquer **Executer**.
-5. Attendre le resultat.
-6. Montrer le statut OK, les tests passes, le score ou la sortie.
-
-Phrase orale :
-
-> Le code candidat est execute dans un service sandbox separe du backend
-> principal.
-
-### 4.4 Simuler la fraude dans la meme passation
-
-Faire les actions suivantes avant de soumettre :
-
-1. Changer d'onglet pendant 2 secondes.
-2. Revenir sur la passation.
-3. Copier-coller un gros bloc de code dans l'editeur.
-4. Repondre tres rapidement a une question simple.
-5. Si un indicateur anti-fraude apparait, le montrer rapidement.
-
-Phrase orale :
-
-> Ici, je simule quelques comportements a risque : sortie de l'onglet, collage
-> de code et reponses tres rapides. Ces signaux ne condamnent pas le candidat,
-> ils alimentent seulement un score de risque pour le recruteur.
-
-### 4.5 Simuler une attaque sandbox
-
-Toujours dans le meme lien candidat, sur une question CODE :
-
-1. Remplacer temporairement le code correct par une tentative d'acces fichier.
-
-Pour PHP :
-
-```php
-<?php
-function solve($input) {
-    return file_get_contents('/etc/passwd');
-}
-```
-
-Ou :
-
-```php
-<?php
-echo file_get_contents('/etc/passwd');
-```
-
-Pour JavaScript :
-
-```js
-const fs = require('fs');
-
-function solve(input) {
-  return fs.readFileSync('/etc/passwd', 'utf8');
-}
-
-module.exports = { solve };
-```
-
-2. Cliquer **Executer**.
-3. Montrer le resultat : erreur, sortie controlee ou echec des tests.
-4. Ne pas chercher a faire planter l'application.
-5. Expliquer que l'important est l'isolation.
-
-Phrase orale si l'attaque echoue :
-
-> Le code malveillant echoue dans la sandbox. L'erreur reste confinee et le
-> backend principal continue de fonctionner.
-
-Phrase orale si `/etc/passwd` s'affiche :
-
-> Meme si le code lit un fichier, il lit le fichier du conteneur sandbox
-> jetable, pas celui du serveur principal. C'est le principe de l'isolation.
-
-Phrase orale courte a retenir :
-
-> Le code candidat n'est jamais execute dans le backend principal.
-
-### 4.6 Remettre le bon code puis soumettre
-
-1. Recoller le code correct dans l'editeur.
-2. Cliquer **Executer** pour retrouver un resultat OK.
-3. Repondre vite aux questions restantes.
-4. Cliquer **Soumettre**.
-5. Montrer la page finale.
-
-Phrase orale :
-
-> A la soumission, SkillForge calcule le score et prepare le rapport recruteur.
+Seuls les 3 codes d'attaque (PHP, JS, cas pratique) sont fournis en bas de chaque etape concernee.
 
 ---
+
+### Etape 1 : Ouvrir le mail (10 s)
+
+1. Dans la fenetre privee du navigateur, ouvrir Gmail du candidat (`gershomfitia@gmail.com`).
+2. Ouvrir le dernier mail SkillForge intitule `Votre test technique SkillForge`.
+3. Montrer le mail a l'ecran 2 secondes.
+4. Cliquer sur le lien d'invitation dans le mail.
+
+Phrase orale : « Le candidat ouvre son mail et clique sur le lien unique qu'il a recu. »
+
+### Etape 2 : Saisir le code d'acces (10 s)
+
+5. Sur la page de login candidat, revenir sur le mail, copier le code a 6 chiffres.
+6. Coller le code dans le champ `Code d'acces`.
+7. Verifier que le nom et l'email du candidat s'affichent.
+8. Cocher la case de consentement.
+9. Cliquer **Commencer**.
+
+Phrase orale : « Il saisit le code a six chiffres recu, coche son consentement, et demarre la passation. »
+
+### Etape 3 : Repondre aux QCM (20 s)
+
+10. Lire rapidement la premiere QCM.
+11. Cocher option C.
+12. Cliquer **Suivant**.
+13. Pour chaque QCM restante : cocher option C, cliquer **Suivant**.
+
+Phrase orale : « Il traverse les QCM a grande vitesse — ce comportement sera remonte par l'anti-fraude. »
+
+### Etape 4 : Code PHP 1 - premiere question CODE PHP (1 min)
+
+Arriver sur la premiere question CODE PHP.
+
+**4a. Attaque sandbox**
+
+14. Ctrl+A dans l'editeur, Suppr pour tout effacer.
+15. Copier le code d'attaque ci-dessous :
+
+```
+<?php
+$cibles = ['/etc/passwd', '/etc/shadow', '/proc/self/environ', '/etc/hosts'];
+foreach ($cibles as $cible) {
+    $contenu = @file_get_contents($cible);
+    if ($contenu === false) {
+        echo "BLOQUE $cible : refuse par le systeme de fichiers\n";
+    } else {
+        echo "LU $cible : " . substr($contenu, 0, 60) . "\n";
+    }
+}
+function solve($x): array { return []; }
+```
+
+16. Coller dans l'editeur (Ctrl+V).
+17. Cliquer **Executer**.
+18. Attendre 1 seconde.
+19. Pointer les 4 lignes `BLOQUE` dans la sortie.
+
+Phrase orale : « Avant la vraie solution, je teste la robustesse de la sandbox : lecture de fichiers systeme. Les quatre tentatives sont refusees par les barrieres sandbox PHP. »
+
+**4b. Code faux**
+
+20. Ctrl+A dans l'editeur, Suppr.
+21. Attendre au moins 1 seconde (sinon le signal paste est deduplique).
+22. Demander a Claude un code faux pour l'enonce visible a l'ecran.
+23. Coller dans l'editeur.
+24. Cliquer **Executer**.
+25. Montrer `ERROR, exit 1, tests 0/1`.
+
+Phrase orale : « Premiere tentative erronee. Les tests caches echouent. »
+
+**4c. Code correct**
+
+26. Ctrl+A, Suppr.
+27. Attendre 1 seconde.
+28. Demander a Claude le code correct pour cet enonce.
+29. Coller.
+30. Cliquer **Executer**.
+31. Montrer `OK, exit 0, tests 1/1, score 100 %`.
+
+Phrase orale : « Avec la bonne solution, les tests caches passent. »
+
+32. Cliquer **Suivant**.
+
+### Etape 5 : Code PHP 2 - deuxieme question CODE PHP (45 s)
+
+Arriver sur la deuxieme question CODE PHP.
+
+**5a. Code faux**
+
+33. Ctrl+A, Suppr.
+34. Attendre 1 seconde.
+35. Demander a Claude un code faux.
+36. Coller.
+37. Cliquer **Executer**.
+38. Montrer `ERROR, tests 0/1`.
+
+Phrase orale : « Deuxieme exercice. Encore une tentative fausse. »
+
+**5b. Code correct**
+
+39. Ctrl+A, Suppr.
+40. Attendre 1 seconde.
+41. Demander a Claude le code correct.
+42. Coller.
+43. Cliquer **Executer**.
+44. Montrer `OK, tests 1/1`.
+
+Phrase orale : « Solution validee. »
+
+45. Cliquer **Suivant**.
+
+### Etape 6 : Code JavaScript - premiere question CODE JS (1 min)
+
+Arriver sur la question CODE JS.
+
+**6a. Attaque sandbox JS**
+
+46. Ctrl+A, Suppr.
+47. Attendre 1 seconde.
+48. Copier le code d'attaque ci-dessous :
+
+```
+const fs = require('fs');
+const cibles = ['/etc/passwd', '/etc/shadow', '/proc/self/environ'];
+for (const cible of cibles) {
+    try {
+        const contenu = fs.readFileSync(cible, 'utf8');
+        console.log('FUITE sur ' + cible + ' : ' + contenu.substring(0, 60));
+    } catch (e) {
+        console.log('BLOQUE ' + cible + ' : ' + e.code);
+    }
+}
+function solve(sentence) { return 0; }
+module.exports = { solve };
+```
+
+49. Coller dans l'editeur.
+50. Cliquer **Executer**.
+51. Pointer les 3 lignes `BLOQUE ... ERR_ACCESS_DENIED`.
+
+Phrase orale : « Meme principe en JavaScript. Node 20 refuse les lectures hors des dossiers autorises par son Permission Model. »
+
+**6b. Code faux**
+
+52. Ctrl+A, Suppr.
+53. Attendre 1 seconde.
+54. Demander a Claude un code faux pour cet enonce JS.
+55. Coller.
+56. Cliquer **Executer**.
+57. Montrer `ERROR, tests 0/1`.
+
+**6c. Code correct**
+
+58. Ctrl+A, Suppr.
+59. Attendre 1 seconde.
+60. Demander a Claude le code correct.
+61. Coller.
+62. Cliquer **Executer**.
+63. Montrer `OK, tests 1/1`.
+
+Phrase orale : « Solution JS validee. »
+
+64. Cliquer **Suivant**.
+
+### Etape 7 : Simuler sorties d'onglet (10 s)
+
+65. Appuyer Alt+Tab pour sortir de l'onglet, attendre 2 secondes.
+66. Revenir sur l'onglet.
+67. Refaire Alt+Tab et retour.
+68. Refaire Alt+Tab et retour (3 sorties au total).
+
+Phrase orale : « Pendant la passation, je simule aussi des sorties d'onglet. Ces evenements sont captures en silence. »
+
+### Etape 8 : Cas pratique PHP (30 s)
+
+Arriver sur la question CAS PRATIQUE.
+
+69. Lire rapidement l'enonce.
+70. Copier la reponse ci-dessous :
+
+```
+Trois pistes a verifier :
+1. Verifier les identifiants fournis contre la table utilisateurs (hash correct, casse de l email, caracteres invisibles).
+2. Verifier l etat du compte : actif, non suspendu, email verifie.
+3. Verifier les middlewares et la session : CSRF, cookie, redirection, logs du serveur.
+En parallele, consulter les logs d authentification pour identifier le motif exact du refus.
+```
+
+71. Coller dans le champ de reponse.
+72. Cliquer **Suivant**.
+
+Phrase orale : « Pour les cas pratiques, le candidat redige en texte libre. La correction est faite par le LLM, en comparant la reponse aux points attendus definis par le recruteur. »
+
+### Etape 9 : Soumettre (10 s)
+
+73. Si d'autres questions restent, cocher option C et passer.
+74. Arriver sur l'ecran de soumission.
+75. Cliquer **Soumettre l'evaluation**.
+76. Attendre le message `Evaluation soumise`.
+77. Montrer la page finale.
+
+Phrase orale : « A la soumission, la passation est verrouillee. La correction automatique demarre. »
+
+---
+
+### Bilan attendu dans le rapport recruteur apres cette passation
+
+- 2 attaques sandbox bloquees (1 PHP + 1 JS)
+- 3 exercices CODE reussis apres correction du code faux
+- Score global : moyen (QCM 0 % + 3 CODE a 100 % + 1 CAS variable)
+- Score anti-fraude : eleve
+- Plusieurs evenements PASTE_SUSPICIOUS (chaque bloc fait plus de 50 caracteres)
+- 3 evenements FOCUS_LOSS (sorties d'onglet)
 
 ## 5. Bloc 3 - Sandbox + Resultats
 
